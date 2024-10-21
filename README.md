@@ -2,5 +2,5 @@
 
 ## Modern C++ project implementing the board game "Eter"
 #### Visual interface: QT
-#### Hints system: limited search (Alpha-Beta pruning)
+#### Hints system: limited search (Alpha-Beta Pruning)
 #### Computer AI: reinforcement learning (Dueling/Double DQN / AlphaZero)
