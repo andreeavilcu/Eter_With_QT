@@ -1,7 +1,7 @@
-#include <iostream>
+#include "modules/Wizard.h"
 
 int main()
 {
-    std::cout << "Eter!" << std::endl;
-    return 0;
+    Wizard w{ 0 };
+    w.playWizard();
 }
