@@ -4,3 +4,9 @@
 #### Visual interface: QT
 #### Hints system: limited search (Alpha-Beta Pruning)
 #### Computer AI: reinforcement learning (Dueling/Double DQN / AlphaZero)
+
+## Team members
+#### Priboi Andrei (andreiprb)
+#### Tudose Alexandru Vasule (Chewdoughsay)
+#### Urs Ruxandra Mihaela (UrsRuxandra)
+#### Vilcu Andreea (andreeavilcu)
