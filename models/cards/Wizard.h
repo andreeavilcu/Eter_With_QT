@@ -4,7 +4,7 @@
 #include <array>
 
 #include "Card.h"
-#include "wizards_powers/Wizards.h"
+#include "../../wizards_powers/Wizards.h"
 
 class Wizard : public Card {
 public:

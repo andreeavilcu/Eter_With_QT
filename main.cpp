@@ -1,4 +1,4 @@
-#include "modules/Wizard.h"
+#include "models/cards/Wizard.h"
 
 int main()
 {
