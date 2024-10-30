@@ -14,7 +14,7 @@ protected:
     static std::array<FuncType, eter::wizard_count> m_wizards;
 
 public:
-    explicit Wizard(const size_t _value);
+    explicit Wizard(size_t _value);
 
     void playWizard() const;
 };
