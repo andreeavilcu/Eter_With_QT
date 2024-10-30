@@ -14,13 +14,7 @@ protected:
     static std::array<FuncType, eter::wizard_count> m_wizards;
 
 public:
-    explicit Wizard(const size_t _value) : Card(_value) {}
+    explicit Wizard(const size_t _value);
 
-    void playWizard() const {
-        m_wizards[this->m_value]();
-    }
-};
-
-std::array<Wizard::FuncType, eter::wizard_count> Wizard::m_wizards = {
-    eliminateCard, eliminateRow, coverCard, sinkHole, moveStackOwn, extraEter, moveStackOpponent, moveEdge
+    void playWizard() const;
 };

@@ -9,4 +9,5 @@ add_executable(Eter main.cpp
         modules/Card.h
         modules/wizards_powers/Wizards.h
         modules/wizards_powers/Wizards.cpp
-        modules/Wizard.h)
+        modules/Wizard.h
+        modules/Wizard.cpp)

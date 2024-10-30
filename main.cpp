@@ -2,6 +2,8 @@
 
 int main()
 {
-    Wizard w{ 4 };
+    srand(time(NULL));
+
+    Wizard w{ static_cast<size_t>(rand() % eter::wizard_count) };
     w.playWizard();
 }
