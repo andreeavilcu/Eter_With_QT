@@ -1,11 +1,6 @@
-//
-// Created by Andrei PRIBOI on 30.10.2024.
-//
+#pragma once
 
-#ifndef CARD_H
-#define CARD_H
-
-#include <stdio.h>
+#include "../utils/constants.h"
 
 class Card {
 protected:
@@ -15,4 +10,3 @@ public:
     explicit Card(const size_t _value) : m_value(_value) {}
 };
 
-#endif //CARD_H
