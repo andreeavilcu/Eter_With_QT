@@ -2,6 +2,6 @@
 
 int main()
 {
-    Wizard w{ 0 };
+    Wizard w{ 4 };
     w.playWizard();
 }
