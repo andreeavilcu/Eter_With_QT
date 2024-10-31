@@ -1,12 +1,5 @@
 #include "Wizard.h"
 
-std::array<Wizard::FuncType, Wizard::wizard_count> Wizard::m_wizards = {
-    eliminateCard, eliminateRow,
-    coverCard, sinkHole,
-    moveStackOwn, extraEter,
-    moveStackOpponent,moveEdge
-};
-
 void Wizard::play(size_t _index) {
     Wizard::m_wizards[_index]();
 }

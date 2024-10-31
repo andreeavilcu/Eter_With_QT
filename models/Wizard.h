@@ -5,31 +5,41 @@
 class Player;
 
 class Wizard {
-public:
-    using FuncType = std::function<void()>;
-    static constexpr auto wizard_count = 8;
-
-    Wizard(const Wizard&) = delete;
-    Wizard& operator=(const Wizard&) = delete;
-
-    friend class Player;
-
-protected:
-    static std::array<FuncType, wizard_count> m_wizards;
-
-    static void play(size_t _index);
+private:
+    static Wizard instance;
 
     Wizard() = default;
     ~Wizard() = default;
 
+public:
+    using FuncType = std::function<void()>;
+    constexpr auto wizard_count = 8;
+    friend class Player;
+
+    Wizard(const Wizard&) = delete;
+    Wizard& operator=(const Wizard&) = delete;
+
+    static Wizard& getInstance() {
+        return instance;
+    }
+
 private:
-    static void eliminateCard();
-    static void eliminateRow();
-    static void coverCard();
-    static void sinkHole();
-    static void moveStackOwn();
-    static void extraEter();
-    static void moveStackOpponent();
-    static void moveEdge();
+    std::array<FuncType, wizard_count> m_wizards = {
+        eliminateCard, eliminateRow,
+        coverCard, sinkHole,
+        moveStackOwn, extraEter,
+        moveStackOpponent,moveEdge
+    };
+
+    void play(size_t _index);
+
+    void eliminateCard();
+    void eliminateRow();
+    void coverCard();
+    void sinkHole();
+    void moveStackOwn();
+    void extraEter();
+    void moveStackOpponent();
+    void moveEdge();
 };
 

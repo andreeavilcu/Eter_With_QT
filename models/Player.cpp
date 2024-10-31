@@ -10,5 +10,5 @@ Player::Player(const std::vector<Card> &_cards, const size_t _wizard_index) :
 }
 
 void Player::playWizard() const {
-    Wizard::play(this->m_wizard_index);
+    Wizard::getInstance().play(this->m_wizard_index);
 }
