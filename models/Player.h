@@ -13,4 +13,7 @@ protected:
 public:
     explicit Player(const std::vector<PlayingCard>& playing_cards, const Wizard& wizard, const std::pair<Power, Power>& powers);
     void move() const;
+    std::vector<PlayingCard> get_playing_cards() const;
+    Wizard get_wizard() const;
+    std::pair<Power, Power> get_powers() const;
 };
