@@ -15,5 +15,5 @@ public:
     explicit Player(const std::vector<Card>& _cards);
     explicit Player(const std::vector<Card>& _cards, size_t _wizard_index);
 
-    void playWizard() const;
+    void playWizard() const; // TODO playPower si playCard
 };

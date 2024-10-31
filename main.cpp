@@ -8,6 +8,6 @@ int main() {
 
     std::uniform_int_distribution<int> wizardDistribution(0, Wizard::wizard_count);
 
-    const Player player({}, wizardDistribution(gen));
+    Player player({}, wizardDistribution(gen));
     player.playWizard();
 }
