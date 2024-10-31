@@ -6,17 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(Eter main.cpp
         utils/constants.h
-        models/cards/Card.h
-        models/cards/Card.cpp
-        models/cards/Wizard.h
-        models/cards/Wizard.cpp
-        models/cards/PlayingCard.h
-        models/cards/PlayingCard.cpp
-        models/cards/Power.h
-        models/cards/Power.cpp
+        models/Wizard.h
+        models/Wizard.cpp
+        models/Power.h
+        models/Power.cpp
+        models/Card.h
+        models/Card.cpp
         models/Player.h
-        models/Player.cpp
-        wizards_powers/Wizards.h
-        wizards_powers/Wizards.cpp
-        wizards_powers/Powers.h
-        wizards_powers/Powers.cpp)
+        models/Player.cpp)
