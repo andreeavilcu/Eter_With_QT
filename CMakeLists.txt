@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(Eter main.cpp
-        utils/constants.h
         models/Wizard.h
         models/Wizard.cpp
         models/Power.h

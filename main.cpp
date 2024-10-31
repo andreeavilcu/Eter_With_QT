@@ -1,8 +1,9 @@
-#include "models/Wizard.h";
+#include "models/Player.h"
 
 int main()
 {
     srand(time(NULL));
 
-    Wizard::play(rand() % eter::wizard_count);
+    Player player({}, rand() % Wizard::wizard_count);
+    player.playWizard();
 }
