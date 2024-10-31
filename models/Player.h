@@ -11,6 +11,7 @@ protected:
     Wizard m_wizard;
     std::pair<Power, Power> m_powers;
 public:
+    explicit Player(const size_t& _value);
     explicit Player(const std::vector<PlayingCard>& playing_cards, const Wizard& wizard, const std::pair<Power, Power>& powers);
     void move() const;
     std::vector<PlayingCard> get_playing_cards() const;
