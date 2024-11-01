@@ -21,6 +21,10 @@ protected:
     Value m_value;
     Color m_color;
 
+private:
+    static Value convertToValue(int value);
+    static Color convertToColor(const std::string& color);
+
 public:
 
     Card(int value, const std::string& color);
