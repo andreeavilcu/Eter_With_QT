@@ -1,12 +1,32 @@
 #pragma once
 
 #include <stdio.h>
+#include <iostream>
 
 class Card {
 protected:
-    size_t m_value;
+    enum class Value {
+        one,
+        two,
+        three,
+        four,
+        five
+    };
+
+    enum class Color {
+        Red,
+        Blue
+    };
+
+    Value m_value;
+    Color m_color;
 
 public:
-    explicit Card(size_t _value);
+
+    Card(int value, const std::string& color);
+    ~Card() = default;
+    Value getValue() const;
+    Color getColor() const;
+
 };
 
