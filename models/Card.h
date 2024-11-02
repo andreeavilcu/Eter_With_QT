@@ -1,37 +1,28 @@
 #pragma once
 
-#include <stdio.h>
-#include <iostream>
+#include <cstdint>
 
 class Card {
-protected:
-    enum class Value {
+public:
+    enum class Value: uint8_t {
+        eter,
         one,
         two,
         three,
         four,
-        five,
-        Error
     };
 
-    enum class Color {
+    enum class Color: uint8_t {
         Red,
         Blue
     };
 
-    Value m_value;
-    Color m_color;
-
-private:
-    static Value convertToValue(int value);
-    static Color convertToColor(const std::string& color);
-
-public:
-
-    Card(int value, const std::string& color);
+    explicit Card(const Value& value, const Color& color);
     ~Card() = default;
     Value getValue() const;
     Color getColor() const;
-
+protected:
+    Value m_value;
+    Color m_color;
 };
 
