@@ -19,8 +19,8 @@ public:
 
     explicit Card(const Value& value, const Color& color);
     ~Card() = default;
-    Value getValue() const;
-    Color getColor() const;
+    [[nodiscard]] Value getValue() const;
+    [[nodiscard]] Color getColor() const;
 protected:
     Value m_value;
     Color m_color;
