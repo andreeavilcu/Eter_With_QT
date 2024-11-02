@@ -1,5 +1,6 @@
 #include <random>
 #include "models/Player.h"
+#include "models/Game.h"
 
 int main() {
     std::random_device rd;
@@ -12,4 +13,6 @@ int main() {
     player.playWizard();
     player.playPower(true);
     player.playPower(false);
+
+    Game& game = Game::getInstance();
 }

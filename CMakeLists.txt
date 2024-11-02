@@ -12,4 +12,6 @@ add_executable(Eter main.cpp
         models/Card.h
         models/Card.cpp
         models/Player.h
-        models/Player.cpp)
+        models/Player.cpp
+        models/Game.h
+        models/Game.cpp)
