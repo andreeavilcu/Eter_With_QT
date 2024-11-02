@@ -1,7 +1,7 @@
 #pragma once
 
-#include<iostream>
-#include<functional>
+#include <iostream>
+#include <functional>
 #include <array>
 
 class Player;
@@ -14,11 +14,11 @@ public:
 	Power(const Power&) = delete;
 	Power& operator=(const Power&) = delete;
 
-	static Power& getInstance()
-	{
+	static Power& getInstance() {
 		static Power instance;
 		return instance;
 	}
+
 private:
 	Power() = default;
 	~Power() = default;
@@ -50,10 +50,10 @@ private:
 		static void rock();
 	};
 
-	void play_power(const size_t _index) const
-	{
+	void play(const size_t _index) const {
 		m_powers[_index]();
 	}
+
 	using FuncType = std::function<void()>;
 
 	std::array<FuncType, power_count> m_powers =

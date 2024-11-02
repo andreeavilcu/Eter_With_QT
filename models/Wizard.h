@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include<functional>
-#include<array>
+#include <functional>
+#include <array>
 
 class Player;
 

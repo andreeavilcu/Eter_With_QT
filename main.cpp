@@ -8,10 +8,8 @@ int main() {
     std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count };
     std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count };
 
-    Player player{ {}, wizardDistribution(gen) };
+    Player player{ {}, wizardDistribution(gen), { powerDistribution(gen), powerDistribution(gen) } };
     player.playWizard();
-
-    std::pair<size_t, size_t> powerIndices = { powerDistribution(gen), powerDistribution(gen) };
-    Player player2{ {}, wizardDistribution(gen), powerIndices };
-    player2.playPower();
+    player.playPower(true);
+    player.playPower(false);
 }
