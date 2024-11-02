@@ -6,12 +6,10 @@ Card::Card(const Value& value, const Color& color)
 	,m_color{ color }
 {}
 
-Card::Value Card::getValue() const
-{
+Card::Value Card::getValue() const {
 	return m_value;
 }
 
-Card::Color Card::getColor() const
-{
+Card::Color Card::getColor() const {
 	return m_color;
 }

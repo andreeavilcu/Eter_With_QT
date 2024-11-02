@@ -21,6 +21,7 @@ public:
     ~Card() = default;
     [[nodiscard]] Value getValue() const;
     [[nodiscard]] Color getColor() const;
+
 protected:
     Value m_value;
     Color m_color;

@@ -1,6 +1,5 @@
 #include "Player.h"
 
-
 Player::Player(const std::vector<Card>& _cards) :
     m_cards{ _cards } {
 }
