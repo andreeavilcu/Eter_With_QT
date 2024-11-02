@@ -13,6 +13,8 @@ Card::Value Card::convertToValue(int value)
 			return Value::four;
 		case 5:
 			return Value::five;
+		default:
+			return Value::Error;
 
 	}
 }

@@ -10,7 +10,8 @@ protected:
         two,
         three,
         four,
-        five
+        five,
+        Error
     };
 
     enum class Color {
