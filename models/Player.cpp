@@ -9,6 +9,13 @@ Player::Player(const std::vector<Card> &_cards, const size_t _wizard_index) :
     m_wizard_index(_wizard_index) {
 }
 
+Player::Player(const std::vector<Card>& _cards, size_t _wizard_index, std::pair<size_t, size_t> _powers_index)
+    : m_cards(_cards), m_wizard_index(_wizard_index), m_powers_index(_powers_index) {}
+
 void Player::playWizard() const {
     Wizard::getInstance().play(m_wizard_index);
+}
+
+void Player::playPower()const {
+    Power::getInstance().play_power(m_powers_index.first);
 }

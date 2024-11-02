@@ -50,7 +50,7 @@ private:
 		static void rock();
 	};
 
-	void play(const size_t _index) const
+	void play_power(const size_t _index) const
 	{
 		m_powers[_index]();
 	}
