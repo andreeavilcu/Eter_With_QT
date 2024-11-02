@@ -11,5 +11,5 @@ int main() {
     Player player{{}, wizardDistribution(gen)};
     player.playWizard();
 
-    std::cout << "test ruxi commit";
+
 }
