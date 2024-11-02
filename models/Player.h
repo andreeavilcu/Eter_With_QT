@@ -3,8 +3,8 @@
 #include <vector>
 #include <utility>
 
-#include "Card.h"
 #include "Power.h"
+#include "Card.h"
 #include "Wizard.h"
 
 class Player {
