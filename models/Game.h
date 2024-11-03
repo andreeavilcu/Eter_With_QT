@@ -1,8 +1,10 @@
 #pragma once
 
+#include<iostream>
 #include <vector>
 #include <memory>
 #include <array>
+
 
 class Game {
 public:
@@ -25,4 +27,12 @@ private:
         m_powers_used.fill(0);
         m_players.fill(nullptr);
     }
+
+public:
+    void run();
+    void explosion();
+    void generateExplosion();
+    void shiftMap();
+
+
 };
