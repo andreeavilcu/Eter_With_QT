@@ -4,6 +4,7 @@
 #include <functional>
 #include <array>
 
+
 class Player;
 
 class Wizard {
