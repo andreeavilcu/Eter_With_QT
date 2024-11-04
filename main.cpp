@@ -1,6 +1,7 @@
 #include <random>
 #include "models/Player.h"
-#include "models/Game.h"
+// #include "models/Game.h"
+#include "models/Board.h"
 
 int main() {
     std::random_device rd;
@@ -14,5 +15,11 @@ int main() {
     player.playPower(true);
     player.playPower(false);
 
-    Game& game = Game::getInstance();
+    // Game<3>& game = Game<3>::getInstance();
+
+    Board<3> b;
+    b.placeCard(0, 0);
+    b.swapRow(0, 2);
+    b.swapCol(0, 2);
+    b.printTest();
 }

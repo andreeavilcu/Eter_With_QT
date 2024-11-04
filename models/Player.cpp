@@ -21,3 +21,7 @@ void Player::playWizard() const {
     Wizard::getInstance().play(m_wizard_index);
 }
 
+void Player::playPower(bool _first) const {
+    Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second);
+}
+

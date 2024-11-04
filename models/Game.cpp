@@ -1,6 +1,6 @@
 #include "Game.h"
 
-void Game::run(){
+/*void Game::run(){
 	std::cout << "run";
 }
 
@@ -14,6 +14,6 @@ void Game::generateExplosion(){
 
 void Game::shiftMap(){
 	std::cout << "shiftMap";
-}
+}*/
 
 

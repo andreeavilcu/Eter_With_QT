@@ -2,6 +2,7 @@
 
 #include<array>
 #include<list>
+#include <algorithm>
 #include<iostream>
 #include "Card.h"
 
@@ -13,7 +14,6 @@ private:
 
 	std::array<uint8_t, gridSize> m_rowIndex;
 	std::array<uint8_t, gridSize> m_colIndex;
-public:
 
 	class RowProxy {
 	private:
@@ -33,6 +33,7 @@ public:
 		}
 	};
 
+public:
 	RowProxy& operator[](size_t _row) {
 		return RowProxy{ *this, _row };
 	}
@@ -47,4 +48,28 @@ public:
 		}
 	}
 
+	void swapRow(size_t _first, size_t _second) {
+		std::swap(m_rowIndex[_first], m_rowIndex[_second]);
+	}
+	void swapCol(size_t _first, size_t _second) {
+		std::swap(m_colIndex[_first], m_colIndex[_second]);
+	}
+
+	void placeCard(size_t _row, size_t _col)
+	{
+		if (_row < 0 || _row >= gridSize || _col < 0 || _col >= gridSize){
+			std::cout << "Error at indices\n";
+			return;
+		}
+		m_board[_row][_col].push_back(Card{ Card::Value::eter, Card::Color::Blue});
+	}
+
+	void printTest()
+	{
+		for (size_t i = 0; i < gridSize; ++i) {
+			for (size_t j = 0; j < gridSize; ++j)
+				std::cout << m_board[i][j].size() << " ";
+			std::cout << std::endl;
+		}
+	}
 };
