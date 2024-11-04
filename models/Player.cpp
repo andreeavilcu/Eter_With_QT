@@ -1,6 +1,7 @@
 #include "Player.h"
 
-Player::Player(const std::vector<Card>&& _cards, const bool _wizard, const bool _powers) :
+Player::Player(const Color _color, const std::vector<Card>& _cards, const bool _wizard, const bool _powers) :
+    m_color{ _color },
     m_cards{ _cards } {
 
     std::random_device rd;
@@ -17,18 +18,36 @@ Player::Player(const std::vector<Card>&& _cards, const bool _wizard, const bool 
     } while (m_powers_index.first == m_powers_index.second && _powers);
 }
 
-void Player::useWizard() {
+bool Player::useWizard() {
     if (m_wizard_index == -1)
-        return;
+        return false;
 
     Wizard::getInstance().play(m_wizard_index);
     m_wizard_index = -1;
+
+    return true;
 }
 
-void Player::usePower(bool _first) {
+bool Player::usePower(bool _first) {
     if (_first ? m_powers_index.first == -1 : m_powers_index.second == -1)
-        return;
+        return false;
 
     Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second);
     _first ? m_powers_index.first = -1 : m_powers_index.second = -1;
+
+    return true;
+}
+
+std::optional<Card> Player::useCard(Card::Value _value) {
+    const auto iter = std::ranges::find_if(m_cards, [_value](const Card& _card) {
+        return _card.getValue() == _value;
+    });
+
+    if (iter != m_cards.end()) {
+        Card cardToMove = std::move(*iter);
+        m_cards.erase(iter);
+        return cardToMove;
+    }
+
+    return std::nullopt;
 }

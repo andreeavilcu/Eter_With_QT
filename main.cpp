@@ -1,5 +1,5 @@
 #include "models/Game.h"
 
 int main() {
-    Game<3>::getInstance().run();
+    Game<GridSize::Three>::getInstance().run(GameType::WizardDuel);
 }

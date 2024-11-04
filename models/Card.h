@@ -6,27 +6,26 @@
 class Card {
 public:
     enum class Value: uint8_t {
-        Eter,
+        Eter = 0,
         One,
         Two,
         Three,
         Four,
     };
 
-    enum class Color: uint8_t {
-        Red,
-        Blue
-    };
-
-    explicit Card(const Value& value, const Color& color);
+    explicit Card(const Value& value);
     ~Card() = default;
+    Card(const Card& other) = default;
+    Card& operator=(const Card& other) = default;
+    Card(Card&& other) noexcept;
+    Card& operator=(Card&& other) noexcept;
+
     [[nodiscard]] Value getValue() const;
-    [[nodiscard]] Color getColor() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Card& card);
 
-protected:
+private:
     Value m_value;
-    Color m_color;
+
 };
 
