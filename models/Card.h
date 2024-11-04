@@ -1,15 +1,16 @@
 #pragma once
 
 #include <cstdint>
+#include <ostream>
 
 class Card {
 public:
     enum class Value: uint8_t {
-        eter,
-        one,
-        two,
-        three,
-        four,
+        Eter,
+        One,
+        Two,
+        Three,
+        Four,
     };
 
     enum class Color: uint8_t {
@@ -21,6 +22,8 @@ public:
     ~Card() = default;
     [[nodiscard]] Value getValue() const;
     [[nodiscard]] Color getColor() const;
+
+    friend std::ostream& operator<<(std::ostream& os, const Card& card);
 
 protected:
     Value m_value;

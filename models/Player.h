@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <utility>
+#include <vector>
+#include <random>
 
 #include "Power.h"
 #include "Card.h"
@@ -14,11 +15,8 @@ protected:
     std::pair<size_t, size_t> m_powers_index{};
 
 public:
-    explicit Player(const std::vector<Card>& _cards);
-    explicit Player(const std::vector<Card>& _cards, size_t _wizard_index);
-    explicit Player(const std::vector<Card>& _cards, std::pair<size_t, size_t> _powers_index);
-    explicit Player(const std::vector<Card>& _cards, size_t _wizard_index, std::pair<size_t, size_t> _powers_index);
+    explicit Player(const std::vector<Card>&& _cards, bool _wizard, bool _powers);
 
-    void playWizard() const;
-    void playPower(bool _first) const;
+    void useWizard();
+    void usePower(bool _first);
 };
