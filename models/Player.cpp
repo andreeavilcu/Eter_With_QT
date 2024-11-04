@@ -1,8 +1,11 @@
 #include "Player.h"
 
-Player::Player(const Color _color, const std::vector<Card>& _cards, const bool _wizard, const bool _powers) :
+Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const bool _wizard, const bool _powers) :
     m_color{ _color },
     m_cards{ _cards } {
+
+    for (size_t i = 0; i < _cards.size(); ++i)
+        m_cards[i].setColor(_color);
 
     std::random_device rd;
     std::mt19937 gen{ rd() };

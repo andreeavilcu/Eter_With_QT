@@ -286,18 +286,10 @@ void Game<gridSize>::run(const GameType _mode) {
         cards.emplace_back( Card::Value::Three );
     }
 
-    const std::vector<Card> cards_bc = {
-        Card{ Card::Value::Eter }, Card{ Card::Value::One },
-        Card{ Card::Value::One }, Card{ Card::Value::Two },
-        Card{ Card::Value::Two }, Card{ Card::Value::Two },
-        Card{ Card::Value::Three }, Card{ Card::Value::Three },
-        Card{ Card::Value::Three }, Card{ Card::Value::Four }
-    };
-
-    Player player1{ Player::Color::Red, cards,
+    Player player1{ Card::Color::Red, cards,
         _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
         _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
-    Player player2{ Player::Color::Blue, cards,
+    Player player2{ Card::Color::Blue, cards,
 
         _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
         _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };

@@ -10,13 +10,8 @@
 
 class Player {
 public:
-    enum class Color: uint8_t {
-        Red = 0,
-        Blue
-    };
-
 protected:
-    Color m_color{};
+    Card::Color m_color{};
 
     std::vector<Card> m_cards{};
 
@@ -24,7 +19,7 @@ protected:
     std::pair<size_t, size_t> m_powers_index{};
 
 public:
-    explicit Player(Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
+    explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
 
     bool useWizard();
     bool usePower(bool _first);
