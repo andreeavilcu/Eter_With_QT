@@ -1,18 +1,21 @@
 #include "Game.h"
-
-void Game::run(){
+template<size_t gridSize>
+void Game<gridSize>::run(){
 	std::cout << "run";
 }
 
-void Game::explosion(){
+template<size_t gridSize>
+void Game<gridSize>::explosion(){
 	std::cout << "explosion";
 }
 
-void Game::generateExplosion(){
+template<size_t gridSize>
+void Game<gridSize>::generateExplosion(){
 	std::cout << "generateExplosion";
 }
 
-void Game::shiftMap(){
+template<size_t gridSize>
+void Game<gridSize>::shiftMap(){
 	std::cout << "shiftMap";
 }
 
