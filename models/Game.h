@@ -137,11 +137,11 @@ template<GridSize gridSize>
 void Game<gridSize>::printBoard() const {
     for (size_t i = 0; i < static_cast<size_t>(gridSize); ++i) {
         for (size_t j = 0; j < static_cast<size_t>(gridSize); ++j) {
-            if (!m_board[i][j].empty()) {
+            if (!m_board[i][j].empty())
                 std::cout << m_board[i][j].back() << " ";
-            } else {
+
+            else
                 std::cout << 'x' << " ";
-            }
         }
         std::cout << std::endl;
     }
@@ -149,10 +149,7 @@ void Game<gridSize>::printBoard() const {
 
 template<GridSize gridSize>
 bool Game<gridSize>::checkIndexes(const size_t _row, const size_t _col) const {
-    if (_row >= static_cast<size_t>(gridSize) || _col >= static_cast<size_t>(gridSize))
-        return false;
-
-    return true;
+    return !(_row >= static_cast<size_t>(gridSize) || _col >= static_cast<size_t>(gridSize));
 }
 
 template<GridSize gridSize>
@@ -289,8 +286,8 @@ void Game<gridSize>::run(const GameType _mode) {
     Player player1{ Card::Color::Red, cards,
         _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
         _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
-    Player player2{ Card::Color::Blue, cards,
 
+    Player player2{ Card::Color::Blue, cards,
         _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
         _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
 
