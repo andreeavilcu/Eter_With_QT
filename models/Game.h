@@ -53,7 +53,14 @@ public:
     [[nodiscard]] bool checkIndexes(size_t _row, size_t _col) const;
     [[nodiscard]] bool checkNeighbours(size_t _row, size_t _col) const;
     [[nodiscard]] bool checkValue(size_t _row, size_t _col, const Card::Value& _value) const;
+    
+    [[nodiscard]] bool checkLines(size_t _index)const;
+    [[nodiscard]] bool checkDiagonals()const;
+    [[nodiscard]] bool checkCards(const Player &player)const;
+    [[nodiscard]] bool checkEmpty()const;
 
+    [[nodiscard]] size_t checkEndOfTheGame()const;
+   
     void shiftBoard();
 
     bool placeCard(Player& _player, size_t _iterationIndex);
@@ -187,6 +194,54 @@ bool Game<gridSize>::checkValue(size_t _row, size_t _col, const Card::Value& _va
 }
 
 template<GridSize gridSize>
+inline bool Game<gridSize>::checkLines(size_t _index) const
+{
+    for (size_t i=0; i<gridSize; ++i)
+        if (m_board[i][_index].empty())
+            return false;
+
+    for (size_t i = 0; i < gridSize; ++i)
+        if (m_board[_index][i].empty())
+            return false;
+
+    return true;
+}
+
+template<GridSize gridSize>
+inline bool Game<gridSize>::checkDiagonals() const
+{
+    for (size_t i = 0; i < gridSize; ++i)
+        if(m_board[i][i].empty())
+            return false;
+    for (size_t i = 0; i < gridSize; ++i)
+        if(m_board[i][gridSize-i-1].empty())
+        return false;
+
+    return true;
+}
+
+template<GridSize gridSize>
+inline bool Game<gridSize>::checkCards(const Player& player) const
+{
+    return player.m_cards.size()>0;
+}
+
+template<GridSize gridSize>
+inline bool Game<gridSize>::checkEmpty() const {
+    for (size_t i = 0; i < gridSize; ++i)
+        for (size_t j = 0; j < gridSize; ++j)
+            if (m_board[i][j].empty())
+                return false;
+    return true;
+}
+
+template<GridSize gridSize>
+inline size_t Game<gridSize>::checkEndOfTheGame() const
+{
+    return size_t();
+}
+
+template<GridSize gridSize>
 void Game<gridSize>::shiftBoard() {
     char choice;
 
@@ -213,7 +268,7 @@ void Game<gridSize>::shiftBoard() {
 template<GridSize gridSize>
 bool Game<gridSize>::placeCard(Player& _player, const size_t _iterationIndex) {
     size_t x, y, int_value;
-
+    
     std::cin >> x;
     std::cin >> y;
     std::cin >> int_value;
@@ -292,7 +347,7 @@ void Game<gridSize>::run(const GameType _mode) {
         _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
 
     size_t iterationIndex = 0;
-
+   
     while (iterationIndex < 10) { // TODO remove constant 10 and add some checks like full table or empty decks for both players or game end
         std::cout << "Player " << iterationIndex % 2 + 1 << "'s turn!" << std::endl;
 
