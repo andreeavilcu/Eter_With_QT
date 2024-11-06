@@ -21,6 +21,14 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     } while (m_powers_index.first == m_powers_index.second && _powers);
 }
 
+Card::Color Player::getColor() const {
+    return this->m_color;
+}
+
+size_t Player::getCardCount() const {
+    return this->m_cards.size();
+}
+
 bool Player::useWizard() {
     if (m_wizard_index == -1)
         return false;

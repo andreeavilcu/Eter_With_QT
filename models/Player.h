@@ -10,7 +10,6 @@
 #include "Wizard.h"
 
 class Player {
-public:
 protected:
     Card::Color m_color{};
 
@@ -21,6 +20,9 @@ protected:
 
 public:
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
+
+    [[nodiscard]] Card::Color getColor() const;
+    [[nodiscard]] size_t getCardCount() const;
 
     bool useWizard();
     bool usePower(bool _first);
