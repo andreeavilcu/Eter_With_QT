@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <utility>
@@ -6,6 +6,7 @@
 #include <memory>
 #include <ranges>
 #include <array>
+///#include <unordered_map>
 
 #include "Player.h"
 
@@ -20,6 +21,13 @@ enum class GridSize : size_t {
     Three = 3,
     Four = 4,
 };
+
+//struct pair_hash {
+//    template <class T1, class T2>
+//    std::size_t operator() (const std::pair<T1, T2>& pair) const {
+//        return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+//    }
+//}; 
 
 template<GridSize gridSize>
 class Game {
@@ -38,6 +46,7 @@ public:
 
 private:
     std::array<std::array<std::vector<Card>, static_cast<size_t>(gridSize)>, static_cast<size_t>(gridSize)> m_board{};
+   /// std::unordered_map<std::pair<size_t, size_t>, Card::ID> m_playerPositions;
 
 public:
     void swapRow(size_t _first, size_t _second);
@@ -193,32 +202,57 @@ bool Game<gridSize>::checkValue(size_t _row, size_t _col, const Card::Value& _va
     return false;
 }
 
-template<GridSize gridSize>
-inline bool Game<gridSize>::checkLines(size_t _index) const
-{
-    for (size_t i=0; i<gridSize; ++i)
-        if (m_board[i][_index].empty())
-            return false;
+//template<GridSize gridSize>
+//inline bool Game<gridSize>::checkLines(size_t _index) const
+//{
+//    auto firstRowID = m_playerPositions.at({ _index, 0 });
+//    bool rowWin = true;
+//    for (size_t col = 1; col <gridSize; ++col) {
+//        auto pos = m_playerPositions.find({ _index, col });
+//        if (pos == m_playerPositions.end() || pos->second != firstRowID) {
+//            rowWin = false;
+//            break;
+//        }
+//    }
+//
+//    auto firstColID = m_playerPositions.at({ 0, _index });
+//    bool colWin = true;
+//    for (size_t row = 1; row < gridSize; ++row) {
+//        auto pos = m_playerPositions.find({ row, _index });
+//        if (pos == m_playerPositions.end() || pos->second != firstColID) {
+//            colWin = false;
+//            break;
+//        }
+//    }
+//
+//    return rowWin || colWin;
+//}
 
-    for (size_t i = 0; i < gridSize; ++i)
-        if (m_board[_index][i].empty())
-            return false;
-
-    return true;
-}
-
-template<GridSize gridSize>
-inline bool Game<gridSize>::checkDiagonals() const
-{
-    for (size_t i = 0; i < gridSize; ++i)
-        if(m_board[i][i].empty())
-            return false;
-    for (size_t i = 0; i < gridSize; ++i)
-        if(m_board[i][gridSize-i-1].empty())
-        return false;
-
-    return true;
-}
+//template<GridSize gridSize>
+//inline bool Game<gridSize>::checkDiagonals() const
+//{
+//    auto firstDiagID = m_playerPositions.at({ 0, 0 });
+//    bool mainDiagWin = true;
+//    for (size_t i = 1; i <gridSize; ++i) {
+//        auto pos = m_playerPositions.find({ i, i });
+//        if (pos == m_playerPositions.end() || pos->second != firstDiagID) {
+//            mainDiagWin = false;
+//            break;
+//        }
+//    }
+//
+//    auto firstAntiDiagID = m_playerPositions.at({ 0, gridSize - 1 });
+//    bool antiDiagWin = true;
+//    for (size_t i = 1; i < gridSize; ++i) {
+//        auto pos = m_playerPositions.find({ i, gridSize - i - 1 });
+//        if (pos == m_playerPositions.end() || pos->second != firstAntiDiagID) {
+//            antiDiagWin = false;
+//            break;
+//        }
+//    }
+//
+//    return mainDiagWin || antiDiagWin;
+//}
 
 template<GridSize gridSize>
 inline bool Game<gridSize>::checkCards(const Player& player) const
@@ -291,9 +325,11 @@ bool Game<gridSize>::placeCard(Player& _player, const size_t _iterationIndex) {
 
     if (!playedCard)
         return false;
-
+   
+    ///Player->setPlayerID(_player.getID());
     m_board[x][y].push_back(std::move(*playedCard));
 
+    ///m_playerPositions[{x, y}] = _player.getID();
     return true;
 }
 
