@@ -1,12 +1,12 @@
 ﻿#pragma once
 
 #include <iostream>
+#include <cstdlib>
 #include <utility>
 #include <vector>
 #include <memory>
 #include <ranges>
 #include <array>
-///#include <unordered_map>
 
 #include "Player.h"
 
@@ -22,17 +22,10 @@ enum class GridSize : size_t {
     Four = 4,
 };
 
-//struct pair_hash {
-//    template <class T1, class T2>
-//    std::size_t operator() (const std::pair<T1, T2>& pair) const {
-//        return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-//    }
-//}; 
-
-template<GridSize gridSize>
+template<GridSize gridSize, GameType gameType>
 class Game {
 private:
-    Game() = default;
+    Game();
     ~Game() = default;
 
 public:
@@ -40,13 +33,15 @@ public:
     Game& operator=(const Game&) = delete;
 
     static Game& getInstance() {
-        static Game<gridSize> instance;
+        static Game<gridSize, gameType> instance;
         return instance;
     }
 
 private:
     std::array<std::array<std::vector<Card>, static_cast<size_t>(gridSize)>, static_cast<size_t>(gridSize)> m_board{};
-   /// std::unordered_map<std::pair<size_t, size_t>, Card::ID> m_playerPositions;
+
+    Player m_player1, m_player2;
+    Card::Color m_winner{ Card::Color::Undefined };
 
 public:
     void swapRow(size_t _first, size_t _second);
@@ -63,31 +58,70 @@ public:
     [[nodiscard]] bool checkNeighbours(size_t _row, size_t _col) const;
     [[nodiscard]] bool checkValue(size_t _row, size_t _col, const Card::Value& _value) const;
     
-    [[nodiscard]] bool checkLines(size_t _index)const;
-    [[nodiscard]] bool checkDiagonals()const;
-    [[nodiscard]] bool checkCards(const Player &player)const;
-    [[nodiscard]] bool checkEmpty()const;
+    [[nodiscard]] Card::Color checkRows() const;
+    [[nodiscard]] Card::Color checkCols() const;
+    [[nodiscard]] Card::Color checkDiagonals() const;
 
-    [[nodiscard]] size_t checkEndOfTheGame()const;
+    [[nodiscard]] bool checkFullBoard() const;
+    [[nodiscard]] bool checkEmptyDeck() const;
+
+    [[nodiscard]] Card::Color calculateWinner() const;
+
+    [[nodiscard]] bool checkEndOfGame(Card::Color _color);
    
     void shiftBoard();
 
-    bool placeCard(Player& _player, size_t _iterationIndex);
-    bool playerTurn(Player& _player, size_t _iterationIndex);
+    bool placeCard(Card::Color _color, size_t _iterationIndex);
+    bool playerTurn(Card::Color _color, size_t _iterationIndex);
 
-    void run(GameType _mode);
+    void run();
 
 };
 
-template<GridSize gridSize>
-void Game<gridSize>::swapRow(const size_t _first, const size_t _second) { // TODO test
+template<GridSize gridSize, GameType gameType>
+Game<gridSize, gameType>::Game() :
+m_player1{ Card::Color::Blue,  gameType == GameType::Training ?
+    std::vector<Card>{
+        Card{ Card::Value::One }, Card{ Card::Value::One },
+        Card{ Card::Value::Two }, Card{ Card::Value::Two },
+        Card{ Card::Value::Three }, Card{ Card::Value::Three },
+        Card{ Card::Value::Four }
+    } :
+    std::vector<Card>{
+        Card{ Card::Value::Eter }, Card{ Card::Value::One },
+        Card{ Card::Value::Two }, Card{ Card::Value::Two },
+        Card{ Card::Value::Two }, Card{ Card::Value::Three },
+        Card{ Card::Value::Three }, Card{ Card::Value::Three },
+        Card{ Card::Value::Three}, Card{ Card::Value::Four }
+    }, gameType == GameType::WizardDuel || gameType == GameType::WizardAndPowerDuel,
+        gameType == GameType::PowerDuel || gameType == GameType::WizardAndPowerDuel},
+    m_player2{ Card::Color::Red,  gameType == GameType::Training ?
+        std::vector<Card>{
+            Card{ Card::Value::One }, Card{ Card::Value::One },
+            Card{ Card::Value::Two }, Card{ Card::Value::Two },
+            Card{ Card::Value::Three }, Card{ Card::Value::Three },
+            Card{ Card::Value::Four }
+        } :
+        std::vector<Card>{
+            Card{ Card::Value::Eter }, Card{ Card::Value::One },
+            Card{ Card::Value::Two }, Card{ Card::Value::Two },
+            Card{ Card::Value::Two }, Card{ Card::Value::Three },
+            Card{ Card::Value::Three }, Card{ Card::Value::Three },
+            Card{ Card::Value::Three}, Card{ Card::Value::Four }
+        }, gameType == GameType::WizardDuel || gameType == GameType::WizardAndPowerDuel,
+            gameType == GameType::PowerDuel || gameType == GameType::WizardAndPowerDuel} {
+}
+
+
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::swapRow(const size_t _first, const size_t _second) { // TODO test
     if (_first < static_cast<size_t>(gridSize) && _second < static_cast<size_t>(gridSize)) {
         std::ranges::swap(m_board[_first], m_board[_second]);
     }
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::swapCol(const size_t _first, const size_t _second) { // TODO test
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::swapCol(const size_t _first, const size_t _second) { // TODO test
     if (_first < static_cast<size_t>(gridSize) && _second < static_cast<size_t>(gridSize)) {
         for (size_t i = 0; i < static_cast<size_t>(gridSize); ++i) {
             std::ranges::swap(m_board[i][_first], m_board[i][_second]);
@@ -95,8 +129,8 @@ void Game<gridSize>::swapCol(const size_t _first, const size_t _second) { // TOD
     }
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::circularShiftUp() {
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::circularShiftUp() {
     for (std::size_t col = 0; col < static_cast<std::size_t>(gridSize); ++col)
         if (!m_board[0][col].empty())
             return;
@@ -108,8 +142,8 @@ void Game<gridSize>::circularShiftUp() {
         m_board[static_cast<std::size_t>(gridSize) - 1][col].clear();
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::circularShiftDown() {
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::circularShiftDown() {
     for (std::size_t col = 0; col < static_cast<std::size_t>(gridSize); ++col)
         if (!m_board[static_cast<std::size_t>(gridSize) - 1][col].empty())
             return;
@@ -121,8 +155,8 @@ void Game<gridSize>::circularShiftDown() {
         m_board[0][col].clear();
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::circularShiftLeft() {
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::circularShiftLeft() {
     for (std::size_t row = 0; row < static_cast<std::size_t>(gridSize); ++row)
         if (!m_board[row][0].empty())
             return;
@@ -135,8 +169,8 @@ void Game<gridSize>::circularShiftLeft() {
         m_board[row][static_cast<std::size_t>(gridSize) - 1].clear();
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::circularShiftRight() {
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::circularShiftRight() {
     for (std::size_t row = 0; row < static_cast<std::size_t>(gridSize); ++row)
         if (!m_board[row][static_cast<std::size_t>(gridSize) - 1].empty())
             return;
@@ -149,8 +183,8 @@ void Game<gridSize>::circularShiftRight() {
         m_board[row][0].clear();
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::printBoard() const {
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::printBoard() const {
     for (size_t i = 0; i < static_cast<size_t>(gridSize); ++i) {
         for (size_t j = 0; j < static_cast<size_t>(gridSize); ++j) {
             if (!m_board[i][j].empty())
@@ -163,13 +197,13 @@ void Game<gridSize>::printBoard() const {
     }
 }
 
-template<GridSize gridSize>
-bool Game<gridSize>::checkIndexes(const size_t _row, const size_t _col) const {
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkIndexes(const size_t _row, const size_t _col) const {
     return !(_row >= static_cast<size_t>(gridSize) || _col >= static_cast<size_t>(gridSize));
 }
 
-template<GridSize gridSize>
-bool Game<gridSize>::checkNeighbours(size_t _row, size_t _col) const {
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkNeighbours(size_t _row, size_t _col) const {
     if (!m_board[_row][_col].empty())
         return true;
 
@@ -188,8 +222,8 @@ bool Game<gridSize>::checkNeighbours(size_t _row, size_t _col) const {
     });
 }
 
-template<GridSize gridSize>
-bool Game<gridSize>::checkValue(size_t _row, size_t _col, const Card::Value& _value) const {
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkValue(size_t _row, size_t _col, const Card::Value& _value) const {
     if (m_board[_row][_col].empty())
         return true;
 
@@ -202,81 +236,136 @@ bool Game<gridSize>::checkValue(size_t _row, size_t _col, const Card::Value& _va
     return false;
 }
 
-//template<GridSize gridSize>
-//inline bool Game<gridSize>::checkLines(size_t _index) const
-//{
-//    auto firstRowID = m_playerPositions.at({ _index, 0 });
-//    bool rowWin = true;
-//    for (size_t col = 1; col <gridSize; ++col) {
-//        auto pos = m_playerPositions.find({ _index, col });
-//        if (pos == m_playerPositions.end() || pos->second != firstRowID) {
-//            rowWin = false;
-//            break;
-//        }
-//    }
-//
-//    auto firstColID = m_playerPositions.at({ 0, _index });
-//    bool colWin = true;
-//    for (size_t row = 1; row < gridSize; ++row) {
-//        auto pos = m_playerPositions.find({ row, _index });
-//        if (pos == m_playerPositions.end() || pos->second != firstColID) {
-//            colWin = false;
-//            break;
-//        }
-//    }
-//
-//    return rowWin || colWin;
-//}
-
-//template<GridSize gridSize>
-//inline bool Game<gridSize>::checkDiagonals() const
-//{
-//    auto firstDiagID = m_playerPositions.at({ 0, 0 });
-//    bool mainDiagWin = true;
-//    for (size_t i = 1; i <gridSize; ++i) {
-//        auto pos = m_playerPositions.find({ i, i });
-//        if (pos == m_playerPositions.end() || pos->second != firstDiagID) {
-//            mainDiagWin = false;
-//            break;
-//        }
-//    }
-//
-//    auto firstAntiDiagID = m_playerPositions.at({ 0, gridSize - 1 });
-//    bool antiDiagWin = true;
-//    for (size_t i = 1; i < gridSize; ++i) {
-//        auto pos = m_playerPositions.find({ i, gridSize - i - 1 });
-//        if (pos == m_playerPositions.end() || pos->second != firstAntiDiagID) {
-//            antiDiagWin = false;
-//            break;
-//        }
-//    }
-//
-//    return mainDiagWin || antiDiagWin;
-//}
-
-template<GridSize gridSize>
-inline bool Game<gridSize>::checkCards(const Player& player) const
+template<GridSize gridSize, GameType gameType>
+Card::Color Game<gridSize, gameType>::checkRows() const
 {
-    return player.m_cards.size()>0;
+    for (std::size_t row = 0; row < static_cast<std::size_t>(gridSize); ++row) {
+        if (m_board[row][0].empty())
+            continue;
+
+        Card::Color rowColor = m_board[row][0].back().getColor();
+
+        for (std::size_t col = 1; col < static_cast<std::size_t>(gridSize); ++col)
+            if (m_board[row][col].empty() || m_board[row][col].back().getColor() != rowColor) {
+                rowColor = Card::Color::Undefined;
+                break;
+            }
+
+        if (rowColor != Card::Color::Undefined)
+            return rowColor;
+    }
+
+    return Card::Color::Undefined;
 }
 
-template<GridSize gridSize>
-inline bool Game<gridSize>::checkEmpty() const {
-    for (size_t i = 0; i < gridSize; ++i)
-        for (size_t j = 0; j < gridSize; ++j)
-            if (m_board[i][j].empty())
+template<GridSize gridSize, GameType gameType>
+Card::Color Game<gridSize, gameType>::checkCols() const {
+    for (std::size_t col = 0; col< static_cast<std::size_t>(gridSize); ++col) {
+        if (m_board[0][col].empty())
+            continue;
+
+        Card::Color colColor = m_board[0][col].back().getColor();
+
+        for (std::size_t row = 1; row < static_cast<std::size_t>(gridSize); ++row)
+            if (m_board[row][col].empty() || m_board[row][col].back().getColor() != colColor) {
+                colColor = Card::Color::Undefined;
+                break;
+            }
+
+        if (colColor != Card::Color::Undefined)
+            return colColor;
+    }
+
+    return Card::Color::Undefined;
+}
+
+template<GridSize gridSize, GameType gameType>
+Card::Color Game<gridSize, gameType>::checkDiagonals() const {
+    if (m_board[0][0].empty())
+        return Card::Color::Undefined;
+
+    Card::Color diagColor = m_board[0][0].back().getColor();
+
+    for (size_t index = 1; index < static_cast<size_t>(gridSize); ++index) {
+        if (m_board[index][index].empty() || m_board[index][index].back().getColor() != diagColor)
+            return Card::Color::Undefined;
+    }
+
+    if (diagColor != Card::Color::Undefined)
+        return diagColor;
+
+    if (m_board[0][static_cast<size_t>(gridSize) - 1].empty())
+        return Card::Color::Undefined;
+
+    diagColor = m_board[0][static_cast<size_t>(gridSize) - 1].back().getColor();
+
+    for (size_t index = 1; index < static_cast<size_t>(gridSize); ++index) {
+        if (m_board[index][index].empty() || m_board[index][static_cast<std::size_t>(gridSize) - index - 1].back().getColor() != diagColor)
+            return Card::Color::Undefined;
+    }
+
+    return diagColor;
+}
+
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkFullBoard() const {
+    for (size_t row = 0; row < static_cast<size_t>(gridSize); ++row)
+        for (size_t col = 0; col < static_cast<size_t>(gridSize); ++col)
+            if (m_board[row][col].empty())
                 return false;
+
     return true;
 }
 
-template<GridSize gridSize>
-inline size_t Game<gridSize>::checkEndOfTheGame() const
-{
-    return size_t();
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkEmptyDeck() const {
+    return !m_player1.getCardCount() || !m_player2.getCardCount();
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::shiftBoard() {
+template<GridSize gridSize, GameType gameType>
+Card::Color Game<gridSize, gameType>::calculateWinner() const {
+    std::pair<int, int> winner = {0, 0};
+
+    for (std::size_t row = 0; row < static_cast<std::size_t>(gridSize); ++row)
+        for (std::size_t col = 0; col < static_cast<std::size_t>(gridSize); ++col)
+            if (!m_board[row][col].empty()) {
+                if (m_board[row][col].back().getColor() == m_player1.getColor())
+                    winner.first += static_cast<int>(m_board[row][col].back().getValue());
+                else
+                    winner.second += static_cast<int>(m_board[row][col].back().getValue());
+            }
+
+    if (winner.first > winner.second)
+        return m_player1.getColor();
+
+    if (winner.first < winner.second)
+        return m_player2.getColor();
+
+    return Card::Color::Undefined;
+}
+
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::checkEndOfGame(const Card::Color _color) {
+    this->m_winner = checkRows();
+    this->m_winner = checkCols();
+    this->m_winner = checkDiagonals();
+
+    if (this->m_winner != Card::Color::Undefined)
+        return false;
+
+    if (checkEmptyDeck() || checkFullBoard()) {
+        playerTurn(this->m_player1.getColor() == _color ? this->m_player1.getColor() : this->m_player2.getColor(), -1);
+
+        this->m_winner = calculateWinner();
+
+        return false;
+    }
+
+    return true;
+}
+
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::shiftBoard() {
     char choice;
 
     std::cin >> choice;
@@ -299,10 +388,10 @@ void Game<gridSize>::shiftBoard() {
     }
 }
 
-template<GridSize gridSize>
-bool Game<gridSize>::placeCard(Player& _player, const size_t _iterationIndex) {
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::placeCard(const Card::Color _color, const size_t _iterationIndex) {
     size_t x, y, int_value;
-    
+
     std::cin >> x;
     std::cin >> y;
     std::cin >> int_value;
@@ -321,20 +410,21 @@ bool Game<gridSize>::placeCard(Player& _player, const size_t _iterationIndex) {
     if (_iterationIndex && !checkNeighbours(x, y))
         return false;
 
-    auto playedCard = _player.useCard(value);
+    auto playedCard =
+        m_player1.getColor() == _color ?
+            m_player1.useCard(value) :
+            m_player2.useCard(value);
 
     if (!playedCard)
         return false;
-   
-    ///Player->setPlayerID(_player.getID());
+
     m_board[x][y].push_back(std::move(*playedCard));
 
-    ///m_playerPositions[{x, y}] = _player.getID();
     return true;
 }
 
-template<GridSize gridSize>
-bool Game<gridSize>::playerTurn(Player& _player, const size_t _iterationIndex) {
+template<GridSize gridSize, GameType gameType>
+bool Game<gridSize, gameType>::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
     char choice;
 
     std::cout << "Play a card (c)\n";
@@ -345,51 +435,42 @@ bool Game<gridSize>::playerTurn(Player& _player, const size_t _iterationIndex) {
 
     switch (choice) {
         case 'c':
-            return placeCard(_player, _iterationIndex);
+            return placeCard(_color, _iterationIndex);
         case 's':
             shiftBoard();
             return false;
         case 'w': // TODO add checks for empty table, possibility to play wizard, etc.
-            return _player.useWizard();
         case 'p': // TODO add checks for empty table, possibility to play power, etc. and query for which power to play
-            _player.usePower(true);
-            return _player.usePower(false);
         default:
             return false;
     }
 }
 
-template<GridSize gridSize>
-void Game<gridSize>::run(const GameType _mode) {
-    std::vector<Card> cards = {
-        Card{ Card::Value::One }, Card{ Card::Value::One },
-        Card{ Card::Value::Two }, Card{ Card::Value::Two },
-        Card{ Card::Value::Three }, Card{ Card::Value::Three },
-        Card{ Card::Value::Four }
-    };
-
-    if (_mode != GameType::Training) {
-        cards.emplace_back( Card::Value::Eter );
-        cards.emplace_back( Card::Value::Two );
-        cards.emplace_back( Card::Value::Three );
-    }
-
-    Player player1{ Card::Color::Red, cards,
-        _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
-        _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
-
-    Player player2{ Card::Color::Blue, cards,
-        _mode == GameType::WizardDuel || _mode == GameType::WizardAndPowerDuel,
-        _mode == GameType::PowerDuel || _mode == GameType::WizardAndPowerDuel };
-
+template<GridSize gridSize, GameType gameType>
+void Game<gridSize, gameType>::run() {
     size_t iterationIndex = 0;
    
-    while (iterationIndex < 10) { // TODO remove constant 10 and add some checks like full table or empty decks for both players or game end
-        std::cout << "Player " << iterationIndex % 2 + 1 << "'s turn!" << std::endl;
+    while (checkEndOfGame(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor())) {
+        std::cout << "Player " << (iterationIndex + 1) % 2 + 1 << "'s turn!" << std::endl;
 
         printBoard();
 
-        if (playerTurn(iterationIndex % 2 ? player1 : player2, iterationIndex))
+        if (playerTurn(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor(), iterationIndex))
             iterationIndex++;
+
+        #ifdef WINDOWS
+                std::system("cls");
+        #else
+                std::system("clear");
+        #endif
     }
+
+    printBoard();
+
+    if (m_winner == Card::Color::Undefined) {
+        std::cout << "Draw" << std::endl;
+        return;
+    }
+
+    std::cout << "Winner: " << (m_player1.getColor() == m_winner ? "Player 1" : "Player 2") << std::endl;
 }
