@@ -50,6 +50,9 @@ private:
     Card::Color m_winner{ Card::Color::Undefined };
     GridSize m_gridSize{ gameType == GameType::Training ? GridSize::Three : GridSize::Four };
 
+    std::pair<size_t, size_t> m_illusionCardPlayer1{-1, -1};
+    std::pair<size_t, size_t> m_illusionCardPlayer2{-1, -1};
+
 public:
     void swapRow(size_t _first, size_t _second);
     void swapCol(size_t _first, size_t _second);
@@ -79,6 +82,7 @@ public:
     void shiftBoard();
 
     bool placeCard(Card::Color _color, size_t _iterationIndex);
+    bool playIllusion(const Card::Color _color, const size_t _iterationIndex);
     bool playerTurn(Card::Color _color, size_t _iterationIndex);
 
     void run();
@@ -193,15 +197,21 @@ template<GameType gameType>
 void Game<gameType>::printBoard() const {
     for (size_t i = 0; i < static_cast<size_t>(m_gridSize); ++i) {
         for (size_t j = 0; j < static_cast<size_t>(m_gridSize); ++j) {
-            if (!m_board[i][j].empty())
-                std::cout << m_board[i][j].back() << " ";
+            if (!m_board[i][j].empty()) {
 
-            else
-                std::cout << 'x' << " ";
+                if (std::pair{i, j} == m_illusionCardPlayer1 || std::pair{i, j} == m_illusionCardPlayer2) {
+                    std::cout << "#"  << (m_board[i][j].back().getColor() == Card::Color::Red ? "R" : "B") <<" ";
+                } else {
+                    std::cout << m_board[i][j].back() << " ";
+                }
+            } else {
+                std::cout << "xx" << " ";
+            }
         }
         std::cout << std::endl;
     }
 }
+
 
 template<GameType gameType>
 bool Game<gameType>::checkIndexes(const size_t _row, const size_t _col) const {
@@ -218,13 +228,13 @@ bool Game<gameType>::checkNeighbours(size_t _row, size_t _col) const {
         {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
     }};
 
-    return std::ranges::any_of(directions, [&](const auto& direction) {
+    return std::any_of(directions.begin(), directions.end(), [&](const auto& direction) {
         int newRow = static_cast<int>(_row) + direction.first;
         int newCol = static_cast<int>(_col) + direction.second;
 
         return newRow >= 0 && newRow < static_cast<int>(m_gridSize) &&
                newCol >= 0 && newCol < static_cast<int>(m_gridSize) &&
-               !m_board[newRow][newCol].empty();
+                   !m_board[newRow][newCol].empty();
     });
 }
 
@@ -332,14 +342,20 @@ template<GameType gameType>
 Card::Color Game<gameType>::calculateWinner() const {
     std::pair<int, int> winner = {0, 0};
 
-    for (std::size_t row = 0; row < static_cast<std::size_t>(m_gridSize); ++row)
-        for (std::size_t col = 0; col < static_cast<std::size_t>(m_gridSize); ++col)
+    for (std::size_t row = 0; row < static_cast<std::size_t>(m_gridSize); ++row) {
+        for (std::size_t col = 0; col < static_cast<std::size_t>(m_gridSize); ++col) {
             if (!m_board[row][col].empty()) {
-                if (m_board[row][col].back().getColor() == m_player1.getColor())
-                    winner.first += static_cast<int>(m_board[row][col].back().getValue());
-                else
-                    winner.second += static_cast<int>(m_board[row][col].back().getValue());
+
+                int cardValue = std::pair{row, col} == m_illusionCardPlayer1 || std::pair{row, col} == m_illusionCardPlayer2 ? 1 : static_cast<int>(m_board[row][col].back().getValue());
+
+                if (m_board[row][col].back().getColor() == m_player1.getColor()) {
+                    winner.first += cardValue;
+                } else {
+                    winner.second += cardValue;
+                }
             }
+        }
+    }
 
     if (winner.first > winner.second)
         return m_player1.getColor();
@@ -349,6 +365,7 @@ Card::Color Game<gameType>::calculateWinner() const {
 
     return Card::Color::Undefined;
 }
+
 
 template<GameType gameType>
 bool Game<gameType>::checkEndOfGame(const Card::Color _color) {
@@ -431,6 +448,51 @@ bool Game<gameType>::placeCard(const Card::Color _color, const size_t _iteration
 }
 
 template<GameType gameType>
+bool Game<gameType>::playIllusion(const Card::Color _color, const size_t _iterationIndex) {
+    size_t x, y, int_value;
+
+    std::cin >> x;
+    std::cin >> y;
+    std::cin >> int_value;
+
+    if (!checkIndexes(x, y))
+        return false;
+
+    if (int_value > static_cast<size_t>(Card::Value::Four))
+        return false;
+
+    const auto value = static_cast<Card::Value>(int_value);
+
+    if (!checkValue(x, y, value))
+        return false;
+
+    if (_iterationIndex && !checkNeighbours(x, y))
+        return false;
+
+    auto playedCard =
+        m_player1.getColor() == _color ?
+            m_player1.useCard(value) :
+            m_player2.useCard(value);
+
+    if (!playedCard)
+        return false;
+
+    if (m_player1.getColor() == _color) {
+        if(!m_player1.playIllusion())
+            return false;
+        m_illusionCardPlayer1 = {x, y};
+    } else {
+        if(!m_player2.playIllusion())
+            return false;
+        m_illusionCardPlayer2 = {x, y};
+    }
+
+    m_board[x][y].push_back(std::move(*playedCard));
+
+    return true;
+}
+
+template<GameType gameType>
 bool Game<gameType>::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
     char choice;
 
@@ -438,6 +500,7 @@ bool Game<gameType>::playerTurn(const Card::Color _color, const size_t _iteratio
     std::cout << "Shift board (s)\n";
     std::cout << "Play wizard (w)\n";
     std::cout << "Play power  (p)\n";
+    std::cout << "Play illusion (i)\n";
     std::cin >> choice;
 
     switch (choice) {
@@ -446,6 +509,8 @@ bool Game<gameType>::playerTurn(const Card::Color _color, const size_t _iteratio
         case 's':
             shiftBoard();
             return false;
+        case 'i':
+            return playIllusion(_color, _iterationIndex);
         case 'w': // TODO add checks for empty table, possibility to play wizard, etc.
         case 'p': // TODO add checks for empty table, possibility to play power, etc. and query for which power to play
         default:
@@ -464,12 +529,6 @@ void Game<gameType>::run() {
 
         if (playerTurn(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor(), iterationIndex))
             iterationIndex++;
-
-        #ifdef WINDOWS
-                std::system("cls");
-        #else
-                std::system("clear");
-        #endif
     }
 
     printBoard();
