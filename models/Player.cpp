@@ -29,6 +29,13 @@ size_t Player::getCardCount() const {
     return this->m_cards.size();
 }
 
+bool Player::playIllusion() {
+    if(m_playedIllusion)
+        return false;
+    m_playedIllusion = true;
+    return true;
+}
+
 bool Player::useWizard() {
     if (m_wizard_index == -1)
         return false;

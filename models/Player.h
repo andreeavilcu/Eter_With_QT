@@ -18,11 +18,15 @@ protected:
     size_t m_wizard_index{};
     std::pair<size_t, size_t> m_powers_index{};
 
+    bool m_playedIllusion{false};
 public:
+
+
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
 
     [[nodiscard]] Card::Color getColor() const;
     [[nodiscard]] size_t getCardCount() const;
+    [[nodiscard]] bool playIllusion();
 
     bool useWizard();
     bool usePower(bool _first);

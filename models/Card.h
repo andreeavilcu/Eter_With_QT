@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <ostream>
+#include <iostream>
 
 class Player;
 
 class Card {
 public:
     enum class Value: size_t {
-        Eter = 0,
-        One,
+        Eter = 1,
+        One = 1,
         Two,
         Three,
         Four,

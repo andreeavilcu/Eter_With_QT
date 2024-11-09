@@ -36,7 +36,7 @@ void Card::setColor(const Color _color) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Card& card) {
-	if (card.getColor() == Card::Color::Red)
+	/*if (card.getColor() == Card::Color::Red)
 		os << "\033[31m";
 
 	if(card.getColor() == Card::Color::Blue)
@@ -45,8 +45,8 @@ std::ostream& operator<<(std::ostream& os, const Card& card) {
 	if (card.getValue() == Card::Value::Eter)
 		os << "E" << "\033[0m";
 
-	else
-		os << static_cast<int>(card.getValue()) << "\033[0m";
+	else*/
+		os << static_cast<int>(card.getValue()) << (card.getColor() == Card::Color::Red ? "R" : "B");/* << "\033[0m";*/
 
 	return os;
 }
