@@ -66,7 +66,7 @@ public:
 
     [[nodiscard]] bool checkIndexes(size_t _row, size_t _col) const;
     [[nodiscard]] bool checkNeighbours(size_t _row, size_t _col) const;
-    [[nodiscard]] bool checkValue(size_t _row, size_t _col, const Card::Value& _value) const;
+    [[nodiscard]] bool checkValue(size_t _row, size_t _col, const Card::Value& _value, bool _illusion = false) const;
     
     [[nodiscard]] Card::Color checkRows() const;
     [[nodiscard]] Card::Color checkCols() const;
@@ -82,6 +82,9 @@ public:
     void shiftBoard();
 
     bool placeCard(Card::Color _color, size_t _iterationIndex);
+
+    bool checkIllusionValue(size_t _row, size_t _col, size_t _value);
+
     bool playIllusion(const Card::Color _color, const size_t _iterationIndex);
     bool playerTurn(Card::Color _color, size_t _iterationIndex);
 
@@ -239,12 +242,18 @@ bool Game<gameType>::checkNeighbours(size_t _row, size_t _col) const {
 }
 
 template<GameType gameType>
-bool Game<gameType>::checkValue(size_t _row, size_t _col, const Card::Value& _value) const {
+bool Game<gameType>::checkValue(size_t _row, size_t _col, const Card::Value& _value, const bool _illusion) const {
     if (m_board[_row][_col].empty())
         return true;
 
+    if (_illusion)
+        return false;
+
     if (m_board[_row][_col].back().getValue() == Card::Value::Eter || _value == Card::Value::Eter)
         return false;
+
+    if (m_illusionCardPlayer1 == std::pair{_row, _col} || std::pair{_row, _col} == m_illusionCardPlayer2)
+        return true;
 
     if (m_board[_row][_col].back().getValue() < _value)
         return true;
@@ -434,6 +443,12 @@ bool Game<gameType>::placeCard(const Card::Color _color, const size_t _iteration
     if (_iterationIndex && !checkNeighbours(x, y))
         return false;
 
+    if (m_illusionCardPlayer1 == std::pair{x, y} && _color == m_player1.getColor())
+        return false;
+
+    if (m_illusionCardPlayer2 == std::pair{x, y} && _color == m_player2.getColor())
+        return false;
+
     auto playedCard =
         m_player1.getColor() == _color ?
             m_player1.useCard(value) :
@@ -442,9 +457,24 @@ bool Game<gameType>::placeCard(const Card::Color _color, const size_t _iteration
     if (!playedCard)
         return false;
 
-    m_board[x][y].push_back(std::move(*playedCard));
+    if ((m_illusionCardPlayer1 != std::pair{x, y} && m_illusionCardPlayer2 != std::pair{x, y}) || checkIllusionValue(x, y, int_value))
+        m_board[x][y].push_back(std::move(*playedCard));
+
+    else
+        playedCard.reset();
+
+    if (m_illusionCardPlayer1 == std::pair{x, y})
+        m_illusionCardPlayer1 = {-1, -1};
+
+    if (m_illusionCardPlayer2 == std::pair{x, y})
+        m_illusionCardPlayer2 = {-1, -1};
 
     return true;
+}
+
+template<GameType gameType>
+bool Game<gameType>::checkIllusionValue(const size_t _row, const size_t _col, const size_t _value) {
+    return static_cast<size_t>(m_board[_row][_col].back().getValue()) < _value;
 }
 
 template<GameType gameType>
@@ -463,7 +493,7 @@ bool Game<gameType>::playIllusion(const Card::Color _color, const size_t _iterat
 
     const auto value = static_cast<Card::Value>(int_value);
 
-    if (!checkValue(x, y, value))
+    if (!checkValue(x, y, value, true))
         return false;
 
     if (_iterationIndex && !checkNeighbours(x, y))
