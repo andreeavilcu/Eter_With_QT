@@ -10,8 +10,8 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     std::random_device rd;
     std::mt19937 gen{ rd() };
 
-    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count };
-    std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count };
+    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
+    std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
 
     m_wizard_index = _wizard ? wizardDistribution(gen) : -1;
     m_powers_index.first = _powers ? powerDistribution(gen) : -1;

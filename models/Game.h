@@ -7,6 +7,7 @@
 #include <memory>
 #include <ranges>
 #include <array>
+#include <random>
 
 #include "Player.h"
 
@@ -56,14 +57,10 @@ private:
 
 private:
     enum class ExplosionEffect : size_t {
+        NONE = 0,
         REMOVE_CARD,
         RETURN_CARD,
         CREATE_HOLE,
-    };
-
-    struct ExplosionPattern {
-        std::vector<std::pair<size_t, size_t>> affectedPositions;
-        std::vector<ExplosionEffect> effects;
     };
 
     std::pair<size_t, size_t> m_holes{ -1, -1 };
@@ -97,6 +94,7 @@ public:
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
    
     void shiftBoard();
+    void playExplosion();
 
     bool placeCard(Card::Color _color, size_t _iterationIndex);
 
@@ -477,6 +475,81 @@ void Game<gameType>::shiftBoard() {
         default:
             break;
     }
+}
+
+template<GameType gameType>
+void Game<gameType>::playExplosion()
+{
+    std::array<
+        std::array<
+        ExplosionEffect,
+        static_cast<size_t>(gameType == GameType::Training ? GridSize::Three : GridSize::Four)
+        >,
+        static_cast<size_t>(gameType == GameType::Training ? GridSize::Three : GridSize::Four)
+    > explosion{};
+    
+     std::random_device rd;
+     std::mt19937 gen{ rd() };
+
+     std::uniform_int_distribution<size_t> effectsDistribution{ 0, 10 };
+     std::uniform_int_distribution<size_t> indexDistribution{ 0, static_cast<size_t>(m_gridSize) - 1 };
+     std::bernoulli_distribution removeOrReplaceDistribution(0.5);
+
+     size_t effectsCount = (m_gridSize == GridSize::Three) ? (rand() % 3) + 2 : (rand() % 4) + 3;
+
+
+     for (int i = 0; i < effectsCount; ++i) {
+         size_t x, y;
+
+         do {
+             x = indexDistribution(gen);
+             y = indexDistribution(gen);
+         } while (explosion[x][y] != ExplosionEffect::NONE);
+         
+         if (!effectsDistribution(gen))
+             explosion[x][y] = ExplosionEffect::CREATE_HOLE;
+
+         else if (removeOrReplaceDistribution(gen))
+             explosion[x][y] = ExplosionEffect::REMOVE_CARD;
+
+         else
+             explosion[x][y] = ExplosionEffect::RETURN_CARD;
+     }
+
+     std::cout << "Explosion\n";
+
+     for (int i = 0; i < static_cast<size_t>(m_gridSize); ++i) {
+         for (int j = 0; j < static_cast<size_t>(m_gridSize); ++j) {
+             switch (explosion[i][j]) {
+             case ExplosionEffect::CREATE_HOLE:
+                 std::cout << "H" << " ";
+                 break;
+             case ExplosionEffect::REMOVE_CARD:
+                 std::cout << "R" << " ";
+                 break;
+             case ExplosionEffect::RETURN_CARD:
+                 std::cout << "r" << " ";
+                 break;
+             default:
+                 std::cout << "  ";
+                 break;
+             }
+         }
+
+         std::cout << "\n";
+     }
+
+     //TODO rotate explosion
+
+     char choice;
+     std::cout << "Play explosion (Y/n)?";
+     std::cin >> choice;
+
+     if (tolower(choice) != 'y') // TODO do while tolower(choice) != y/n
+         return;
+
+     //TODO play explosion
+     //TODO refactor sometime soon
 }
 
 template<GameType gameType>

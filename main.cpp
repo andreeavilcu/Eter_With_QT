@@ -1,5 +1,8 @@
 #include "models/Game.h"
 
 int main() {
-    Game<GameType::Training>::getInstance().run();
+
+    srand(time(NULL));
+
+    Game<GameType::WizardDuel>::getInstance().playExplosion();//run();
 }
