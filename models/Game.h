@@ -7,6 +7,7 @@
 #include <memory>
 #include <ranges>
 #include <array>
+#include <random>
 
 #include "Player.h"
 
@@ -56,6 +57,18 @@ private:
     std::pair<size_t, size_t> m_illusionCardPlayer1{-1, -1};
     std::pair<size_t, size_t> m_illusionCardPlayer2{-1, -1};
 
+
+private:
+    enum class ExplosionEffect : size_t {
+        NONE = 0,
+        REMOVE_CARD,
+        RETURN_CARD,
+        CREATE_HOLE,
+    };
+
+    std::pair<size_t, size_t> m_holes{ -1, -1 };
+    bool m_playedExplosion{ false };
+
 public:
     void swapRow(size_t _first, size_t _second);
     void swapCol(size_t _first, size_t _second);
@@ -77,12 +90,14 @@ public:
 
     [[nodiscard]] bool checkFullBoard() const;
     [[nodiscard]] bool checkEmptyDeck() const;
+    [[nodiscard]] bool checkTwoRows() const;
 
     [[nodiscard]] Card::Color calculateWinner() const;
 
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
    
     void shiftBoard();
+    void playExplosion();
 
     bool placeCard(Card::Color _color, size_t _iterationIndex);
 
@@ -351,6 +366,45 @@ bool Game<gameType>::checkEmptyDeck() const {
 }
 
 template<GameType gameType>
+bool Game<gameType>::checkTwoRows() const {
+    size_t rowCount = 0;
+    size_t colCount = 0;
+
+    for (size_t row = 0; row < static_cast<size_t>(m_gridSize); ++row) {
+        bool isRowFull = true;
+        for (size_t col = 0; static_cast<size_t>(m_gridSize); ++col) {
+            if (m_board[row][col].empty()) {
+                isRowFull = false;
+                break;
+            }
+
+
+        }
+        if (isRowFull)
+            ++rowCount;
+    }
+
+    for (size_t col = 0; col < static_cast<size_t>(m_gridSize); ++col) {
+        bool isColFull = true;
+        for (size_t row = 0; row < static_cast<size_t>(m_gridSize); ++row) {
+            if (m_board[row][col].empty()) {
+                isColFull = false;
+                break;
+            }
+        }
+
+        if (isColFull) {
+            ++colCount;
+
+        }
+
+
+    }
+
+    return (rowCount >= 2 || colCount >= 2);
+}
+
+template<GameType gameType>
 Card::Color Game<gameType>::calculateWinner() const {
     std::pair<int, int> winner = {0, 0};
 
@@ -359,6 +413,8 @@ Card::Color Game<gameType>::calculateWinner() const {
             if (!m_board[row][col].empty()) {
 
                 int cardValue = std::pair{row, col} == m_illusionCardPlayer1 || std::pair{row, col} == m_illusionCardPlayer2 ? 1 : static_cast<int>(m_board[row][col].back().getValue());
+                if (cardValue == static_cast<size_t>(Card::Value::Eter))
+                    cardValue = 1;
 
                 if (m_board[row][col].back().getColor() == m_player1.getColor()) {
                     winner.first += cardValue;
@@ -422,6 +478,81 @@ void Game<gameType>::shiftBoard() {
         default:
             break;
     }
+}
+
+template<GameType gameType>
+void Game<gameType>::playExplosion()
+{
+    std::array<
+        std::array<
+        ExplosionEffect,
+        static_cast<size_t>(gameType == GameType::Training ? GridSize::Three : GridSize::Four)
+        >,
+        static_cast<size_t>(gameType == GameType::Training ? GridSize::Three : GridSize::Four)
+    > explosion{};
+    
+     std::random_device rd;
+     std::mt19937 gen{ rd() };
+
+     std::uniform_int_distribution<size_t> effectsDistribution{ 0, 10 };
+     std::uniform_int_distribution<size_t> indexDistribution{ 0, static_cast<size_t>(m_gridSize) - 1 };
+     std::bernoulli_distribution removeOrReplaceDistribution(0.5);
+
+     size_t effectsCount = (m_gridSize == GridSize::Three) ? (rand() % 3) + 2 : (rand() % 4) + 3;
+
+
+     for (int i = 0; i < effectsCount; ++i) {
+         size_t x, y;
+
+         do {
+             x = indexDistribution(gen);
+             y = indexDistribution(gen);
+         } while (explosion[x][y] != ExplosionEffect::NONE);
+         
+         if (!effectsDistribution(gen))
+             explosion[x][y] = ExplosionEffect::CREATE_HOLE;
+
+         else if (removeOrReplaceDistribution(gen))
+             explosion[x][y] = ExplosionEffect::REMOVE_CARD;
+
+         else
+             explosion[x][y] = ExplosionEffect::RETURN_CARD;
+     }
+
+     std::cout << "Explosion\n";
+
+     for (int i = 0; i < static_cast<size_t>(m_gridSize); ++i) {
+         for (int j = 0; j < static_cast<size_t>(m_gridSize); ++j) {
+             switch (explosion[i][j]) {
+             case ExplosionEffect::CREATE_HOLE:
+                 std::cout << "H" << " ";
+                 break;
+             case ExplosionEffect::REMOVE_CARD:
+                 std::cout << "R" << " ";
+                 break;
+             case ExplosionEffect::RETURN_CARD:
+                 std::cout << "r" << " ";
+                 break;
+             default:
+                 std::cout << "  ";
+                 break;
+             }
+         }
+
+         std::cout << "\n";
+     }
+
+     //TODO rotate explosion
+
+     char choice;
+     std::cout << "Play explosion (Y/n)?";
+     std::cin >> choice;
+
+     if (tolower(choice) != 'y') // TODO do while tolower(choice) != y/n
+         return;
+
+     //TODO play explosion
+     //TODO refactor sometime soon
 }
 
 template<GameType gameType>
@@ -563,6 +694,14 @@ void Game<gameType>::run() {
 
         if (playerTurn(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor(), iterationIndex))
             iterationIndex++;
+
+        if (!m_playedExplosion && checkTwoRows()) {
+            std::cout << "test";
+            //if functie verificare play explosion (in
+            //functie playexplsion - afiseaza pe ecran daca vreau sa joc explozia - alta functie care genereaza explozia
+            m_playedExplosion = true;
+        }
+        
     }
 
     printBoard();
