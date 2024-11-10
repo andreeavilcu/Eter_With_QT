@@ -29,6 +29,9 @@ private:
     Game();
     ~Game() = default;
 
+    friend class Wizard;
+    friend class Power;
+
 public:
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
@@ -39,9 +42,6 @@ public:
     }
 
 private:
-    friend class Wizard;
-    friend class Power;
-
     std::array<
         std::array<
             std::vector<Card>,
@@ -103,7 +103,7 @@ public:
 
     bool checkIllusionValue(size_t _row, size_t _col, size_t _value);
 
-    bool playIllusion(const Card::Color _color, const size_t _iterationIndex);
+    bool playIllusion(Card::Color _color, size_t _iterationIndex);
     bool playerTurn(Card::Color _color, size_t _iterationIndex);
 
     void run();
@@ -519,32 +519,50 @@ void Game<gameType>::playExplosion()
              explosion[x][y] = ExplosionEffect::RETURN_CARD;
      }
 
-     std::cout << "Explosion\n";
-
-     for (int i = 0; i < static_cast<size_t>(m_gridSize); ++i) {
-         for (int j = 0; j < static_cast<size_t>(m_gridSize); ++j) {
-             switch (explosion[i][j]) {
-             case ExplosionEffect::CREATE_HOLE:
-                 std::cout << "H" << " ";
-                 break;
-             case ExplosionEffect::REMOVE_CARD:
-                 std::cout << "R" << " ";
-                 break;
-             case ExplosionEffect::RETURN_CARD:
-                 std::cout << "r" << " ";
-                 break;
-             default:
-                 std::cout << "  ";
-                 break;
-             }
-         }
-
-         std::cout << "\n";
-     }
-
-     //TODO rotate explosion
+    // TODO rotate matrix
 
      char choice;
+
+    do {
+        std::cout << "Explosion\n";
+
+        for (int i = 0; i < static_cast<size_t>(m_gridSize); ++i) {
+            for (int j = 0; j < static_cast<size_t>(m_gridSize); ++j) {
+                switch (explosion[i][j]) {
+                    case ExplosionEffect::CREATE_HOLE:
+                        std::cout << "H" << " ";
+                    break;
+                    case ExplosionEffect::REMOVE_CARD:
+                        std::cout << "R" << " ";
+                    break;
+                    case ExplosionEffect::RETURN_CARD:
+                        std::cout << "r" << " ";
+                    break;
+                    default:
+                        std::cout << "  ";
+                    break;
+                }
+            }
+
+            std::cout << "\n";
+        }
+
+        std::cout << "Rotate (R) or accept (A).";
+        std::cin >> choice;
+
+        if (tolower(choice) == 'r') {
+            auto newExplosion{ explosion };
+
+            for (std::size_t i = 0; i < static_cast<std::size_t>(m_gridSize); ++i)
+                for (std::size_t j = 0; j < static_cast<std::size_t>(m_gridSize); ++j)
+                    newExplosion[j][static_cast<std::size_t>(m_gridSize) - i - 1] = explosion[i][j];
+
+            explosion = newExplosion;
+        }
+
+    } while (tolower(choice) != 'a');
+
+
      std::cout << "Play explosion (Y/n)?";
      std::cin >> choice;
 

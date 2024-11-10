@@ -21,7 +21,6 @@ protected:
     bool m_playedIllusion{false};
 public:
 
-
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
 
     [[nodiscard]] Card::Color getColor() const;
