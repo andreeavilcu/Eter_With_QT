@@ -8,8 +8,8 @@ class Player;
 class Card {
 public:
     enum class Value: size_t {
-        Eter = 1,
-        One = 1,
+        Eter = 0,
+        One,
         Two,
         Three,
         Four,

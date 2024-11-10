@@ -53,6 +53,22 @@ private:
     std::pair<size_t, size_t> m_illusionCardPlayer1{-1, -1};
     std::pair<size_t, size_t> m_illusionCardPlayer2{-1, -1};
 
+
+private:
+    enum class ExplosionEffect : size_t {
+        REMOVE_CARD,
+        RETURN_CARD,
+        CREATE_HOLE,
+    };
+
+    struct ExplosionPattern {
+        std::vector<std::pair<size_t, size_t>> affectedPositions;
+        std::vector<ExplosionEffect> effects;
+    };
+
+    std::pair<size_t, size_t> m_holes{ -1, -1 };
+    bool m_playedExplosion{ false };
+
 public:
     void swapRow(size_t _first, size_t _second);
     void swapCol(size_t _first, size_t _second);
@@ -74,7 +90,7 @@ public:
 
     [[nodiscard]] bool checkFullBoard() const;
     [[nodiscard]] bool checkEmptyDeck() const;
-    [[nodicard]] bool checkTwoRows() const;
+    [[nodiscard]] bool checkTwoRows() const;
 
     [[nodiscard]] Card::Color calculateWinner() const;
 
@@ -360,7 +376,7 @@ bool Game<gameType>::checkTwoRows() const {
 
     for (size_t col = 0; col < static_cast<size_t>(m_gridSize); ++col) {
         bool isColFull = true;
-        for (size_t row = 0; static_cast<size_t>(m_gridSize); ++row) {
+        for (size_t row = 0; row < static_cast<size_t>(m_gridSize); ++row) {
             if (m_board[row][col].empty()) {
                 isColFull = false;
                 break;
@@ -372,10 +388,10 @@ bool Game<gameType>::checkTwoRows() const {
 
         }
 
-        return (rowCount >= 2 || colCount >= 2);
-
 
     }
+
+    return (rowCount >= 2 || colCount >= 2);
 }
 
 template<GameType gameType>
@@ -387,6 +403,8 @@ Card::Color Game<gameType>::calculateWinner() const {
             if (!m_board[row][col].empty()) {
 
                 int cardValue = std::pair{row, col} == m_illusionCardPlayer1 || std::pair{row, col} == m_illusionCardPlayer2 ? 1 : static_cast<int>(m_board[row][col].back().getValue());
+                if (cardValue == static_cast<size_t>(Card::Value::Eter))
+                    cardValue = 1;
 
                 if (m_board[row][col].back().getColor() == m_player1.getColor()) {
                     winner.first += cardValue;
@@ -570,6 +588,12 @@ void Game<gameType>::run() {
         if (playerTurn(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor(), iterationIndex))
             iterationIndex++;
 
+        if (!m_playedExplosion && checkTwoRows()) {
+            std::cout << "test";
+            //if functie verificare play explosion (in
+            //functie playexplsion - afiseaza pe ecran daca vreau sa joc explozia - alta functie care genereaza explozia
+            m_playedExplosion = true;
+        }
         
     }
 
