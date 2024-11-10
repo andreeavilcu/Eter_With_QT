@@ -74,6 +74,7 @@ public:
 
     [[nodiscard]] bool checkFullBoard() const;
     [[nodiscard]] bool checkEmptyDeck() const;
+    [[nodicard]] bool checkTwoRows() const;
 
     [[nodiscard]] Card::Color calculateWinner() const;
 
@@ -339,6 +340,45 @@ bool Game<gameType>::checkEmptyDeck() const {
 }
 
 template<GameType gameType>
+bool Game<gameType>::checkTwoRows() const {
+    size_t rowCount = 0;
+    size_t colCount = 0;
+
+    for (size_t row = 0; row < static_cast<size_t>(m_gridSize); ++row) {
+        bool isRowFull = true;
+        for (size_t col = 0; static_cast<size_t>(m_gridSize); ++col) {
+            if (m_board[row][col].empty()) {
+                isRowFull = false;
+                break;
+            }
+
+
+        }
+        if (isRowFull)
+            ++rowCount;
+    }
+
+    for (size_t col = 0; col < static_cast<size_t>(m_gridSize); ++col) {
+        bool isColFull = true;
+        for (size_t row = 0; static_cast<size_t>(m_gridSize); ++row) {
+            if (m_board[row][col].empty()) {
+                isColFull = false;
+                break;
+            }
+        }
+
+        if (isColFull) {
+            ++colCount;
+
+        }
+
+        return (rowCount >= 2 || colCount >= 2);
+
+
+    }
+}
+
+template<GameType gameType>
 Card::Color Game<gameType>::calculateWinner() const {
     std::pair<int, int> winner = {0, 0};
 
@@ -529,6 +569,8 @@ void Game<gameType>::run() {
 
         if (playerTurn(iterationIndex % 2 ? m_player1.getColor() : m_player2.getColor(), iterationIndex))
             iterationIndex++;
+
+        
     }
 
     printBoard();
