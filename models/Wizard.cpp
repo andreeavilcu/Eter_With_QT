@@ -1,33 +1,46 @@
 #include "Wizard.h"
 
-void Wizard::WizardActions::eliminateCard() {
-    std::cout << "eliminateCard" << std::endl;
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::eliminateCard(const Card::Color _color, const size_t _row, const size_t _col) {
+    std::vector stack = Game<gameType>::getInstance().m_board[_row][_col];
+    Card last = stack.pop_back();
+    Card curr = stack.back();
+
+    if(curr.getColor() == last.getColor() && last.getColor() == _color)
+        stack.push_back(last);
 }
 
-void Wizard::WizardActions::eliminateRow() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::eliminateRow() {
     std::cout << "eliminateRow" << std::endl;
 }
 
-void Wizard::WizardActions::coverCard() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::coverCard() {
     std::cout << "coverCard" << std::endl;
 }
 
-void Wizard::WizardActions::sinkHole() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::sinkHole() {
     std::cout << "sinkHole" << std::endl;
 }
 
-void Wizard::WizardActions::moveStackOwn() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::moveStackOwn() {
     std::cout << "moveStackOwn" << std::endl;
 }
 
-void Wizard::WizardActions::extraEter() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::extraEter() {
     std::cout << "extraEter" << std::endl;
 }
 
-void Wizard::WizardActions::moveStackOpponent() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::moveStackOpponent() {
     std::cout << "moveStackOpponent" << std::endl;
 }
 
-void Wizard::WizardActions::moveEdge() {
+template<GameType gameType>
+void Wizard::WizardActions<gameType>::moveEdge() {
     std::cout << "moveEdge" << std::endl;
 }

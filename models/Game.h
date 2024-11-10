@@ -38,6 +38,9 @@ public:
     }
 
 private:
+    friend class Wizard;
+    friend class Power;
+
     std::array<
         std::array<
             std::vector<Card>,
@@ -541,7 +544,8 @@ bool Game<gameType>::playerTurn(const Card::Color _color, const size_t _iteratio
             return false;
         case 'i':
             return playIllusion(_color, _iterationIndex);
-        case 'w': // TODO add checks for empty table, possibility to play wizard, etc.
+        case 'w':
+            // TODO add checks for empty table, possibility to play wizard, etc.
         case 'p': // TODO add checks for empty table, possibility to play power, etc. and query for which power to play
         default:
             return false;

@@ -4,8 +4,9 @@
 #include <functional>
 #include <array>
 
+#include "Game.h"
+#include "Card.h"
 
-class Player;
 
 class Wizard {
 public:
@@ -24,8 +25,9 @@ private:
     Wizard() = default;
     ~Wizard() = default;
 
+    template<GameType gameType>
     struct WizardActions {
-        static void eliminateCard();
+        static void eliminateCard(const Card::Color _color, const size_t _row,const size_t _col);
         static void eliminateRow();
         static void coverCard();
         static void sinkHole();
@@ -38,14 +40,16 @@ private:
     void play(const size_t _index) const {
         m_wizards[_index]();
     }
-
     using FuncType = std::function<void()>;
 
+    template <GameType gameType>
     std::array<FuncType, wizard_count> m_wizards = {
-        WizardActions::eliminateCard, WizardActions::eliminateRow,
-        WizardActions::coverCard, WizardActions::sinkHole,
-        WizardActions::moveStackOwn, WizardActions::extraEter,
-        WizardActions::moveStackOpponent, WizardActions::moveEdge
-    };
+            WizardActions<gameType>::eliminateCard, WizardActions<gameType>::eliminateRow,
+            WizardActions<gameType>::coverCard, WizardActions<gameType>::sinkHole,
+            WizardActions<gameType>::moveStackOwn, WizardActions<gameType>::extraEter,
+            WizardActions<gameType>::moveStackOpponent, WizardActions<gameType>::moveEdge
+        }; //TODO fix this
+
+
 };
 
