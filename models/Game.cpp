@@ -1,10 +1,16 @@
 #include "Game.h"
 
+#include <stack>
+
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
 
     for (auto& row : this->m_board)
         row.resize(_size);
+}
+
+size_t Game::Board::getSize() const {
+    return this->m_board.size();
 }
 
 void Game::Board::circularShiftUp() {
@@ -60,11 +66,14 @@ void Game::Board::circularShiftRight() {
 void Game::Board::printBoard() const {
     for (size_t i = 0; i < this->m_board.size(); ++i) {
         for (size_t j = 0; j < this->m_board.size(); ++j)
-            if (!m_board[i][j].empty())
-                std::cout << m_board[i][j].back() << " ";
+            if (this->m_hole == std::pair{i, j})
+                std::cout << "HH ";
+
+            else if (!m_board[i][j].empty())
+                std::cout << m_board[i][j].back();
 
             else
-                std::cout << "xx" << " ";
+                std::cout << "xx ";
 
         std::cout << std::endl;
     }
@@ -93,7 +102,7 @@ bool Game::Board::checkNeighbours(const size_t _row, const size_t _col) const {
     });
 }
 
-bool Game::Board::checkValue(const size_t _row, const size_t _col, const Card::Value &_value, bool _illusion) const {
+bool Game::Board::checkValue(const size_t _row, const size_t _col, const Card::Value _value, const bool _illusion) const {
     if (m_board[_row][_col].empty())
         return true;
 
@@ -112,7 +121,11 @@ bool Game::Board::checkValue(const size_t _row, const size_t _col, const Card::V
     return false;
 }
 
-bool Game::Board::checkIllusion(size_t _row, size_t _col, Card::Color _color) const {
+bool Game::Board::checkHole(size_t _row, size_t _col) const {
+    return this->m_hole == std::pair{ _row, _col };
+}
+
+bool Game::Board::checkIllusion(const size_t _row, const size_t _col, const Card::Color _color) const {
     if (m_board[_row][_col].empty())
         return false;
 
@@ -122,6 +135,9 @@ bool Game::Board::checkIllusion(size_t _row, size_t _col, Card::Color _color) co
 }
 
 bool Game::Board::checkIllusionValue(const size_t _row, const size_t _col, const size_t _value) const {
+    if (m_board[_row][_col].empty())
+        return true;
+
     return static_cast<size_t>(m_board[_row][_col].back().getValue()) < _value;
 }
 
@@ -269,11 +285,104 @@ bool Game::Board::checkTwoRows() const {
     return (rowCount >= 2 || colCount >= 2);
 }
 
+std::vector<Card> Game::Board::useExplosion(const std::vector<std::vector<ExplosionEffect>> &_matrix) {
+    std::vector<Card> returnedCards{};
+
+    for (size_t row = 0; row < this->m_board.size(); ++row) {
+        for (size_t col = 0; col < this->m_board.size(); ++col) {
+            if (_matrix[row][col] == ExplosionEffect::None)
+                continue;
+
+            if (_matrix[row][col] == ExplosionEffect::SinkHole) {
+                auto deletedStack = std::move(this->m_board[row][col]);
+                this->m_board[row][col].clear();
+
+                if (!this->checkBoardIntegrity())
+                    this->m_board[row][col] = std::move(deletedStack);
+
+                else
+                    this->m_hole = {row, col};
+
+                continue;
+            }
+
+            if (this->m_board[row][col].empty())
+                continue;
+
+            Card affectedCard = this->m_board[row][col].back();
+
+            switch (_matrix[row][col]) {
+                case ExplosionEffect::RemoveCard:
+                    this->m_board[row][col].pop_back();
+
+                    if (!this->checkBoardIntegrity())
+                        this->m_board[row][col].push_back(std::move(affectedCard));
+
+                    break;
+
+                case ExplosionEffect::ReturnCard:
+                    this->m_board[row][col].pop_back();
+
+                    if (!this->checkBoardIntegrity())
+                        this->m_board[row][col].push_back(std::move(affectedCard));
+
+                    else
+                        returnedCards.push_back(std::move(affectedCard));
+
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    return returnedCards;
+}
+
+bool Game::Board::checkBoardIntegrity() const {
+    const size_t rows = m_board.size();
+    const size_t cols = m_board[0].size();
+    std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols, false));
+
+    bool foundFirstSet = false;
+
+    auto dfs = [&](size_t row, size_t col) {
+        std::stack<std::pair<size_t, size_t>> stack;
+        stack.emplace(row, col);
+        while (!stack.empty()) {
+            auto [r, c] = stack.top();
+            stack.pop();
+            if (visited[r][c]) continue;
+            visited[r][c] = true;
+
+            for (const auto& [dr, dc] : {std::pair{-1, 0}, {1, 0}, {0, -1}, {0, 1},
+                                                                {-1, -1}, {-1, 1}, {1, -1}, {1, 1}}) {
+                size_t nr = r + dr, nc = c + dc;
+                if (nr < rows && nc < cols && !visited[nr][nc] && !m_board[nr][nc].empty())
+                    stack.emplace(nr, nc);
+            }
+        }
+    };
+
+    for (size_t row = 0; row < rows; ++row) {
+        for (size_t col = 0; col < cols; ++col) {
+            if (!m_board[row][col].empty() && !visited[row][col]) {
+                if (foundFirstSet) return false;
+                dfs(row, col);
+                foundFirstSet = true;
+            }
+        }
+    }
+
+    return true;
+}
+
 void Game::Board::placeCard(const size_t _row, const size_t _col, const Card && _card) {
     m_board[_row][_col].push_back(_card);
 }
 
-Game::Game(GameType _gameType) :
+Game::Game(const GameType _gameType) :
     m_board(_gameType == Game::GameType::Training
        ? static_cast<size_t>(GridSize::Three)
        : static_cast<size_t>(GridSize::Four)),
@@ -325,12 +434,15 @@ void Game::run() {
         if (playerTurn(iterationIndex % 2 ? Card::Color::Player2 : Card::Color::Player1, iterationIndex))
             iterationIndex++;
 
-        if (!this->m_playedExplosion && this->m_board.checkTwoRows()) {
-            //if functie verificare play explosion (in
-            //functie playexplsion - afiseaza pe ecran daca vreau sa joc explozia - alta functie care genereaza explozia
-            m_playedExplosion = true;
-        }
+        if (!this->m_playedExplosion && this->m_board.checkTwoRows())
+            this->playExplosion();
 
+        else if (!m_returnedCards.empty()) {
+            for (auto& card : m_returnedCards)
+                auto _ = std::move(card);
+
+            m_returnedCards.clear();
+        }
     }
 
     this->m_board.printBoard();
@@ -370,6 +482,20 @@ bool Game::checkEmptyDeck() const {
     return !m_player1.getCardCount() || !m_player2.getCardCount();
 }
 
+bool Game::checkCardAfterReturn(const Card::Color _color, const Card::Value _value) const {
+    const auto iter = std::ranges::find_if(m_returnedCards, [_value](const Card& _card) {
+        return _card.getValue() == _value;
+    });
+
+    if (iter == m_returnedCards.end())
+        return true;
+
+    if (_color == Card::Color::Player1)
+        return m_player1.getCardCount(_value) > 1;
+
+    return m_player2.getCardCount(_value) > 1;
+}
+
 bool Game::checkEndOfGame(const Card::Color _color) {
     this->m_winner = this->m_board.checkRows();
 
@@ -396,6 +522,24 @@ bool Game::checkEndOfGame(const Card::Color _color) {
     return true;
 }
 
+bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_value, const size_t _iterationIndex) const {
+    if (!this->m_board.checkIndexes(_x, _y) || this->m_board.checkHole(_x, _y))
+        return false;
+
+    if (_int_value > static_cast<size_t>(Card::Value::Four))
+        return false;
+
+    const auto value = static_cast<Card::Value>(_int_value);
+
+    if (!this->m_board.checkValue(_x, _y, value))
+        return false;
+
+    if (_iterationIndex && !this->m_board.checkNeighbours(_x, _y))
+        return false;
+
+    return true;
+}
+
 bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
     size_t x, y, int_value;
 
@@ -403,18 +547,7 @@ bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
     std::cin >> y;
     std::cin >> int_value;
 
-    if (!this->m_board.checkIndexes(x, y))
-        return false;
-
-    if (int_value > static_cast<size_t>(Card::Value::Four))
-        return false;
-
-    const auto value = static_cast<Card::Value>(int_value);
-
-    if (!this->m_board.checkValue(x, y, value))
-        return false;
-
-    if (_iterationIndex && !this->m_board.checkNeighbours(x, y))
+    if (!this->checkPartial(x, y, int_value, _iterationIndex))
         return false;
 
     if (this->m_board.checkIllusion(x, y, _color))
@@ -422,8 +555,8 @@ bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
 
     auto playedCard =
         m_player1.getColor() == _color ?
-            m_player1.useCard(value) :
-            m_player2.useCard(value);
+            m_player1.useCard(static_cast<Card::Value>(int_value)) :
+            m_player2.useCard(static_cast<Card::Value>(int_value));
 
     if (!playedCard)
         return false;
@@ -445,18 +578,7 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
     std::cin >> y;
     std::cin >> int_value;
 
-    if (!this->m_board.checkIndexes(x, y))
-        return false;
-
-    if (int_value > static_cast<size_t>(Card::Value::Four))
-        return false;
-
-    const auto value = static_cast<Card::Value>(int_value);
-
-    if (!this->m_board.checkValue(x, y, value))
-        return false;
-
-    if (_iterationIndex && !this->m_board.checkNeighbours(x, y))
+    if (!this->checkPartial(x, y, int_value, _iterationIndex))
         return false;
 
     if (this->m_board.checkIllusion(x, y, Card::Color::Player1) || this->m_board.checkIllusion(x, y, Card::Color::Player2))
@@ -464,8 +586,8 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
 
     auto playedCard =
         _color == Card::Color::Player1 ?
-            m_player1.useIllusion(value) :
-            m_player2.useIllusion(value);
+            m_player1.useIllusion(static_cast<Card::Value>(int_value)) :
+            m_player2.useIllusion(static_cast<Card::Value>(int_value));
 
     if (!playedCard)
         return false;
@@ -476,6 +598,124 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
 }
 
 void Game::playExplosion() {
+    std::vector<std::vector<Game::ExplosionEffect>> explosionEffects = generateExplosion(this->m_board.getSize());
+
+    std::cout << "Player 2's turn\n";
+    std::cout << "---------------\n";
+
+    this->m_board.printBoard();
+
+    bool quit = false;
+
+    do {
+        printExplosion(explosionEffects);
+
+        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
+        std::cout << "Press 'x' to to quit using explosion.\n";
+    }
+    while (!quit && rotateExplosion(explosionEffects, quit));
+
+    m_playedExplosion = true;
+
+    if (quit)
+        return;
+
+    this->m_returnedCards = this->m_board.useExplosion(explosionEffects);
+
+    for (auto card : this->m_returnedCards) {
+        card.getColor() == Card::Color::Player1
+            ? m_player1.returnCard(card)
+            : m_player2.returnCard(card);
+    }
+}
+
+std::vector<std::vector<Game::ExplosionEffect>> Game::generateExplosion(const size_t _size) {
+    std::random_device rd;
+    std::mt19937 gen{ rd() };
+
+    std::uniform_int_distribution<size_t> indexDistribution{ 0, _size - 1};
+
+    std::uniform_int_distribution<size_t> effectDistribution{ 0, 10 };
+    std::bernoulli_distribution removeOrReplaceDistribution{ 0.5 };
+
+    std::vector<std::vector<ExplosionEffect>> explosionEffects;
+
+    explosionEffects.resize(_size);
+    for (auto& row : explosionEffects)
+        row.resize(_size);
+
+    const size_t effectCount = indexDistribution(gen) + (_size - 1);
+
+    for (int _ = 0; _ < effectCount; _++) {
+        size_t x, y;
+
+        do {
+            x = indexDistribution(gen);
+            y = indexDistribution(gen);
+        }
+        while (explosionEffects[x][y] != ExplosionEffect::None);
+
+        if (const size_t effect = effectDistribution(gen); !effect)
+            explosionEffects[x][y] = ExplosionEffect::SinkHole;
+
+        else
+            explosionEffects[x][y] = removeOrReplaceDistribution(gen)
+                ? ExplosionEffect::ReturnCard
+                : ExplosionEffect::RemoveCard;
+    }
+
+    return explosionEffects;
+}
+
+bool Game::rotateExplosion(std::vector<std::vector<Game::ExplosionEffect>> &_matrix, bool &_quit) {
+    char choice;
+    std::cin >> choice;
+
+    if (tolower(choice) == 'c')
+        return false;
+
+    if (tolower(choice) == 'x') {
+        _quit = true;
+        return false;
+    }
+
+    if (tolower(choice) == 'r')
+        rotateMatrixRight(_matrix);
+
+    return true;
+}
+
+void Game::rotateMatrixRight(std::vector<std::vector<Game::ExplosionEffect>> &_matrix) {
+    const std::vector<std::vector<Game::ExplosionEffect>> temp = _matrix;
+
+    for (int i = 0; i < _matrix.size(); ++i) {
+        for (int j = 0; j < _matrix.size(); ++j) {
+            _matrix[j][_matrix.size() - 1 - i] = temp[i][j];
+        }
+    }
+}
+
+void Game::printExplosion(const std::vector<std::vector<Game::ExplosionEffect>>& _matrix) const {
+    for (size_t i = 0; i < _matrix.size(); ++i) {
+        for (size_t j = 0; j < _matrix.size(); ++j) {
+            switch (_matrix[i][j]) {
+                case ExplosionEffect::None:
+                    std::cout << "- ";
+                    break;
+                case ExplosionEffect::SinkHole:
+                    std::cout << "H ";
+                    break;
+                case ExplosionEffect::RemoveCard:
+                    std::cout << "R ";
+                    break;
+                case ExplosionEffect::ReturnCard:
+                    std::cout << "r ";
+                    break;
+            }
+        }
+
+        std::cout << std::endl;
+    }
 }
 
 bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {

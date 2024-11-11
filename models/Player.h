@@ -22,9 +22,11 @@ protected:
 public:
 
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
+    void returnCard(const Card& _card);
 
     [[nodiscard]] Card::Color getColor() const;
     [[nodiscard]] size_t getCardCount() const;
+    [[nodiscard]] size_t getCardCount(Card::Value _value) const;
 
     bool useWizard();
     bool usePower(bool _first);

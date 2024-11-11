@@ -63,7 +63,7 @@ std::ostream& operator<<(std::ostream& os, const Card& _card) {
 
 	else os << static_cast<int>(_card.getValue());
 
-	os << (_card.getColor() == Card::Color::Player1 ? "R" : "B");/* << "\033[0m";*/
+	os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");/* << "\033[0m";*/
 
 	return os;
 }
