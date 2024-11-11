@@ -49,6 +49,5 @@ private:
         WizardActions::moveEdge,
     };
 
-
 };
 

@@ -25,6 +25,11 @@ void Player::returnCard(const Card &_card) {
     this->m_cards.push_back(_card);
 }
 
+void Player::printCards() {
+    for (const auto & m_card : m_cards)
+        std::cout << m_card;
+}
+
 Card::Color Player::getColor() const {
     return this->m_color;
 }
@@ -41,6 +46,18 @@ size_t Player::getCardCount(Card::Value _value) const {
             ++count;
 
     return count;
+}
+
+int Player::getWizardIndex() const {
+    return static_cast<int>(this->m_wizard_index);
+}
+
+std::pair<int, int> Player::getPowersIndex() const {
+    return this->m_powers_index;
+}
+
+bool Player::wasIllusionPlayed() const {
+    return this->m_playedIllusion;
 }
 
 bool Player::useWizard() {

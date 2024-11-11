@@ -721,11 +721,29 @@ void Game::printExplosion(const std::vector<std::vector<Game::ExplosionEffect>>&
 bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
     char choice;
 
-    std::cout << "Play a card (c)\n";
-    std::cout << "Shift board (s)\n";
-    std::cout << "Play wizard (w)\n";
-    std::cout << "Play power  (p)\n";
-    std::cout << "Play illusion (i)\n";
+    std::cout << "Play a card   (c) ";
+    _color == Card::Color::Player1
+        ? m_player1.printCards()
+        : m_player2.printCards();
+
+    std::cout << "\nShift board   (s)\n";
+
+    std::cout << "Play wizard   (w) " << (
+        _color == Card::Color::Player1
+            ? m_player1.getWizardIndex()
+            : m_player2.getWizardIndex()
+        ) << "\n";
+
+    std::cout << "Play power    (p) " << (
+        _color == Card::Color::Player1
+            ? std::to_string(m_player1.getPowersIndex().first) + " " + std::to_string(m_player1.getPowersIndex().second)
+            : std::to_string(m_player2.getPowersIndex().first) + " " + std::to_string(m_player2.getPowersIndex().second)
+    ) << "\n";
+    std::cout << "Play illusion (i) " << (
+        _color == Card::Color::Player1
+            ? (m_player1.wasIllusionPlayed() ? "(already played)" : "")
+            : (m_player2.wasIllusionPlayed() ? "(already played)" : "")
+    ) << "\n";
     std::cin >> choice;
 
     switch (choice) {
