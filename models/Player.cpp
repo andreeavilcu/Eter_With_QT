@@ -29,13 +29,6 @@ size_t Player::getCardCount() const {
     return this->m_cards.size();
 }
 
-bool Player::playIllusion() {
-    if(m_playedIllusion)
-        return false;
-    m_playedIllusion = true;
-    return true;
-}
-
 bool Player::useWizard() {
     if (m_wizard_index == -1)
         return false;
@@ -68,4 +61,16 @@ std::optional<Card> Player::useCard(Card::Value _value) {
     }
 
     return std::nullopt;
+}
+
+std::optional<Card> Player::useIllusion(const Card::Value _value) {
+    if(m_playedIllusion)
+        return std::nullopt;
+
+    m_playedIllusion = true;
+
+    auto playedCard = this->useCard(_value);
+    playedCard->setIllusion();
+
+    return playedCard;
 }

@@ -23,8 +23,6 @@ private:
 	Power() = default;
 	~Power() = default;
 
-	// TODO: fix template problem like in wizards class
-	
 	struct PowerAction {
 		static void controlledExplosion();
 		static void destruction();

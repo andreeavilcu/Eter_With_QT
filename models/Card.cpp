@@ -31,11 +31,23 @@ Card::Color Card::getColor() const {
 	return m_color;
 }
 
+bool Card::isIllusion() const {
+	return this->m_illusion;
+}
+
 void Card::setColor(const Color _color) {
 	m_color = _color;
 }
 
-std::ostream& operator<<(std::ostream& os, const Card& card) {
+void Card::resetIllusion() {
+	this->m_illusion = false;
+}
+
+void Card::setIllusion() {
+	this->m_illusion = true;
+}
+
+std::ostream& operator<<(std::ostream& os, const Card& _card) {
 	/*if (card.getColor() == Card::Color::Red)
 		os << "\033[31m";
 
@@ -46,7 +58,12 @@ std::ostream& operator<<(std::ostream& os, const Card& card) {
 		os << "E" << "\033[0m";
 
 	else*/
-		os << static_cast<int>(card.getValue()) << (card.getColor() == Card::Color::Red ? "R" : "B");/* << "\033[0m";*/
+	if (_card.m_illusion)
+		os << "#";
+
+	else os << static_cast<int>(_card.getValue());
+
+	os << (_card.getColor() == Card::Color::Player1 ? "R" : "B");/* << "\033[0m";*/
 
 	return os;
 }

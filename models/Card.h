@@ -17,8 +17,8 @@ public:
 
     enum class Color: size_t {
         Undefined = 0,
-        Red,
-        Blue,
+        Player1,
+        Player2
     };
 
     explicit Card(Value _value, Color _color = Color::Undefined);
@@ -31,6 +31,8 @@ public:
     [[nodiscard]] Value getValue() const;
     [[nodiscard]] Color getColor() const;
 
+    [[nodiscard]] bool isIllusion() const;
+
     friend std::ostream& operator<<(std::ostream& os, const Card& card);
     friend class Player;
 
@@ -38,7 +40,14 @@ public:
 private:
     Value m_value;
     Color m_color;
+
+    bool m_illusion = false;
+
     void setColor(Color _color);
+    void setIllusion();
+
+public:
+    void resetIllusion();
 
 };
 

@@ -25,9 +25,10 @@ public:
 
     [[nodiscard]] Card::Color getColor() const;
     [[nodiscard]] size_t getCardCount() const;
-    [[nodiscard]] bool playIllusion();
 
     bool useWizard();
     bool usePower(bool _first);
+
     std::optional<Card> useCard(Card::Value _value);
+    std::optional<Card> useIllusion(Card::Value _value);
 };

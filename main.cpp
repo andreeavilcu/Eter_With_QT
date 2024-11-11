@@ -4,5 +4,6 @@ int main() {
 
     srand(time(NULL));
 
-    Game<GameType::WizardDuel>::getInstance().playExplosion();//run();
+    Game game{ Game::GameType::Training };
+    game.run();
 }
