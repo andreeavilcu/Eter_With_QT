@@ -1,33 +1,33 @@
 #include "Wizard.h"
 
-void Wizard::WizardActions::eliminateCard() {
+bool Wizard::WizardActions::eliminateCard() {
     std::cout << "eliminateCard" << std::endl;
 }
 
-void Wizard::WizardActions::eliminateRow() {
+bool Wizard::WizardActions::eliminateRow() {
     std::cout << "eliminateRow" << std::endl;
 }
 
-void Wizard::WizardActions::coverCard() {
+bool Wizard::WizardActions::coverCard() {
     std::cout << "coverCard" << std::endl;
 }
 
-void Wizard::WizardActions::sinkHole() {
+bool Wizard::WizardActions::sinkHole() {
     std::cout << "sinkHole" << std::endl;
 }
 
-void Wizard::WizardActions::moveStackOwn() {
+bool Wizard::WizardActions::moveStackOwn() {
     std::cout << "moveStackOwn" << std::endl;
 }
 
-void Wizard::WizardActions::extraEter() {
+bool Wizard::WizardActions::extraEter() {
     std::cout << "extraEter" << std::endl;
 }
 
-void Wizard::WizardActions::moveStackOpponent() {
+bool Wizard::WizardActions::moveStackOpponent() {
     std::cout << "moveStackOpponent" << std::endl;
 }
 
-void Wizard::WizardActions::moveEdge() {
+bool Wizard::WizardActions::moveEdge() {
     std::cout << "moveEdge" << std::endl;
 }

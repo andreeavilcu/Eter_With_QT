@@ -383,9 +383,11 @@ void Game::Board::placeCard(const size_t _row, const size_t _col, const Card && 
 }
 
 Game::Game(const GameType _gameType) :
-    m_board(_gameType == Game::GameType::Training
+    m_board{ _gameType == Game::GameType::Training
        ? static_cast<size_t>(GridSize::Three)
-       : static_cast<size_t>(GridSize::Four)),
+       : static_cast<size_t>(GridSize::Four) },
+
+    m_gameType{ _gameType },
 
     m_player1{ Card::Color::Player1, (_gameType == GameType::Training
         ? std::vector<Card>{
@@ -597,6 +599,34 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
     return true;
 }
 
+bool Game::playWizard(Card::Color _color) {
+    if (_color == Card::Color::Player1)
+        return m_player1.useWizard();
+
+    return m_player2.useWizard();
+}
+
+bool Game::playPower(const Card::Color _color) {
+    char choice;
+    bool first;
+
+    std::cout << "Press 'f' for first power and 's' for second power.\n";
+    std::cin >> choice;
+
+    if (tolower(choice) == 'f')
+        first = true;
+
+    else if (tolower(choice) == 's')
+        first = false;
+
+    else return false;
+
+    if (_color == Card::Color::Player1)
+        return m_player1.usePower(first);
+
+    return m_player2.usePower(first);
+}
+
 void Game::playExplosion() {
     std::vector<std::vector<Game::ExplosionEffect>> explosionEffects = generateExplosion(this->m_board.getSize());
 
@@ -726,19 +756,24 @@ bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
         ? m_player1.printCards()
         : m_player2.printCards();
 
-    std::cout << "\nShift board   (s)\n";
+    std::cout << "Shift board   (s)\n";
 
-    std::cout << "Play wizard   (w) " << (
+    if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel) {
+        std::cout << "Play wizard   (w) " << (
         _color == Card::Color::Player1
             ? m_player1.getWizardIndex()
             : m_player2.getWizardIndex()
         ) << "\n";
+    }
 
-    std::cout << "Play power    (p) " << (
-        _color == Card::Color::Player1
-            ? std::to_string(m_player1.getPowersIndex().first) + " " + std::to_string(m_player1.getPowersIndex().second)
-            : std::to_string(m_player2.getPowersIndex().first) + " " + std::to_string(m_player2.getPowersIndex().second)
-    ) << "\n";
+    if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel) {
+        std::cout << "Play power    (p) " << (
+            _color == Card::Color::Player1
+                ? std::to_string(m_player1.getPowersIndex().first) + " " + std::to_string(m_player1.getPowersIndex().second)
+                : std::to_string(m_player2.getPowersIndex().first) + " " + std::to_string(m_player2.getPowersIndex().second)
+        ) << "\n";
+    }
+
     std::cout << "Play illusion (i) " << (
         _color == Card::Color::Player1
             ? (m_player1.wasIllusionPlayed() ? "(already played)" : "")
@@ -749,14 +784,21 @@ bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
     switch (choice) {
         case 'c':
             return this->playCard(_color, _iterationIndex);
+
         case 's':
             this->shiftBoard();
-        return false;
+            return false;
+
         case 'i':
             return this->playIllusion(_color, _iterationIndex);
+
         case 'w':
-            // TODO add checks for empty table, possibility to play wizard, etc.
-        case 'p': // TODO add checks for empty table, possibility to play power, etc. and query for which power to play
+            if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel)
+                return this->playWizard(_color);
+
+        case 'p':
+            if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel)
+                return this->playPower(_color);
         default:
             return false;
     }

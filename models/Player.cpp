@@ -28,6 +28,8 @@ void Player::returnCard(const Card &_card) {
 void Player::printCards() {
     for (const auto & m_card : m_cards)
         std::cout << m_card;
+
+    std::cout << std::endl;
 }
 
 Card::Color Player::getColor() const {
@@ -64,20 +66,24 @@ bool Player::useWizard() {
     if (m_wizard_index == -1)
         return false;
 
-    Wizard::getInstance().play(m_wizard_index);
-    m_wizard_index = -1;
+    const bool legal = Wizard::getInstance().play(m_wizard_index);
 
-    return true;
+    if (legal)
+        m_wizard_index = -1;
+
+    return legal;
 }
 
 bool Player::usePower(bool _first) {
     if (_first ? m_powers_index.first == -1 : m_powers_index.second == -1)
         return false;
 
-    Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second);
-    _first ? m_powers_index.first = -1 : m_powers_index.second = -1;
+    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second);
 
-    return true;
+    if (legal)
+        _first ? m_powers_index.first = -1 : m_powers_index.second = -1;
+
+    return legal;
 }
 
 std::optional<Card> Player::useCard(Card::Value _value) {

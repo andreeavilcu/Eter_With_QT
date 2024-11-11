@@ -22,31 +22,31 @@ private:
     ~Wizard() = default;
 
     struct WizardActions {
-        static void eliminateCard();
-        static void eliminateRow();
-        static void coverCard();
-        static void sinkHole();
-        static void moveStackOwn();
-        static void extraEter();
-        static void moveStackOpponent();
-        static void moveEdge();
+        static bool eliminateCard();
+        static bool eliminateRow();
+        static bool coverCard();
+        static bool sinkHole();
+        static bool moveStackOwn();
+        static bool extraEter();
+        static bool moveStackOpponent();
+        static bool moveEdge();
     };
 
-    void play(const size_t _index) const {
-        m_wizards[_index]();
+    [[nodiscard]] bool play(const size_t _index) const {
+        return m_wizards[_index]();
     }
 
-    using FuncType = std::function<void()>;
+    using FuncType = std::function<bool()>;
 
     std::array<FuncType, wizard_count> m_wizards = {
-        WizardActions::eliminateCard,
-        WizardActions::eliminateRow,
-        WizardActions::coverCard,
-        WizardActions::sinkHole,
-        WizardActions::moveStackOwn,
-        WizardActions::extraEter,
-        WizardActions::moveStackOpponent,
-        WizardActions::moveEdge,
+        []{ return WizardActions::eliminateCard(); },
+        []{ return WizardActions::eliminateRow(); },
+        []{ return WizardActions::coverCard(); },
+        []{ return WizardActions::sinkHole(); },
+        []{ return WizardActions::moveStackOwn(); },
+        []{ return WizardActions::extraEter(); },
+        []{ return WizardActions::moveStackOpponent(); },
+        []{ return WizardActions::moveEdge(); }
     };
 
 };

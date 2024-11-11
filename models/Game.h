@@ -70,6 +70,7 @@ protected:
     };
 
     Board m_board;
+    GameType m_gameType;
 
     Player m_player1, m_player2;
     Card::Color m_winner{ Card::Color::Undefined };
@@ -94,6 +95,9 @@ protected:
 
     [[nodiscard]] bool playCard(Card::Color _color, size_t _iterationIndex);
     [[nodiscard]] bool playIllusion(Card::Color _color, size_t _iterationIndex);
+    [[nodiscard]] bool playWizard(Card::Color _color);
+    [[nodiscard]] bool playPower(Card::Color _color);
+
     void playExplosion();
 
     [[nodiscard]] std::vector<std::vector<Game::ExplosionEffect>> generateExplosion(size_t _size);

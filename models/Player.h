@@ -9,6 +9,8 @@
 #include "Card.h"
 #include "Wizard.h"
 
+class Board;
+
 class Player {
 protected:
     Card::Color m_color{};

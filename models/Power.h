@@ -24,40 +24,39 @@ private:
 	~Power() = default;
 
 	struct PowerAction {
-		static void controlledExplosion();
-		static void destruction();
-		static void flame();
-		static void fire();
-		static void ash();
-		static void spark();
-		static void squall();
-		static void gale();
-		static void hurricane();
-		static void gust();
-		static void mirage();
-		static void storm();
-		static void tide();
-		static void mist();
-		static void wave();
-		static void whirlpool();
-		static void blizzard();
-		static void waterfall();
-		static void support();
-		static void earthquake();
-		static void crumble();
-		static void border();
-		static void avalanche();
-		static void rock();
+		static bool controlledExplosion();
+		static bool destruction();
+		static bool flame();
+		static bool fire();
+		static bool ash();
+		static bool spark();
+		static bool squall();
+		static bool gale();
+		static bool hurricane();
+		static bool gust();
+		static bool mirage();
+		static bool storm();
+		static bool tide();
+		static bool mist();
+		static bool wave();
+		static bool whirlpool();
+		static bool blizzard();
+		static bool waterfall();
+		static bool support();
+		static bool earthquake();
+		static bool crumble();
+		static bool border();
+		static bool avalanche();
+		static bool rock();
 	};
 
-	void play(const size_t _index) const {
-		m_powers[_index]();
+	[[nodiscard]] bool play(const size_t _index) const {
+		return m_powers[_index]();
 	}
 
-	using FuncType = std::function<void()>;
+	using FuncType = std::function<bool()>;
 
-	std::array<FuncType, power_count> m_powers =
-	{
+	std::array<FuncType, power_count> m_powers = {
 		PowerAction::ash,
 		PowerAction::avalanche,
 		PowerAction::blizzard,
@@ -83,4 +82,5 @@ private:
 		PowerAction::wave,
 		PowerAction::whirlpool
 	};
+
 };

@@ -48,22 +48,12 @@ void Card::setIllusion() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Card& _card) {
-	/*if (card.getColor() == Card::Color::Red)
-		os << "\033[31m";
-
-	if(card.getColor() == Card::Color::Blue)
-		os << "\033[34m";
-
-	if (card.getValue() == Card::Value::Eter)
-		os << "E" << "\033[0m";
-
-	else*/
 	if (_card.m_illusion)
 		os << "#";
 
-	else os << static_cast<int>(_card.getValue());
+	else os << (static_cast<int>(_card.m_value) == 0 ? "E" : std::to_string(static_cast<int>(_card.getValue())));
 
-	os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");/* << "\033[0m";*/
+	os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");
 
 	return os;
 }
