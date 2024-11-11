@@ -13,7 +13,8 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
     std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
 
-    m_wizard_index = _wizard ? wizardDistribution(gen) : -1;
+    m_wizard_index = 0;
+    //m_wizard_index = _wizard ? wizardDistribution(gen) : -1;
     m_powers_index.first = _powers ? powerDistribution(gen) : -1;
 
     do {
@@ -62,11 +63,11 @@ bool Player::wasIllusionPlayed() const {
     return this->m_playedIllusion;
 }
 
-bool Player::useWizard() {
+bool Player::useWizard(Game& _game) {
     if (m_wizard_index == -1)
         return false;
 
-    const bool legal = Wizard::getInstance().play(m_wizard_index);
+    const bool legal = Wizard::getInstance().play(m_wizard_index, *this, _game);
 
     if (legal)
         m_wizard_index = -1;
@@ -74,11 +75,11 @@ bool Player::useWizard() {
     return legal;
 }
 
-bool Player::usePower(bool _first) {
+bool Player::usePower(Game& _game, const bool _first) {
     if (_first ? m_powers_index.first == -1 : m_powers_index.second == -1)
         return false;
 
-    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second);
+    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second, *this, _game);
 
     if (legal)
         _first ? m_powers_index.first = -1 : m_powers_index.second = -1;

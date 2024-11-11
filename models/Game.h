@@ -33,7 +33,10 @@ protected:
         std::vector<std::vector<std::vector<Card>>> m_board{};
         std::pair<size_t, size_t> m_hole{-1, -1};
 
-    public:
+        friend class Game;
+        friend class Wizard;
+        friend class Power;
+
         explicit Board(size_t _size);
         [[nodiscard]] size_t getSize() const;
 

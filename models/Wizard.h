@@ -4,6 +4,10 @@
 #include <functional>
 #include <array>
 
+#include "Card.h"
+
+class Game;
+
 class Wizard {
 public:
     static constexpr auto wizard_count = 8;
@@ -22,32 +26,30 @@ private:
     ~Wizard() = default;
 
     struct WizardActions {
-        static bool eliminateCard();
-        static bool eliminateRow();
-        static bool coverCard();
-        static bool sinkHole();
-        static bool moveStackOwn();
-        static bool extraEter();
-        static bool moveStackOpponent();
-        static bool moveEdge();
+        static bool eliminateCard(Player& _player, Game& _game);
+        static bool eliminateRow(Player& _player, Game& _game);
+        static bool coverCard(Player& _player, Game& _game);
+        static bool sinkHole(Player& _player, Game& _game);
+        static bool moveStackOwn(Player& _player, Game& _game);
+        static bool extraEter(Player& _player, Game& _game);
+        static bool moveStackOpponent(Player& _player, Game& _game);
+        static bool moveEdge(Player& _player, Game& _game);
     };
 
-    [[nodiscard]] bool play(const size_t _index) const {
-        return m_wizards[_index]();
+    [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game) const {
+        return m_wizards[_index](_player, _game);
     }
 
-    using FuncType = std::function<bool()>;
+    using FuncType = std::function<bool(Player&, Game&)>;
 
     std::array<FuncType, wizard_count> m_wizards = {
-        []{ return WizardActions::eliminateCard(); },
-        []{ return WizardActions::eliminateRow(); },
-        []{ return WizardActions::coverCard(); },
-        []{ return WizardActions::sinkHole(); },
-        []{ return WizardActions::moveStackOwn(); },
-        []{ return WizardActions::extraEter(); },
-        []{ return WizardActions::moveStackOpponent(); },
-        []{ return WizardActions::moveEdge(); }
+        [](Player& _player, Game& _game) { return WizardActions::eliminateCard(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::eliminateRow(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::coverCard(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::sinkHole(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::moveStackOwn(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::extraEter(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::moveStackOpponent(_player, _game); },
+        [](Player& _player, Game& _game) { return WizardActions::moveEdge(_player, _game); }
     };
-
 };
-

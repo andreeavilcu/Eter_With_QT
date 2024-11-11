@@ -599,11 +599,11 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
     return true;
 }
 
-bool Game::playWizard(Card::Color _color) {
+bool Game::playWizard(const Card::Color _color) {
     if (_color == Card::Color::Player1)
-        return m_player1.useWizard();
+        return m_player1.useWizard(*this);
 
-    return m_player2.useWizard();
+    return m_player2.useWizard(*this);
 }
 
 bool Game::playPower(const Card::Color _color) {
@@ -622,9 +622,9 @@ bool Game::playPower(const Card::Color _color) {
     else return false;
 
     if (_color == Card::Color::Player1)
-        return m_player1.usePower(first);
+        return m_player1.usePower(*this, first);
 
-    return m_player2.usePower(first);
+    return m_player2.usePower(*this, first);
 }
 
 void Game::playExplosion() {

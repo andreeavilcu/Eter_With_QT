@@ -36,8 +36,8 @@ public:
     [[nodiscard]] std::pair<int, int> getPowersIndex() const;
     [[nodiscard]] bool wasIllusionPlayed() const;
 
-    bool useWizard();
-    bool usePower(bool _first);
+    bool useWizard(Game& _game);
+    bool usePower(Game& _game, bool _first);
 
     std::optional<Card> useCard(Card::Value _value);
     std::optional<Card> useIllusion(Card::Value _value);
