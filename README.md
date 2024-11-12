@@ -7,6 +7,6 @@
 
 ## Team members
 #### Priboi Andrei (andreiprb)
-#### Tudose Alexandru Vasule (Chewdoughsay)
+#### Tudose Alexandru Vasile (Chewdoughsay)
 #### Urs Ruxandra Mihaela (UrsRuxandra)
 #### Vilcu Andreea (andreeavilcu)
