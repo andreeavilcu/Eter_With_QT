@@ -4,6 +4,9 @@
 
 #include "Player.h"
 
+#ifndef GAME_H
+#define GAME_H
+
 class Game {
 public:
     enum class GameType : size_t {
@@ -111,3 +114,4 @@ protected:
     bool playerTurn(Card::Color _color, size_t _iterationIndex);
 };
 
+#endif // GAME_H
