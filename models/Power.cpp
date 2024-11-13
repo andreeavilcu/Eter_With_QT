@@ -1,5 +1,7 @@
 #include "Power.h"
 
+#include "Game.h"
+
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
     return true;
 }
