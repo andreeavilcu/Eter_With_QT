@@ -112,7 +112,29 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
-    return true;
+    
+    Game::Board& board= _game.m_board;
+    bool anyRemoved = false;
+    
+
+    for (size_t row = 0; row < board.m_board.size(); ++row) {
+        for (size_t col = 0; col < board.m_board.size(); ++col) {
+            if (board.m_board[row][col].back().getValue() == Card::Value::One && !board.m_board[row][col].back().isIllusion())
+            {
+                board.m_board[row][col].pop_back();
+                anyRemoved = true;
+            }
+
+        }
+    }
+
+    if (anyRemoved) {
+        std::cout << "Earthquake! All cards with the value 1 have been removed.\n";
+    }
+    else {
+        std::cout << "There were no cards with the value 1 on the board.\n";
+    }
+    return anyRemoved;
 }
 
 bool Power::PowerAction::crumble(Player& _player, Game& _game) {
@@ -128,5 +150,39 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game) {
+    if (_game.m_gameType != Game::GameType::WizardDuel && _game.m_gameType != Game::GameType::WizardAndPowerDuel) 
+        return false;
+
+    if (_player.getCardCount() == 0)
+        return false;
+
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+    
+    std::cout << "Cover any illusion with a card (from your hand) without flipping the illusion face up.";
+    std::cout << "Enter the coordinates for the illusion to cover:\n";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y))
+        return false;
+
+    if (!board.checkIllusion(x, y, _player.getColor()))
+        return false;
+    
+    if (_player.getCardCount() == 0) {
+        std::cout << "You have no cards in hand to cover the illusion.\n";
+        return false;
+    }
+
+    std::cout << "Choose a card value to cover the illusion (0: Eter, 1: One, 2: Two, 3: Three, 4: Four):\n";
+    int cardValue;
+    std::cin >> cardValue;
+
+    auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
+    
+    board.placeCard(x, y, std::move(*selectedCard));
+    board.resetIllusion(x, y);
+   
+    std::cout << "Illusion covered with a card.\n";
     return true;
 }

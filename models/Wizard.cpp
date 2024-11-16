@@ -48,7 +48,7 @@ bool Wizard::WizardActions::moveStackOwn(Player& _player, Game& _game) {
     std::cout << "Enter the coordinates of the stack:\n";
     std::cin >> startX >> startY;
 
-    if (startX >= board.m_board.size() || startY >= board.m_board.size())
+    if (!board.checkIndexes(startX,startY))
         return false;
 
     if (board.m_board[startX][startY].empty() || board.m_board[startX][startY].size() < 2)
@@ -60,7 +60,7 @@ bool Wizard::WizardActions::moveStackOwn(Player& _player, Game& _game) {
     std::cout << "Enter coordinates for the stack destination:\n";
     std::cin >> endX >> endY;
 
-    if (endX >= board.m_board.size() || endY >= board.m_board.size())
+    if (!board.checkIndexes(endX,endY))
         return false;
 
     if (!board.m_board[endX][endY].empty())
@@ -100,7 +100,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
     std::cout << "Enter coordinates of the stack:\n";
     std::cin >> startX >> startY;
 
-    if (startX >= board.m_board.size() || startY >= board.m_board.size())
+    if (board.checkIndexes(startX,startY))
         return false;
 
     if (board.m_board[startX][startY].empty() || board.m_board[startX][startY].size() < 2)
@@ -112,7 +112,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
     std::cout << "Enter coordinates for the destination of the stack:\n";
     std::cin >> endX >> endY;
 
-    if (endX >= board.m_board.size() || endY >= board.m_board.size())
+    if (board.checkIndexes(endX,endY))
         return false;
 
     if (!board.m_board[endX][endY].empty())
