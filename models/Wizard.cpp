@@ -72,9 +72,8 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     std::cout << "Enter (x, y) coordinates for the target card (0-indexed) and the card value: ";
     std::cin >> x >> y >> cardIndex;
 
-    if (!board.checkIndexes(x, y)) {
+    if (!board.checkIndexes(x, y))
         return false;
-    }
 
     std::vector<Card> &targetStack = board.m_board[x][y];
     if (targetStack.empty()) {
@@ -82,22 +81,18 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     }
 
     const Card &target = targetStack.back();
-    if (target.getColor() == _player.getColor()) {
+    if (target.getColor() == _player.getColor())
         return false;
-    }
 
-    if (cardIndex >= _player.m_cards.size()) {
+    if (cardIndex >= _player.m_cards.size())
         return false;
-    }
 
     Card &selectedCard = _player.m_cards[cardIndex];
-    if (selectedCard.getColor() != _player.getColor()) {
+    if (selectedCard.getColor() != _player.getColor())
         return false;
-    }
 
-    if (selectedCard.getValue() >= target.getValue()) {
+    if (selectedCard.getValue() >= target.getValue())
         return false;
-    }
 
     targetStack.push_back(std::move(selectedCard));
     _player.m_cards.erase(_player.m_cards.begin() + cardIndex);
@@ -107,6 +102,24 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
 
 
 bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
+    size_t x, y;
+    Game::Board &board = _game.m_board;
+
+    std::cout << "Transform an empty space on the board into a sinkhole.\n";
+    std::cout << "Enter (x, y) coordinates for the empty space (0-indexed): ";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y))
+        return false;
+
+    if (!board.m_board[y][x].empty())
+        return false;
+
+    if (board.checkHole(y, x))
+        return false;
+
+    board.m_hole = std::make_pair(y, x);
+
     return true;
 }
 
