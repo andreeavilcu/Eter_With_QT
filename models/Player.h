@@ -22,6 +22,7 @@ protected:
 
     bool m_playedIllusion{false};
 public:
+    friend class Wizard;
 
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
     void returnCard(const Card& _card);
