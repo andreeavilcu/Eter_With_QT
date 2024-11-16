@@ -29,6 +29,36 @@ bool Wizard::WizardActions::eliminateCard(Player& _player, Game& _game) {
 }
 
 bool Wizard::WizardActions::eliminateRow(Player& _player, Game& _game) {
+    size_t rowIndex;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Eliminate an entire row of stacks\n";
+    std::cout << "Enter the row index (0-indexed): ";
+    std::cin >> rowIndex;
+
+    if (rowIndex >= board.m_board.size())
+        return false;
+
+    const std::vector<std::vector<Card>>& row = board.m_board[rowIndex];
+    size_t ownVisibleCards = 0;
+    size_t nonEmptyStacks = 0;
+
+    for(const std::vector<Card>& stack : row) {
+        if(!stack.empty()) {
+            nonEmptyStacks++;
+            if(stack.back().getColor() == _player.getColor())
+                ownVisibleCards++;
+        }
+    }
+
+    if(nonEmptyStacks < 3)
+        return false;
+
+    if(ownVisibleCards == 0)
+        return false;
+
+    for(std::vector<Card>& stack : board.m_board[rowIndex])
+        stack.clear();
     return true;
 }
 
