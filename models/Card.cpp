@@ -43,6 +43,26 @@ void Card::resetIllusion() {
 	this->m_illusion = false;
 }
 
+void Card::increaseValue()
+{
+	if (m_value == Card::Value::One)
+		m_value == Card::Value::Two;
+	else if (m_value == Card::Value::Two)
+		m_value == Card::Value::Three;
+	else if (m_value == Card::Value::Three)
+		m_value == Card::Value::Four;
+}
+
+void Card::decreaseValue()
+{
+	if (m_value == Card::Value::Two)
+		m_value == Card::Value::One;
+	else if (m_value == Card::Value::Three)
+		m_value == Card::Value::Two;
+	else if (m_value == Card::Value::Four)
+		m_value == Card::Value::Three;
+}
+
 void Card::setIllusion() {
 	this->m_illusion = true;
 }

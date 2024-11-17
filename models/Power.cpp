@@ -1,4 +1,4 @@
-#include "Power.h"
+﻿#include "Power.h"
 
 #include "Game.h"
 
@@ -181,15 +181,111 @@ bool Power::PowerAction::blizzard(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+    size_t row;
+    char direction;
+
+    std::cout << "Waterfall!";
+    std::cout << "Choose a row with at least 3 occupied positions.\n";
+    std::cin >> row;
+
+    if (row >= board.getSize()) {
+        std::cout << "Invalid row selection";
+        return false;
+    }
+
+    int occupiedPositions = 0;
+    for (size_t col = 0; col < board.getSize(); ++col) {
+        if (!board.m_board[row][col].empty())
+            ++occupiedPositions;
+    }
+
+    if (occupiedPositions < 3) {
+        std::cout << "Not enough occupied positions.\n";
+        return false;
+    }
+
+    std::cout << "Choose the direction of the cascade(l for left, 1 for right)\n";
+    std::cin >> direction;
+
+    if (direction != 'l' && direction != 'r') {
+        std::cout << "\n";
+        return false;
+    }
+
+    std::vector<Card> mergedStack;
+
+    if (direction == 'l') {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            while (!board.m_board[row][col].empty()) {
+                mergedStack.push_back(std::move(board.m_board[row][col].back()));
+                board.m_board[row][col].pop_back();
+            }
+        }
+        board.m_board[row][0] = std::move(mergedStack);
+    }
+    else {
+        for (size_t col = board.getSize() - 1; col >= 0; --col) {
+            while (!board.m_board[row][col].empty()) {
+                mergedStack.push_back(std::move(board.m_board[row][col].back()));
+                board.m_board[row][col].pop_back();
+            }
+        }
+
+        board.m_board[row][board.getSize() - 1] = std::move(mergedStack);
+    }
+
+    std::cout << "Cards have merged successfully.\n";
     return true;
 }
 
 bool Power::PowerAction::support(Player& _player, Game& _game) {
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Support!";
+    std::cout << " Choose a card of value 1, 2 or 3 to increase its value by 1.\n";
+    std::cout << "Enter the coordinates of the card:\n";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y)) {
+        std::cout << "Invalid coordinates";
+        return false;
+    }
+
+    if (board.m_board[x][y].empty()) {
+        std::cout << "No card at given position!";
+        return false;
+    }
+
+    if (board.m_board[x][y].back().isIllusion()) {
+        std::cout << "The card is an illusion!";
+        return false;
+    }
+
+    Card& selectedCard = board.m_board[x][y].back();
+    if (selectedCard.getColor() != _player.getColor()) {
+        std::cout << "The card is not yours.\n";
+        return false;
+    }
+
+    if (selectedCard.getValue() != Card::Value::One &&
+        selectedCard.getValue() != Card::Value::Two &&
+        selectedCard.getValue() != Card::Value::Three) {
+        std::cout << "The selected card is not eligible!(not 1, 2, or 3).\n";
+        return false;
+    }
+
+    selectedCard.increaseValue();
+    std::cout << "The value of the selected card has been increased by 1.\n";
+
     return true;
 }
 
+
 bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
     
+
     Game::Board& board= _game.m_board;
     bool anyRemoved = false;
     
@@ -215,10 +311,86 @@ bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::crumble(Player& _player, Game& _game) {
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Choose an opponent's card of value 2, 3, or 4 to decrease its value by 1.\n";
+    std::cout << "Enter the coordinates of the card:\n";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y)) {
+        std::cout << "Invalid coordinates";
+        return false;
+    }
+
+    if (board.m_board[x][y].empty()) {
+        std::cout << "No card at given position!";
+        return false;
+    }
+
+    if (board.m_board[x][y].back().isIllusion()) {
+        std::cout << "The card is an illusion!";
+        return false;
+    }
+
+    Card& selectedCard = board.m_board[x][y].back();
+    if (selectedCard.getColor() == _player.getColor()) {
+        std::cout << "The card is yours.\n";
+        return false;
+    }
+
+    //TO DO :daca cartea este acoperita sau întoarsă în mână isi pierde bonusul?
+
+
+    if (selectedCard.getValue() != Card::Value::Two &&
+        selectedCard.getValue() != Card::Value::Three &&
+        selectedCard.getValue() != Card::Value::Four) {
+        std::cout << "The selected card is not eligible!(not 2, 3, or 4).\n";
+        return false;
+    }
+
+    selectedCard.decreaseValue();
+    std::cout << "The value of the selected card has been decreased by 1.\n";
+
     return true;
 }
 
+
 bool Power::PowerAction::border(Player& _player, Game& _game) {
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Border!\n";
+    std::cout << "Place a neutral card on the board to define at least one boundary.\n";
+    std::cout << "Enter the coordinates for placing the neutral  card.\n";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y))
+        return false;
+
+    if ((x != 0 && x != board.m_board.size() - 1 && y != 0 && y != board.m_board.size() - 1)) {
+        std::cout << "Invalid position! The neutral card must be placed on the boundary of the board.\n";
+        return false;
+    }
+
+
+    Card neutralCard(Card::Value::Eter);
+    board.placeCard(x, y, std::move(neutralCard));
+
+
+    std::cout << "Now play a card from your hand.\n";
+    size_t cardIndex;
+    std::cin >> cardIndex;
+
+    auto cardToPlay = _player.useCard(static_cast<Card::Value>(cardIndex));
+
+    if (!cardToPlay) {
+        std::cout << "Failed to play the card.\n";
+        return false;
+    }
+
+    board.placeCard(x, y, std::move(*cardToPlay));
+    std::cout << "The card was placed successfully!\n";
     return true;
 }
 

@@ -47,6 +47,8 @@ private:
 
 public:
     void resetIllusion();
+    void increaseValue();
+    void decreaseValue();
 
 };
 

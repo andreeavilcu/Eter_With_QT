@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include <stack>
-#include <bits/ranges_algo.h>
+//#include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
