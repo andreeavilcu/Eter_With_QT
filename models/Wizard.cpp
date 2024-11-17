@@ -123,7 +123,36 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
+bool Wizard::WizardActions::moveStackOwn(Player& _player, Game& _game) {
+    size_t startX, startY, endX, endY;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Move a stack with your own card on top to an empty position.\n";
+    std::cout << "Enter the coordinates of the stack:\n";
+    std::cin >> startX >> startY;
+
+    if (startX >= board.m_board.size() || startY >= board.m_board.size())
+        return false;
+
+    if (board.m_board[startX][startY].empty() || board.m_board[startX][startY].size() < 2)
+        return false;
+
+    if (board.m_board[startX][startY].back().getColor() != _player.getColor())
+        return false;
+
+    std::cout << "Enter coordinates for the stack destination:\n";
+    std::cin >> endX >> endY;
+
+    if (endX >= board.m_board.size() || endY >= board.m_board.size())
+        return false;
+
+    if (!board.m_board[endX][endY].empty())
+        return false;
+
+    board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
+    board.m_board[startX][startY].clear();
+
+    std::cout << "Stack moved successfully!";
     return true;
 }
 
@@ -146,7 +175,37 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
+bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
+    size_t startX, startY, endX, endY;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Move an opponent's stack with your card on top to an empty position.\n";
+    std::cout << "Enter coordinates of the stack:\n";
+    std::cin >> startX >> startY;
+
+    if (startX >= board.m_board.size() || startY >= board.m_board.size())
+        return false;
+
+    if (board.m_board[startX][startY].empty() || board.m_board[startX][startY].size() < 2)
+        return false;
+
+    if (board.m_board[startX][startY].back().getColor() == _player.getColor())
+        return false;
+
+    std::cout << "Enter coordinates for the destination of the stack:\n";
+    std::cin >> endX >> endY;
+
+    if (endX >= board.m_board.size() || endY >= board.m_board.size())
+        return false;
+
+    if (!board.m_board[endX][endY].empty())
+        return false;
+
+
+    board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
+    board.m_board[startX][startY].clear();
+
+    std::cout << "Stack moved successfully!\n";
     return true;
 }
 
