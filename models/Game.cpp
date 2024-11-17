@@ -237,6 +237,12 @@ Card::Color Game::Board::calculateWinner() const {
                 if (cardValue == static_cast<size_t>(Card::Value::Eter))
                     cardValue = 1;
 
+                if (m_plus == std::pair{ row,col })
+                    cardValue++;
+
+                if (m_minus == std::pair{ row,col })
+                    cardValue--;
+
                 if (topCard.getColor() == Card::Color::Player1) {
                     winner.first += cardValue;
                 } else {

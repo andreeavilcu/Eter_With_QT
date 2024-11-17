@@ -30,47 +30,95 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
 }
 
 bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
-    size_t rowIndex;
+    size_t index;
+    char choice;
     Game::Board &board = _game.m_board;
 
-    std::cout << "Eliminate an entire row of stacks\n";
-    std::cout << "Enter the row index (0-indexed): ";
-    std::cin >> rowIndex;
+    std::cout << "Eliminate an entire row or column of stacks.\n";
+    std::cout << "Enter 'r' for row or 'c' for column: ";
 
-    if (rowIndex >= board.m_board.size())
+    do {
+        std::cin >> choice;
+    }
+    while (tolower(choice) != 'r' && towlower(choice) != 'c');
+
+    std::cout << "Enter the index (0-indexed): ";
+    std::cin >> index;
+
+    if (index >= board.m_board.size())
         return false;
 
-    const std::vector<std::vector<Card> > &row = board.m_board[rowIndex];
+    const size_t boardSize = board.m_board.size();
     size_t ownVisibleCards = 0;
     size_t nonEmptyStacks = 0;
 
-    for (const std::vector<Card> &stack: row) {
-        if (!stack.empty()) {
-            nonEmptyStacks++;
-            const Card& topCard = stack.back();
-            if (stack.back().getColor() == _player.getColor() && !topCard.isIllusion())
-                ownVisibleCards++;
+    if (tolower(choice) == 'r') {
+        const std::vector<std::vector<Card> > &row = board.m_board[index];
+        for (const std::vector<Card> &stack: row) {
+            if (!stack.empty()) {
+                nonEmptyStacks++;
+                const Card &topCard = stack.back();
+                if (topCard.getColor() == _player.getColor() && !topCard.isIllusion())
+                    ownVisibleCards++;
+            }
+        }
+    }
+
+    else {
+        for (size_t i = 0; i < boardSize; ++i) {
+            const std::vector<Card> &stack = board.m_board[i][index];
+            if (!stack.empty()) {
+                nonEmptyStacks++;
+                const Card &topCard = stack.back();
+                if (topCard.getColor() == _player.getColor() && !topCard.isIllusion())
+                    ownVisibleCards++;
+            }
         }
     }
 
     if (nonEmptyStacks < 3)
         return false;
 
+
     if (ownVisibleCards == 0)
         return false;
 
-    for (std::vector<Card> &stack: board.m_board[rowIndex])
-        stack.clear();
+    std::vector<std::vector<Card> > savedSection;
+    if (tolower(choice) == 'r') {
+        savedSection = board.m_board[index];
+        for (std::vector<Card> &stack: board.m_board[index])
+            stack.clear();
+    }
+
+    else {
+        savedSection.resize(boardSize);
+        for (size_t i = 0; i < boardSize; ++i) {
+            savedSection[i] = std::move(board.m_board[i][index]);
+            board.m_board[i][index].clear();
+        }
+    }
+
+    if (!board.checkBoardIntegrity()) {
+        if (tolower(choice) == 'r') {
+            board.m_board[index] = std::move(savedSection);
+        } else {
+            for (size_t i = 0; i < boardSize; ++i) {
+                board.m_board[i][index] = std::move(savedSection[i]);
+            }
+        }
+        return false;
+    }
+
     return true;
 }
 
 bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
-    size_t x, y, cardIndex;
+    size_t x, y, cardValue;
     Game::Board &board = _game.m_board;
 
     std::cout << "Cover an opponent's card with one of your own of strictly lower value.\n";
     std::cout << "Enter (x, y) coordinates for the target card (0-indexed) and the card value: ";
-    std::cin >> x >> y >> cardIndex;
+    std::cin >> x >> y >> cardValue;
 
     if (!board.checkIndexes(x, y))
         return false;
@@ -90,12 +138,14 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     Card &selectedCard = _player.m_cards[cardIndex];
     if (selectedCard.getColor() != _player.getColor())
         return false;
+    }
 
-    if (selectedCard.getValue() >= target.getValue())
+    if (selectedCard->getValue() >= target.getValue()) {
+        _player.returnCard(*selectedCard);
         return false;
+    }
 
-    targetStack.push_back(std::move(selectedCard));
-    _player.m_cards.erase(_player.m_cards.begin() + cardIndex);
+    targetStack.push_back(std::move(*selectedCard));
 
     return true;
 }
@@ -123,9 +173,9 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOwn(Player& _player, Game& _game) {
+bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
     size_t startX, startY, endX, endY;
-    Game::Board& board = _game.m_board;
+    Game::Board &board = _game.m_board;
 
     std::cout << "Move a stack with your own card on top to an empty position.\n";
     std::cout << "Enter the coordinates of the stack:\n";
@@ -175,9 +225,9 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
+bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
     size_t startX, startY, endX, endY;
-    Game::Board& board = _game.m_board;
+    Game::Board &board = _game.m_board;
 
     std::cout << "Move an opponent's stack with your card on top to an empty position.\n";
     std::cout << "Enter coordinates of the stack:\n";
@@ -205,8 +255,13 @@ bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
     board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
     board.m_board[startX][startY].clear();
 
-    std::cout << "Stack moved successfully!\n";
-    return true;
+    if (board.checkBoardIntegrity())
+        return true;
+
+    board.m_board[startX][startY] = std::move(board.m_board[endX][endY]);
+    board.m_board[endX][endY].clear();
+
+    return false;
 }
 
 bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {

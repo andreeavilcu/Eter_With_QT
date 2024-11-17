@@ -100,7 +100,7 @@ std::optional<Card> Player::useCard(Card::Value _value) {
     return std::nullopt;
 }
 
-std::optional<Card> Player::useIllusion(const Card::Value _value) {
+std::optional<Card> Player::useIllusion(const Card::Value _value) { 
     if(m_playedIllusion)
         return std::nullopt;
 
