@@ -132,13 +132,11 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     if (target.getColor() == _player.getColor())
         return false;
 
-    if (cardValue >= _player.m_cards.size())
+    if (cardIndex >= _player.m_cards.size())
         return false;
 
-    auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
-
-    if (selectedCard->getColor() != _player.getColor()) {
-        _player.returnCard(*selectedCard);
+    Card &selectedCard = _player.m_cards[cardIndex];
+    if (selectedCard.getColor() != _player.getColor())
         return false;
     }
 
@@ -204,13 +202,8 @@ bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
     board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
     board.m_board[startX][startY].clear();
 
-    if(board.checkBoardIntegrity())
-        return true;
-
-    board.m_board[startX][startY] = std::move(board.m_board[endX][endY]);
-    board.m_board[endX][endY].clear();
-
-    return false;
+    std::cout << "Stack moved successfully!";
+    return true;
 }
 
 bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
