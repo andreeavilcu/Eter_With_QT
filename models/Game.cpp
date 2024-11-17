@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include <stack>
-#include <bits/ranges_algo.h>
+//#include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
@@ -80,6 +80,9 @@ void Game::Board::printBoard() const {
     }
 }
 
+bool Game::Board::isAPile(const size_t _row, const size_t _col) const {
+    return m_board[_row][_col].size() >= 2;
+}
 bool Game::Board::checkIndexes(const size_t _row, const size_t _col) const {
     return !(_row >= this->m_board.size() || _col >= this->m_board.size());
 }
@@ -233,6 +236,12 @@ Card::Color Game::Board::calculateWinner() const {
                 int cardValue =  topCard.isIllusion() ? 1 : static_cast<int>(topCard.getValue());
                 if (cardValue == static_cast<size_t>(Card::Value::Eter))
                     cardValue = 1;
+
+                if (m_plus == std::pair{ row,col })
+                    cardValue++;
+
+                if (m_minus == std::pair{ row,col })
+                    cardValue--;
 
                 if (topCard.getColor() == Card::Color::Player1) {
                     winner.first += cardValue;

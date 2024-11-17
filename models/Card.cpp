@@ -43,6 +43,7 @@ void Card::resetIllusion() {
 	this->m_illusion = false;
 }
 
+
 void Card::setIllusion() {
 	this->m_illusion = true;
 }

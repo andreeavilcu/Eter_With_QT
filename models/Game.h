@@ -35,6 +35,8 @@ protected:
     class Board {
         std::vector<std::vector<std::vector<Card>>> m_board{};
         std::pair<size_t, size_t> m_hole{-1, -1};
+        std::pair<size_t, size_t> m_minus{ -1, -1 };
+        std::pair<size_t, size_t> m_plus{ -1, -1 };
 
         friend class Game;
         friend class Wizard;
@@ -50,6 +52,7 @@ protected:
 
         void printBoard() const;
 
+        [[nodiscard]] bool isAPile(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkIndexes(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkNeighbours(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkValue(size_t _row, size_t _col, Card::Value _value, bool _illusion = false) const;

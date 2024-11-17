@@ -31,7 +31,7 @@ public:
 
     [[nodiscard]] Value getValue() const;
     [[nodiscard]] Color getColor() const;
-
+    [[nodiscard]] void setColor(Color _color);
     [[nodiscard]] bool isIllusion() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Card& card);
@@ -43,12 +43,11 @@ private:
     Color m_color;
 
     bool m_illusion = false;
-
-    void setColor(Color _color);
     void setIllusion();
 
 public:
     void resetIllusion();
+    
 
 };
 
