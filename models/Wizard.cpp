@@ -152,8 +152,13 @@ bool Wizard::WizardActions::moveStackOwn(Player& _player, Game& _game) {
     board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
     board.m_board[startX][startY].clear();
 
-    std::cout << "Stack moved successfully!";
-    return true;
+    if(board.checkBoardIntegrity())
+        return true;
+
+    board.m_board[startX][startY] = std::move(board.m_board[endX][endY]);
+    board.m_board[endX][endY].clear();
+
+    return false;
 }
 
 bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
@@ -205,8 +210,13 @@ bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
     board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
     board.m_board[startX][startY].clear();
 
-    std::cout << "Stack moved successfully!\n";
-    return true;
+    if (board.checkBoardIntegrity())
+        return true;
+
+    board.m_board[startX][startY] = std::move(board.m_board[endX][endY]);
+    board.m_board[endX][endY].clear();
+
+    return false;
 }
 
 bool Wizard::WizardActions::moveEdge(Player &_player, Game &_game) {

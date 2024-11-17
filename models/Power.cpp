@@ -249,34 +249,27 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
     std::cin >> x >> y;
 
     if (!board.checkIndexes(x, y)) {
-        std::cout << "Invalid coordinates";
         return false;
     }
 
     if (board.m_board[x][y].empty()) {
-        std::cout << "No card at given position!";
         return false;
     }
 
     if (board.m_board[x][y].back().isIllusion()) {
-        std::cout << "The card is an illusion!";
         return false;
     }
 
     Card& selectedCard = board.m_board[x][y].back();
     if (selectedCard.getColor() != _player.getColor()) {
-        std::cout << "The card is not yours.\n";
         return false;
     }
 
-    if (selectedCard.getValue() != Card::Value::One &&
-        selectedCard.getValue() != Card::Value::Two &&
-        selectedCard.getValue() != Card::Value::Three) {
-        std::cout << "The selected card is not eligible!(not 1, 2, or 3).\n";
+    if (selectedCard.getValue() == Card::Value::Four || selectedCard.getValue() == Card::Value::Eter) {
         return false;
     }
 
-    selectedCard.increaseValue();
+    board.m_plus = { x,y };
     std::cout << "The value of the selected card has been increased by 1.\n";
 
     return true;
@@ -319,37 +312,30 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
     std::cin >> x >> y;
 
     if (!board.checkIndexes(x, y)) {
-        std::cout << "Invalid coordinates";
         return false;
     }
 
     if (board.m_board[x][y].empty()) {
-        std::cout << "No card at given position!";
         return false;
     }
 
     if (board.m_board[x][y].back().isIllusion()) {
-        std::cout << "The card is an illusion!";
         return false;
     }
 
     Card& selectedCard = board.m_board[x][y].back();
     if (selectedCard.getColor() == _player.getColor()) {
-        std::cout << "The card is yours.\n";
         return false;
     }
 
     //TO DO :daca cartea este acoperita sau întoarsă în mână isi pierde bonusul?
 
 
-    if (selectedCard.getValue() != Card::Value::Two &&
-        selectedCard.getValue() != Card::Value::Three &&
-        selectedCard.getValue() != Card::Value::Four) {
-        std::cout << "The selected card is not eligible!(not 2, 3, or 4).\n";
+    if(selectedCard.getValue() == Card::Value::One || selectedCard.getValue() == Card::Value::Eter) {
         return false;
     }
 
-    selectedCard.decreaseValue();
+    board.m_minus = { x,y };
     std::cout << "The value of the selected card has been decreased by 1.\n";
 
     return true;
@@ -373,7 +359,8 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
         return false;
     }
 
-
+    //TO DO daca putem da shift puem pune cartea , daca nu return false
+    // daca cartea nu defineste niciun border, iar return false
     Card neutralCard(Card::Value::Eter);
     board.placeCard(x, y, std::move(neutralCard));
 
@@ -399,12 +386,6 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game) {
-    if (_game.m_gameType != Game::GameType::WizardDuel && _game.m_gameType != Game::GameType::WizardAndPowerDuel) 
-        return false;
-
-    if (_player.getCardCount() == 0)
-        return false;
-
     size_t x, y;
     Game::Board& board = _game.m_board;
     
@@ -415,22 +396,20 @@ bool Power::PowerAction::rock(Player& _player, Game& _game) {
     if (!board.checkIndexes(x, y))
         return false;
 
-    if (!board.checkIllusion(x, y, _player.getColor()))
+    if (!board.m_board[x][y].back().isIllusion())
         return false;
-    
-    if (_player.getCardCount() == 0) {
-        std::cout << "You have no cards in hand to cover the illusion.\n";
-        return false;
-    }
 
     std::cout << "Choose a card value to cover the illusion (0: Eter, 1: One, 2: Two, 3: Three, 4: Four):\n";
     int cardValue;
     std::cin >> cardValue;
 
     auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
+
+    if (selectedCard == std::nullopt)
+        return false;
     
     board.placeCard(x, y, std::move(*selectedCard));
-    board.resetIllusion(x, y);
+   
    
     std::cout << "Illusion covered with a card.\n";
     return true;
