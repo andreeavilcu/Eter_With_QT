@@ -50,6 +50,7 @@ protected:
 
         void printBoard() const;
 
+        [[nodiscard]] bool isAPile(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkIndexes(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkNeighbours(size_t _row, size_t _col) const;
         [[nodiscard]] bool checkValue(size_t _row, size_t _col, Card::Value _value, bool _illusion = false) const;
