@@ -1,6 +1,7 @@
 #include "Game.h"
 
 #include <stack>
+#include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
@@ -79,6 +80,9 @@ void Game::Board::printBoard() const {
     }
 }
 
+bool Game::Board::isAPile(const size_t _row, const size_t _col) const {
+    return m_board[_row][_col].size() >= 2;
+}
 bool Game::Board::checkIndexes(const size_t _row, const size_t _col) const {
     return !(_row >= this->m_board.size() || _col >= this->m_board.size());
 }
