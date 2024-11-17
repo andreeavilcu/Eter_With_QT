@@ -164,10 +164,10 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
     std::cin >> x >> y;
 
-    if (x >= board.m_board.size() || y >= board.m_board.size())
+    if (board.checkIndexes(x,y))
         return false;
 
-    if (board.m_board[x][y].back().getColor() != _player.getColor())
+    if (!board.m_board[x][y].empty())
         return false;
 
     board.m_board[x][y].emplace_back(Card::Value::Eter, _player.getColor());
@@ -209,6 +209,54 @@ bool Wizard::WizardActions::moveStackOpponent(Player& _player, Game& _game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveEdge(Player &_player, Game &_game) {
+bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board; 
+    std::cout << "Move edge of the playing field and move it to a different edge\n";
+    char choice;
+    std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
+    std::cin >> choice;
+
+    std::vector<std::vector<Card>> movedLine;
+
+    switch (choice) {
+    case 'w': {
+        movedLine = std::move(board.m_board[0]);
+        board.circularShiftUp();
+        board.m_board[board.m_board.size() - 1] = std::move(movedLine);
+        break;
+    }
+    case 'a': {
+     
+        for (auto& row : board.m_board) {
+            movedLine.emplace_back(std::move(row[0]));
+        }
+        board.circularShiftLeft();
+        for (size_t i = 0; i < board.m_board.size(); ++i) {
+            board.m_board[i][board.m_board[i].size() - 1] = std::move(movedLine[i]);
+        }
+        break;
+    }
+    case 's': {
+        movedLine = std::move(board.m_board[board.m_board.size() - 1]);
+        board.circularShiftDown();
+        board.m_board[0] = std::move(movedLine);
+        break;
+    }
+    case 'd': {
+        for (auto& row : board.m_board) {
+            movedLine.emplace_back(std::move(row[row.size() - 1]));
+        }
+        board.circularShiftRight();
+        for (size_t i = 0; i < board.m_board.size(); ++i) {
+            board.m_board[i][0] = std::move(movedLine[i]);
+        }
+        break;
+    }
+    default: {
+        return false;
+    }
+    }
     return true;
 }
+
+
