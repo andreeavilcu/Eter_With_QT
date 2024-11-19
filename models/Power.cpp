@@ -381,7 +381,7 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
         return false;
     }
 
-    //TO DO :daca cartea este acoperita sau întoarsă în mână isi pierde bonusul?
+    //TODO :daca cartea este acoperita sau întoarsă în mână isi pierde bonusul?
 
 
     if(selectedCard.getValue() == Card::Value::One || selectedCard.getValue() == Card::Value::Eter) {

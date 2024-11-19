@@ -79,7 +79,6 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
     if (nonEmptyStacks < 3)
         return false;
 
-
     if (ownVisibleCards == 0)
         return false;
 
@@ -138,7 +137,6 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
     if (selectedCard == std::nullopt)
         return false;
-
 
     if (selectedCard->getColor() != _player.getColor()) {
         return false;
@@ -206,15 +204,20 @@ bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
     board.m_board[endX][endY] = std::move(board.m_board[startX][startY]);
     board.m_board[startX][startY].clear();
 
-    std::cout << "Stack moved successfully!";
-    return true;
+    if (board.checkBoardIntegrity())
+        return true;
+
+    board.m_board[startX][startY] = std::move(board.m_board[endX][endY]);
+    board.m_board[endX][endY].clear();
+
+    return false;
 }
 
 bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     size_t x, y;
     Game::Board &board = _game.m_board;
 
-    std::cout << "You recived an extra Eter card.Place now!\n";
+    std::cout << "You received an extra Eter card.Place now!\n";
     std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
     std::cin >> x >> y;
 

@@ -14,4 +14,5 @@ add_executable(Eter main.cpp
         models/Player.h
         models/Player.cpp
         models/Game.h
-        models/Game.cpp)
+        models/Game.cpp
+)
