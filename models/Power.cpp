@@ -169,12 +169,65 @@ bool Power::PowerAction::mist(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::wave(Player& _player, Game& _game) {
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Move the stack to an adjacent empty position. Play a card on the new empty position.\n";
+    std::cout << "Enter (x, y) coordinates for power action (0-indexed): ";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y)) 
+        return false;
+    
+    if (!board.isAPile(y, x)) 
+        return false;
+    
+    const std::array<std::pair<int, int>, 8> directions = { {
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1},
+        {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
+    } };
+
+    std::vector<std::pair<size_t, size_t>> emptyNeighbours;
+    for (const auto& direction : directions) {
+        int newRow = static_cast<int>(y) + direction.first;
+        int newCol = static_cast<int>(x) + direction.second;
+
+        if (newRow >= 0 && newRow < board.getSize() &&  newCol >= 0 && newCol < board.getSize() && board.m_board[newRow][newCol].empty()) {
+            emptyNeighbours.emplace_back(newRow, newCol);
+        }
+    }
+    if (emptyNeighbours.empty()) 
+        return false;
+    
+    std::cout << "Available positions:\n";
+    for (size_t i = 0; i < emptyNeighbours.size(); ++i) 
+        std::cout << i + 1 << ": (" << emptyNeighbours[i].first << ", " << emptyNeighbours[i].second << ")\n";
+    
+    size_t choice;
+    std::cout << "Choose a position by number: ";
+    std::cin >> choice;
+
+    if (choice < 1 || choice > emptyNeighbours.size()) {
+        std::cout << "Invalid choice.\n";
+        return false;
+    }
+
+    size_t Y = emptyNeighbours[choice - 1].first;
+    size_t X = emptyNeighbours[choice - 1].second;
+
+    board.m_board[Y][X] = std::move(board.m_board[y][x]);
+    board.m_board[y][x].clear();
+
+   /// board.playCard();
+
     return true;
 }
+
 
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     return true;
 }
+
 
 bool Power::PowerAction::blizzard(Player& _player, Game& _game) {
     return true;

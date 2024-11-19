@@ -19,8 +19,8 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
     if (board.m_board[x][y].back().getColor() == _player.getColor())
         return false;
 
-    if (const size_t secondLastCardIndex = board.m_board[x][y].size() - 2;
-        board.m_board[x][y][secondLastCardIndex].getColor() != _player.getColor())
+    if (const size_t secondLastcardValue = board.m_board[x][y].size() - 2;
+        board.m_board[x][y][secondLastcardValue].getColor() != _player.getColor())
         return false;
 
     auto eliminatedCard = std::move(board.m_board[x][y].back());
@@ -132,11 +132,15 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     if (target.getColor() == _player.getColor())
         return false;
 
-    if (cardIndex >= _player.m_cards.size())
+    if (cardValue >= _player.m_cards.size())
         return false;
 
-    Card &selectedCard = _player.m_cards[cardIndex];
-    if (selectedCard.getColor() != _player.getColor())
+    auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
+    if (selectedCard == std::nullopt)
+        return false;
+
+
+    if (selectedCard->getColor() != _player.getColor()) {
         return false;
     }
 
