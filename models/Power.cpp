@@ -3,8 +3,74 @@
 #include "Game.h"
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+
+    if(_game.m_playedExplosion) {
+        auto explosionEffects = _game.generateExplosion(board.getSize());
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<size_t> indexDistribution{0, board.getSize() -1};
+
+        size_t x, y;
+        do {
+            x = indexDistribution(gen);
+            y = indexDistribution(gen);
+        } while(!board.checkIndexes(x, y) || !board.m_board[x][y].empty());
+
+        board.m_board[x][y].emplace_back(Card::Value::Eter, Card::Color::Undefined);
+
+        auto returnedCards = board.useExplosion(explosionEffects);
+
+        for(auto& card : returnedCards) {
+            if(card.getColor() == _player.getColor()) {
+                _player.returnCard(card);
+            }
+
+            else {
+                auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+                opponent.returnCard(card);
+            }
+        }
+
+        return true;
+    }
+
+    auto explosionEffects = _game.generateExplosion(board.getSize());
+
+    for(size_t row = 0; row < board.getSize(); row++) {
+        for(size_t col = 0; col < board.getSize(); col++) {
+            if(explosionEffects[row][col] != Game::ExplosionEffect::None) {
+                auto tempStack = std::move(board.m_board[row][col]);
+                board.m_board[row][col].clear();
+
+                if(!board.checkBoardIntegrity()) {
+                    explosionEffects[row][col]  = Game::ExplosionEffect::None;
+                }
+
+                board.m_board[row][col] = std::move(tempStack);
+            }
+        }
+    }
+
+    auto returnedCards = board.useExplosion(explosionEffects);
+
+    for(auto& card : returnedCards) {
+        if(card.getColor() == _player.getColor()) {
+            _player.returnCard(card);
+        }
+
+        else {
+            auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+            opponent.returnCard(card);
+        }
+    }
+
+    _game.m_playedExplosion = true;
+
     return true;
 }
+
 
 bool Power::PowerAction::destruction(Player& _player, Game& _game) {
     return true;
@@ -52,8 +118,8 @@ bool Power::PowerAction::gust(Player& _player, Game& _game) {
     }
     Card& currentCard = board.m_board[x][y].back();
     std::vector<std::pair<size_t, size_t>> adjacents = {
-       {x - 1, y}, {x + 1, y}, 
-       {x, y - 1}, {x, y + 1} 
+        {x - 1, y}, {x + 1, y},
+        {x, y - 1}, {x, y + 1}
     };
     for (auto& adj : adjacents) {
         size_t row = adj.first;
@@ -218,7 +284,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     board.m_board[Y][X] = std::move(board.m_board[y][x]);
     board.m_board[y][x].clear();
 
-   /// board.playCard();
+    /// board.playCard();
 
     return true;
 }
