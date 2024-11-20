@@ -3,31 +3,16 @@
 #include "Game.h"
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    auto& board = _game.m_board.m_board;
 
-    if(_game.m_playedExplosion) {
-        auto explosionEffects = _game.generateExplosion(board.getSize());
+    if (_game.m_playedExplosion) {
+        auto explosionEffects = _game.generateExplosion(_game.m_board.getSize());
+        auto returnedCards = _game.m_board.useExplosion(explosionEffects);
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<size_t> indexDistribution{0, board.getSize() -1};
-
-        size_t x, y;
-        do {
-            x = indexDistribution(gen);
-            y = indexDistribution(gen);
-        } while(!board.checkIndexes(x, y) || !board.m_board[x][y].empty());
-
-        board.m_board[x][y].emplace_back(Card::Value::Eter, Card::Color::Undefined);
-
-        auto returnedCards = board.useExplosion(explosionEffects);
-
-        for(auto& card : returnedCards) {
-            if(card.getColor() == _player.getColor()) {
+        for (auto& card : returnedCards) {
+            if (card.getColor() == _player.getColor()) {
                 _player.returnCard(card);
-            }
-
-            else {
+            } else {
                 auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
                 opponent.returnCard(card);
             }
@@ -36,31 +21,28 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
         return true;
     }
 
-    auto explosionEffects = _game.generateExplosion(board.getSize());
+    auto explosionEffects = _game.generateExplosion(_game.m_board.getSize());
 
-    for(size_t row = 0; row < board.getSize(); row++) {
-        for(size_t col = 0; col < board.getSize(); col++) {
-            if(explosionEffects[row][col] != Game::ExplosionEffect::None) {
-                auto tempStack = std::move(board.m_board[row][col]);
-                board.m_board[row][col].clear();
+    for (size_t row = 0; row < board.size(); ++row) {
+        for (size_t col = 0; col < board.size(); ++col) {
+            if (explosionEffects[row][col] != Game::ExplosionEffect::None) {
+                auto tempStack = std::move(board[row][col]);
+                board[row][col].clear();
 
-                if(!board.checkBoardIntegrity()) {
-                    explosionEffects[row][col]  = Game::ExplosionEffect::None;
+                if (!_game.m_board.checkBoardIntegrity()) {
+                    board[row][col] = std::move(tempStack);
+                    explosionEffects[row][col] = Game::ExplosionEffect::None;
                 }
-
-                board.m_board[row][col] = std::move(tempStack);
             }
         }
     }
 
-    auto returnedCards = board.useExplosion(explosionEffects);
+    auto returnedCards = _game.m_board.useExplosion(explosionEffects);
 
-    for(auto& card : returnedCards) {
-        if(card.getColor() == _player.getColor()) {
+    for (auto& card : returnedCards) {
+        if (card.getColor() == _player.getColor()) {
             _player.returnCard(card);
-        }
-
-        else {
+        } else {
             auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
             opponent.returnCard(card);
         }
@@ -73,6 +55,23 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::destruction(Player& _player, Game& _game) {
+    auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+
+    auto [lastRow, lastCol] = opponent.getLastPlacedCard();
+
+    if (!_game.m_board.checkIndexes(lastRow, lastCol) || _game.m_board.m_board[lastRow][lastCol].empty()) {
+        return false;
+    }
+
+    auto& stack = _game.m_board.m_board[lastRow][lastCol];
+    Card affectedCard = std::move(stack.back());
+    stack.pop_back();
+
+    if (!_game.m_board.checkBoardIntegrity()) {
+        stack.push_back(std::move(affectedCard));
+        return false;
+    }
+
     return true;
 }
 
