@@ -97,13 +97,9 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
 
     if (illusionFound) {
         _game.m_board.resetIllusion(illusionRow, illusionCol);
-        std::cout << "Opponent's illusion at (" << illusionRow << ", " << illusionCol << ") has been revealed!\n";
-    } else {
-        std::cout << "No opponent's illusion found on the board.\n";
     }
 
     size_t x, y, int_value;
-    std::cout << "Enter coordinates (x, y) and card value to play: ";
     std::cin >> x >> y >> int_value;
 
     if (!_game.checkPartial(x, y, int_value, 0)) {
