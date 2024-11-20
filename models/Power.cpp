@@ -59,6 +59,10 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game) {
 
     auto [lastRow, lastCol] = opponent.getLastPlacedCard();
 
+    if (lastRow == -1 || lastCol == -1) {
+        return false;
+    }
+
     if (!_game.m_board.checkIndexes(lastRow, lastCol) || _game.m_board.m_board[lastRow][lastCol].empty()) {
         return false;
     }
@@ -76,8 +80,46 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::flame(Player& _player, Game& _game) {
+    size_t illusionRow = -1, illusionCol = -1;
+    bool illusionFound = false;
+
+    for (size_t row = 0; row < _game.m_board.getSize(); ++row) {
+        for (size_t col = 0; col < _game.m_board.getSize(); ++col) {
+            if (_game.m_board.checkIllusion(row, col, _player.getColor() == Card::Color::Player1 ? Card::Color::Player2 : Card::Color::Player1)) {
+                illusionRow = row;
+                illusionCol = col;
+                illusionFound = true;
+                break;
+            }
+        }
+        if (illusionFound) break;
+    }
+
+    if (illusionFound) {
+        _game.m_board.resetIllusion(illusionRow, illusionCol);
+        std::cout << "Opponent's illusion at (" << illusionRow << ", " << illusionCol << ") has been revealed!\n";
+    } else {
+        std::cout << "No opponent's illusion found on the board.\n";
+    }
+
+    size_t x, y, int_value;
+    std::cout << "Enter coordinates (x, y) and card value to play: ";
+    std::cin >> x >> y >> int_value;
+
+    if (!_game.checkPartial(x, y, int_value, 0)) {
+        return false;
+    }
+
+    auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
+    if (!playedCard) {
+        return false;
+    }
+
+    _game.m_board.placeCard(x, y, std::move(*playedCard));
+    _player.placeCard(x, y);
     return true;
 }
+
 
 bool Power::PowerAction::fire(Player& _player, Game& _game) {
     return true;
