@@ -53,7 +53,6 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::destruction(Player& _player, Game& _game) {
     auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
 
@@ -116,8 +115,51 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::fire(Player& _player, Game& _game) {
+    size_t chosenValue;
+    std::cin >> chosenValue;
+
+    if (chosenValue < 1 || chosenValue > 4) {
+        return false;
+    }
+
+    Card::Value targetValue = static_cast<Card::Value>(chosenValue);
+
+    size_t count = 0;
+    Game::Board& board = _game.m_board;
+    for (size_t row = 0; row < board.getSize(); ++row) {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            if (!board.m_board[row][col].empty() &&
+                board.m_board[row][col].back().getValue() == targetValue &&
+                !board.m_board[row][col].back().isIllusion()) {
+                ++count;
+                }
+        }
+    }
+
+    if (count < 2) {
+        return false;
+    }
+
+    for (size_t row = 0; row < board.getSize(); ++row) {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            if (!board.m_board[row][col].empty()) {
+                Card topCard = board.m_board[row][col].back();
+                if (topCard.getValue() == targetValue && !topCard.isIllusion()) {
+                    Card::Color cardOwner = topCard.getColor();
+
+                    board.m_board[row][col].pop_back();
+
+                    if (cardOwner == Card::Color::Player1) {
+                        _game.m_player1.returnCard(topCard);
+                    } else if (cardOwner == Card::Color::Player2) {
+                        _game.m_player2.returnCard(topCard);
+                    }
+                }
+            }
+        }
+    }
+
     return true;
 }
 
