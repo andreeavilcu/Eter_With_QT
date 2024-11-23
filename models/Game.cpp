@@ -549,6 +549,9 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     if (_iterationIndex && !this->m_board.checkNeighbours(_x, _y))
         return false;
 
+    if ( _x == this->m_board.m_restrictedRow ||  _y == this->m_board.m_restrictedCol) {
+        return false;
+    }
     return true;
 }
 
@@ -793,8 +796,14 @@ bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
 
     switch (choice) {
         case 'c':
-            return this->playCard(_color, _iterationIndex);
+            if (this->playCard(_color, _iterationIndex)) {
 
+                if (this->m_board.m_restrictedRow != -1 || this->m_board.m_restrictedCol != -1) {
+                    this->m_board.m_restrictedRow = -1;
+                    this->m_board.m_restrictedCol = -1;
+                }
+            } 
+            return true;
         case 's':
             this->shiftBoard();
             return false;

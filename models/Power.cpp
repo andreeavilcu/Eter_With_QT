@@ -229,7 +229,47 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
 }
 
 
-bool Power::PowerAction::blizzard(Player& _player, Game& _game) {
+bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
+    char line;
+    Game::Board& board = _game.m_board;
+    std::cout << "Tsunami!";
+    std::cout << "Choose a row ('r') ora column ('c') to restrict:\n";
+    std::cin >> line;
+
+    if (line != 'r' && line != 'c')
+        return false;
+
+    size_t index;
+    std::cout << "Enter the index of the row/column to restrict:\n";
+    std::cin >> index;
+
+    if (index >= board.getSize())
+        return false;
+
+    bool hasFreeSpace = false;
+    for (size_t i = 0; i < board.getSize(); ++i) {
+        for (size_t j = 0; j < board.getSize(); ++j) {
+            if (board.m_board[i][j].empty() &&
+                !((line == 'r' && i == index) || (line == 'c' && j == index))) {
+                hasFreeSpace = true;
+                break;
+            }
+        }
+        if (hasFreeSpace) break;
+    }
+
+    if (!hasFreeSpace) {
+        std::cout << "The opponent must have at least one free space to play a card outside the restricted row/column.\n";
+        return false;
+    }
+
+    if (line == 'r') {
+        board.m_restrictedRow = index;
+    }
+    else {
+        board.m_restrictedCol = index;
+    }
+    board.justBlocked = true;
     return true;
 }
 
@@ -412,6 +452,8 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
         return false;
     }
 
+
+
     //TO DO daca putem da shift puem pune cartea , daca nu return false
     // daca cartea nu defineste niciun border, iar return false
     Card neutralCard(Card::Value::Eter);
@@ -436,6 +478,7 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
 
 bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
     return true;
+    //TO DO  
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game) {

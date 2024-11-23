@@ -42,7 +42,7 @@ private:
         static bool mist(Player& _player, Game& _game);
         static bool wave(Player& _player, Game& _game);
         static bool whirlpool(Player& _player, Game& _game);
-        static bool blizzard(Player& _player, Game& _game);
+        static bool tsunami(Player& _player, Game& _game);
         static bool waterfall(Player& _player, Game& _game);
         static bool support(Player& _player, Game& _game);
         static bool earthquake(Player& _player, Game& _game);
@@ -61,7 +61,7 @@ private:
     std::array<FuncType, power_count> m_powers = {
         [](Player& _player, Game& _game) { return PowerAction::ash(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::avalanche(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::blizzard(_player, _game); },
+        [](Player& _player, Game& _game) { return PowerAction::tsunami(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::border(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::controlledExplosion(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::crumble(_player, _game); },
