@@ -39,7 +39,7 @@ protected:
         std::pair<size_t, size_t> m_plus{ -1, -1 };
         size_t m_restrictedRow = -1;
         size_t m_restrictedCol = -1;
-        bool justBlocked = false;
+        bool m_justBlocked = false;
 
         friend class Game;
         friend class Wizard;

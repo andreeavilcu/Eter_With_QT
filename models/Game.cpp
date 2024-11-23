@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include <stack>
-#include <bits/ranges_algo.h>
+// #include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
@@ -407,8 +407,17 @@ void Game::run() {
 
         this->m_board.printBoard();
 
-        if (playerTurn(iterationIndex % 2 ? Card::Color::Player2 : Card::Color::Player1, iterationIndex))
+        if (playerTurn(iterationIndex % 2 ? Card::Color::Player2 : Card::Color::Player1, iterationIndex)) {
             iterationIndex++;
+
+            if (m_board.m_justBlocked)
+                m_board.m_justBlocked = false;
+
+            else if (m_board.m_restrictedCol == -1 || m_board.m_restrictedRow == -1) {
+                m_board.m_restrictedCol = -1;
+                m_board.m_restrictedRow = -1;
+            }
+        }
 
         if (!this->m_playedExplosion && this->m_board.checkTwoRows())
             this->playExplosion();
@@ -538,10 +547,14 @@ bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
         this->m_board.placeCard(x, y, std::move(*playedCard));
         (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
     }
+
     else {
         this->m_board.resetIllusion(x, y);
         playedCard.reset();
     }
+
+
+
     return true;
 }
 
@@ -757,14 +770,8 @@ bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
 
     switch (choice) {
         case 'c':
-            if (this->playCard(_color, _iterationIndex)) {
+            return this->playCard(_color, _iterationIndex);
 
-                if (this->m_board.m_restrictedRow != -1 || this->m_board.m_restrictedCol != -1) {
-                    this->m_board.m_restrictedRow = -1;
-                    this->m_board.m_restrictedCol = -1;
-                }
-            } 
-            return true;
         case 's':
             this->shiftBoard();
             return false;
