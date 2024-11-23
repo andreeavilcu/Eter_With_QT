@@ -150,7 +150,7 @@ void Game::Board::resetIllusion(const size_t _row, const size_t _col) {
 }
 
 Card::Color Game::Board::checkWin() const {
-    const size_t n = m_board.size();
+    const int n = m_board.size();
     std::vector<int> sums(2 * n + 2, 0);
     size_t chessmanCount = 0;
 

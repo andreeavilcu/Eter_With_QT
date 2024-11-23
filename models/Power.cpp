@@ -89,7 +89,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
 }
 
 
-bool Power::PowerAction::fire(Player& _player, Game& _game) {
+bool Power::PowerAction::lava(Player& _player, Game& _game) {
     return true;
 }
 
@@ -524,12 +524,40 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
         return false;
 
     if ((x != 0 && x != board.m_board.size() - 1 && y != 0 && y != board.m_board.size() - 1)) {
-        std::cout << "Invalid position! The neutral card must be placed on the boundary of the board.\n";
         return false;
     }
 
 
+    bool canShift = false;
+    if (x == 0) { 
+        board.circularShiftUp();
+        canShift = true;
+    }
+    else if (x == board.m_board.size() - 1) { 
+        board.circularShiftDown();
+        canShift = true;
+    }
+    else if (y == 0) { 
+        board.circularShiftLeft();
+        canShift = true;
+    }
+    else if (y == board.m_board.size() - 1) { 
+        board.circularShiftRight();
+        canShift = true;
+    }
 
+    if (!canShift) {
+        return false;
+    }
+
+    bool definesBoundary = false;
+    if (x == 0 || x == board.m_board.size() - 1 || y == 0 || y == board.m_board.size() - 1) {
+        definesBoundary = true;
+    }
+
+    if (!definesBoundary) {
+        return false;
+    }
     //TO DO daca putem da shift puem pune cartea , daca nu return false
     // daca cartea nu defineste niciun border, iar return false
     Card neutralCard(Card::Value::Eter);
