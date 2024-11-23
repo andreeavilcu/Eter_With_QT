@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include <stack>
-//#include <bits/ranges_algo.h>
+#include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
@@ -531,9 +531,10 @@ bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
     if (!playedCard)
         return false;
 
-    if (!this->m_board.checkIllusion(x, y, Card::Color::Undefined) && this->m_board.checkIllusionValue(x, y, int_value))
+    if (!this->m_board.checkIllusion(x, y, Card::Color::Undefined) && this->m_board.checkIllusionValue(x, y, int_value)) {
         this->m_board.placeCard(x, y, std::move(*playedCard));
-
+        (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
+    }
     else {
         this->m_board.resetIllusion(x, y);
         playedCard.reset();
@@ -563,6 +564,8 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
         return false;
 
     this->m_board.placeCard(x, y, std::move(*playedCard));
+
+    (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
 
     return true;
 }

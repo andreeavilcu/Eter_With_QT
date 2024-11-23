@@ -3,16 +3,119 @@
 #include "Game.h"
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
+    auto& board = _game.m_board.m_board;
+
+    if (_game.m_playedExplosion) {
+        auto explosionEffects = _game.generateExplosion(_game.m_board.getSize());
+        auto returnedCards = _game.m_board.useExplosion(explosionEffects);
+
+        for (auto& card : returnedCards) {
+            if (card.getColor() == _player.getColor()) {
+                _player.returnCard(card);
+            } else {
+                auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+                opponent.returnCard(card);
+            }
+        }
+
+        return true;
+    }
+
+    auto explosionEffects = _game.generateExplosion(_game.m_board.getSize());
+
+    for (size_t row = 0; row < board.size(); ++row) {
+        for (size_t col = 0; col < board.size(); ++col) {
+            if (explosionEffects[row][col] != Game::ExplosionEffect::None) {
+                auto tempStack = std::move(board[row][col]);
+                board[row][col].clear();
+
+                if (!_game.m_board.checkBoardIntegrity()) {
+                    board[row][col] = std::move(tempStack);
+                    explosionEffects[row][col] = Game::ExplosionEffect::None;
+                }
+            }
+        }
+    }
+
+    auto returnedCards = _game.m_board.useExplosion(explosionEffects);
+
+    for (auto& card : returnedCards) {
+        if (card.getColor() == _player.getColor()) {
+            _player.returnCard(card);
+        } else {
+            auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+            opponent.returnCard(card);
+        }
+    }
+
+    _game.m_playedExplosion = true;
+
     return true;
 }
 
+
 bool Power::PowerAction::destruction(Player& _player, Game& _game) {
+    auto& opponent = (_player.getColor() == Card::Color::Player1) ? _game.m_player2 : _game.m_player1;
+
+    auto [lastRow, lastCol] = opponent.getLastPlacedCard();
+
+    if (lastRow == -1 || lastCol == -1) {
+        return false;
+    }
+
+    if (!_game.m_board.checkIndexes(lastRow, lastCol) || _game.m_board.m_board[lastRow][lastCol].empty()) {
+        return false;
+    }
+
+    auto& stack = _game.m_board.m_board[lastRow][lastCol];
+    Card affectedCard = std::move(stack.back());
+    stack.pop_back();
+
+    if (!_game.m_board.checkBoardIntegrity()) {
+        stack.push_back(std::move(affectedCard));
+        return false;
+    }
+
     return true;
 }
 
 bool Power::PowerAction::flame(Player& _player, Game& _game) {
+    size_t illusionRow = -1, illusionCol = -1;
+    bool illusionFound = false;
+
+    for (size_t row = 0; row < _game.m_board.getSize(); ++row) {
+        for (size_t col = 0; col < _game.m_board.getSize(); ++col) {
+            if (_game.m_board.checkIllusion(row, col, _player.getColor() == Card::Color::Player1 ? Card::Color::Player2 : Card::Color::Player1)) {
+                illusionRow = row;
+                illusionCol = col;
+                illusionFound = true;
+                break;
+            }
+        }
+        if (illusionFound) break;
+    }
+
+    if (illusionFound) {
+        _game.m_board.resetIllusion(illusionRow, illusionCol);
+    }
+
+    size_t x, y, int_value;
+    std::cin >> x >> y >> int_value;
+
+    if (!_game.checkPartial(x, y, int_value, 0)) {
+        return false;
+    }
+
+    auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
+    if (!playedCard) {
+        return false;
+    }
+
+    _game.m_board.placeCard(x, y, std::move(*playedCard));
+    _player.placeCard(x, y);
     return true;
 }
+
 
 bool Power::PowerAction::fire(Player& _player, Game& _game) {
     return true;
@@ -52,8 +155,8 @@ bool Power::PowerAction::gust(Player& _player, Game& _game) {
     }
     Card& currentCard = board.m_board[x][y].back();
     std::vector<std::pair<size_t, size_t>> adjacents = {
-       {x - 1, y}, {x + 1, y}, 
-       {x, y - 1}, {x, y + 1} 
+        {x - 1, y}, {x + 1, y},
+        {x, y - 1}, {x, y + 1}
     };
     for (auto& adj : adjacents) {
         size_t row = adj.first;
@@ -218,7 +321,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     board.m_board[Y][X] = std::move(board.m_board[y][x]);
     board.m_board[y][x].clear();
 
-   /// board.playCard();
+    /// board.playCard();
 
     return true;
 }
