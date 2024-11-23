@@ -21,6 +21,8 @@ protected:
     std::pair<size_t, size_t> m_powers_index{};
 
     bool m_playedIllusion{false};
+
+    std::pair<size_t, size_t> m_last_placed_card;
 public:
     friend class Wizard;
 
@@ -28,10 +30,12 @@ public:
     void returnCard(const Card& _card);
 
     void printCards();
+    void placeCard(size_t row, size_t col);
 
     [[nodiscard]] Card::Color getColor() const;
     [[nodiscard]] size_t getCardCount() const;
     [[nodiscard]] size_t getCardCount(Card::Value _value) const;
+    [[nodiscard]] std::pair<size_t, size_t> getLastPlacedCard() const;
 
     [[nodiscard]] int getWizardIndex() const;
     [[nodiscard]] std::pair<int, int> getPowersIndex() const;

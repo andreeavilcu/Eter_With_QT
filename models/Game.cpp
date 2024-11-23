@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include <stack>
-//#include <bits/ranges_algo.h>
+#include <bits/ranges_algo.h>
 
 Game::Board::Board(const size_t _size) {
     this->m_board.resize(_size);
@@ -149,71 +149,35 @@ void Game::Board::resetIllusion(const size_t _row, const size_t _col) {
     this->m_board[_row][_col].back().resetIllusion();
 }
 
-Card::Color Game::Board::checkRows() const {
-    for (std::size_t row = 0; row < this->m_board.size(); ++row) {
-        if (m_board[row][0].empty())
-            continue;
+Card::Color Game::Board::checkWin() const {
+    const size_t n = m_board.size();
+    std::vector<int> sums(2 * n + 2, 0);
+    size_t chessmanCount = 0;
 
-        Card::Color rowColor = m_board[row][0].back().getColor();
+    for (size_t row = 0; row < n; ++row) {
+        for (size_t col = 0; col < n; ++col) {
+            if (m_board[row][col].empty())
+                continue;
 
-        for (std::size_t col = 1; col < this->m_board.size(); ++col)
-            if (m_board[row][col].empty() || m_board[row][col].back().getColor() != rowColor) {
-                rowColor = Card::Color::Undefined;
-                break;
-            }
+            sums[row] += static_cast<int>(m_board[row][col].back().getColor());
+            sums[n + col] += static_cast<int>(m_board[row][col].back().getColor());
 
-        if (rowColor != Card::Color::Undefined)
-            return rowColor;
+            if (row == col)
+                sums[2 * n] += static_cast<int>(m_board[row][col].back().getColor());
+
+            if (row == n - 1 - col)
+                sums[2 * n + 1] += static_cast<int>(m_board[row][col].back().getColor());
+
+            chessmanCount++;
+        }
+    }
+
+    for (int sum : sums) {
+        if (sum == n) return Card::Color::Player1;
+        if (sum == -n) return Card::Color::Player2;
     }
 
     return Card::Color::Undefined;
-}
-
-Card::Color Game::Board::checkCols() const {
-    for (std::size_t col = 0; col< this->m_board.size(); ++col) {
-        if (m_board[0][col].empty())
-            continue;
-
-        Card::Color colColor = m_board[0][col].back().getColor();
-
-        for (std::size_t row = 1; row < this->m_board.size(); ++row)
-            if (m_board[row][col].empty() || m_board[row][col].back().getColor() != colColor) {
-                colColor = Card::Color::Undefined;
-                break;
-            }
-
-        if (colColor != Card::Color::Undefined)
-            return colColor;
-    }
-
-    return Card::Color::Undefined;
-}
-
-Card::Color Game::Board::checkDiagonals() const {
-    if (m_board[0][0].empty())
-        return Card::Color::Undefined;
-
-    Card::Color diagColor = m_board[0][0].back().getColor();
-
-    for (size_t index = 1; index < this->m_board.size(); ++index) {
-        if (m_board[index][index].empty() || m_board[index][index].back().getColor() != diagColor)
-            return Card::Color::Undefined;
-    }
-
-    if (diagColor != Card::Color::Undefined)
-        return diagColor;
-
-    if (m_board[0][this->m_board.size() - 1].empty())
-        return Card::Color::Undefined;
-
-    diagColor = m_board[0][this->m_board.size() - 1].back().getColor();
-
-    for (size_t index = 1; index < this->m_board.size(); ++index) {
-        if (m_board[index][index].empty() || m_board[index][this->m_board.size() - index - 1].back().getColor() != diagColor)
-            return Card::Color::Undefined;
-    }
-
-    return diagColor;
 }
 
 bool Game::Board::checkFullBoard() const {
@@ -509,13 +473,7 @@ bool Game::checkCardAfterReturn(const Card::Color _color, const Card::Value _val
 }
 
 bool Game::checkEndOfGame(const Card::Color _color) {
-    this->m_winner = this->m_board.checkRows();
-
-    if (this->m_winner == Card::Color::Undefined)
-        this->m_winner = this->m_board.checkCols();
-
-    if (this->m_winner == Card::Color::Undefined)
-        this->m_winner = this->m_board.checkDiagonals();
+    this->m_winner = this->m_board.checkWin();
 
     if (this->m_winner != Card::Color::Undefined)
         return false;
@@ -576,9 +534,10 @@ bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
     if (!playedCard)
         return false;
 
-    if (!this->m_board.checkIllusion(x, y, Card::Color::Undefined) && this->m_board.checkIllusionValue(x, y, int_value))
+    if (!this->m_board.checkIllusion(x, y, Card::Color::Undefined) && this->m_board.checkIllusionValue(x, y, int_value)) {
         this->m_board.placeCard(x, y, std::move(*playedCard));
-
+        (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
+    }
     else {
         this->m_board.resetIllusion(x, y);
         playedCard.reset();
@@ -608,6 +567,8 @@ bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) 
         return false;
 
     this->m_board.placeCard(x, y, std::move(*playedCard));
+
+    (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
 
     return true;
 }

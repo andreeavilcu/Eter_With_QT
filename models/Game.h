@@ -66,9 +66,7 @@ protected:
 
         void resetIllusion(size_t _row, size_t _col);
 
-        [[nodiscard]] Card::Color checkRows() const;
-        [[nodiscard]] Card::Color checkCols() const;
-        [[nodiscard]] Card::Color checkDiagonals() const;
+        [[nodiscard]] Card::Color checkWin() const;
 
         [[nodiscard]] bool checkFullBoard() const;
         [[nodiscard]] Card::Color calculateWinner() const;

@@ -32,6 +32,10 @@ void Player::printCards() {
     std::cout << std::endl;
 }
 
+void Player::placeCard(size_t row, size_t col) {
+    m_last_placed_card = {row, col};
+}
+
 Card::Color Player::getColor() const {
     return this->m_color;
 }
@@ -48,6 +52,10 @@ size_t Player::getCardCount(Card::Value _value) const {
             ++count;
 
     return count;
+}
+
+std::pair<size_t, size_t> Player::getLastPlacedCard() const {
+    return m_last_placed_card;
 }
 
 int Player::getWizardIndex() const {
