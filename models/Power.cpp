@@ -321,7 +321,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     board.m_board[Y][X] = std::move(board.m_board[y][x]);
     board.m_board[y][x].clear();
 
-    /// board.playCard();
+   /// board.playCard();
 
     return true;
 }
