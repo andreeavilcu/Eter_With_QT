@@ -300,9 +300,97 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
-    return true;
-}
+    size_t x, y;
+    Game::Board& board = _game.m_board;
 
+    std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
+    std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) {
+        std::cout << "Invalid coordinates or not an empty spot.\n";
+        return false;
+    }
+
+    size_t leftIndex = static_cast<size_t>(-1), rightIndex = static_cast<size_t>(-1);
+    size_t topIndex = static_cast<size_t>(-1), bottomIndex = static_cast<size_t>(-1);
+
+    if (y > 0 && !board.m_board[x][y - 1].empty())
+        leftIndex = y - 1;
+    if (y < board.m_board[x].size() - 1 && !board.m_board[x][y + 1].empty())
+        rightIndex = y + 1;
+
+    if (x > 0 && !board.m_board[x - 1][y].empty())
+        topIndex = x - 1;
+    if (x < board.m_board.size() - 1 && !board.m_board[x + 1][y].empty())
+        bottomIndex = x + 1;
+
+    bool hasRowCards = (leftIndex != static_cast<size_t>(-1) && rightIndex != static_cast<size_t>(-1));
+    bool hasColumnCards = (topIndex != static_cast<size_t>(-1) && bottomIndex != static_cast<size_t>(-1));
+
+    if (!hasRowCards && !hasColumnCards)
+        return false;
+
+    bool useRow = hasRowCards;
+    if (hasRowCards && hasColumnCards) {
+        int choice;
+        do {
+            std::cout << "Choose the direction to perform the operation:\n";
+            std::cout << "1. Row\n";
+            std::cout << "2. Column\n";
+            std::cin >> choice;
+            if (choice != 1 && choice != 2)
+                std::cout << "Invalid option!\n";
+        } while (choice != 1 && choice != 2);
+        useRow = (choice == 1);
+    }
+
+/*    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
+        if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
+            int choice;
+            auto colorCard1 = card1->getColor();
+            auto colorCard2 = card2->getColor();
+
+            do {
+                std::cout << "Cards have the same value. Choose which card goes on top:\n";
+                std::cout << "1. First card (" << colorCard1 << ")\n";
+                std::cout << "2. Second card (" << colorCard2 << ")\n";
+                std::cin >> choice;
+
+                if (choice != 1 && choice != 2)
+                    std::cout << "Invalid choice. Please choose 1 or 2.\n";
+            } while (choice != 1 && choice != 2);
+
+            if (choice == 1) {
+                board.m_board[x][y] = card1;
+                board.m_board[x][index1].pop_back();
+            }
+            else {
+                board.m_board[x][y] = card2;
+                board.m_board[x][index2].pop_back();
+            }
+        }
+        else {
+            if (card1->getValue() > card2->getValue()) {
+                board.m_board[x][y] = card1;
+                board.m_board[x][index1].pop_back();
+            }
+            else {
+                board.m_board[x][y] = card2;
+                board.m_board[x][index2].pop_back();
+            }
+        }
+
+        };
+
+    if (useRow) {
+        return moveCards(board.m_board[x][leftIndex], leftIndex, board.m_board[x][rightIndex], rightIndex);
+    }
+    else {
+        return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
+    }
+    */
+}
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
     char line;
