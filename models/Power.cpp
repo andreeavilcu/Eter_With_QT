@@ -88,7 +88,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::fire(Player& _player, Game& _game) {
+bool Power::PowerAction::lava(Player& _player, Game& _game) {
     size_t chosenValue;
     std::cin >> chosenValue;
 
@@ -137,6 +137,39 @@ bool Power::PowerAction::fire(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::ash(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+
+    const auto& eliminatedCards = _player.getEliminatedCards();
+    if (eliminatedCards.empty()) {
+        return false;
+    }
+
+    for (size_t i = 0; i < eliminatedCards.size(); ++i) {
+        std::cout << i + 1 << ": " << eliminatedCards[i] << std::endl;
+    }
+
+    size_t cardIndex;
+    std::cin >> cardIndex;
+
+    if (cardIndex < 1 || cardIndex > eliminatedCards.size()) {
+        return false;
+    }
+
+    Card chosenCard = eliminatedCards[cardIndex - 1];
+
+    _player.getEliminatedCards().erase(_player.getEliminatedCards().begin() + 1);
+
+    size_t x, y;
+    std::cout << "Enter (x, y) coordinates to place the card (0-indexed): ";
+    std::cin >> x >> y;
+
+    if(!board.checkIndexes(x, y) || !board.checkValue(x, y, chosenCard.getValue())) {
+        _player.addEliminatedCard(chosenCard);
+        return false;
+    }
+
+    board.placeCard(x, y, std::move(chosenCard));
+    _player.placeCard(x, y);
     return true;
 }
 

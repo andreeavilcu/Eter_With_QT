@@ -36,6 +36,14 @@ void Player::placeCard(size_t row, size_t col) {
     m_last_placed_card = {row, col};
 }
 
+void Player::addEliminatedCard(const Card &_card) {
+    m_eliminated_cards.push_back(_card);
+}
+
+std::vector<Card> Player::getEliminatedCards() {
+    return m_eliminated_cards;
+}
+
 Card::Color Player::getColor() const {
     return this->m_color;
 }
