@@ -110,8 +110,103 @@ bool Power::PowerAction::gale(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+    std::cout << "Shift a full row or column in the desired direction.\n";
+
+    char typeChoice, directionChoice;
+    int index;
+
+    std::cout << "Choose type to shift (r: row, c: column): ";
+    do {
+        std::cin >> typeChoice;
+        if (typeChoice != 'r' && typeChoice != 'c')
+            std::cout << "Invalide choise!Choose type to shift (r: row, c: column):\n ";
+    } while (typeChoice != 'r' && typeChoice != 'c');
+
+    do {
+        std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
+        std::cin >> directionChoice;
+
+        if ((typeChoice == 'r' && (directionChoice != 'a' && directionChoice != 'd')) ||
+            (typeChoice == 'c' && (directionChoice != 'w' && directionChoice != 's'))) {
+            std::cerr << "Invalid direction for the chosen type! Try again.\n";
+        }
+        else
+            break;
+    } while (true);
+
+    if (typeChoice == 'r')
+        std::cout << "Choose row index to shift (0 to " << board.m_board.size() - 1 << "): ";
+    else
+        std::cout << "Choose column index to shift (0 to " << board.m_board[0].size() - 1 << "): ";
+
+    std::cin >> index;
+
+    if (typeChoice == 'r' && (index < 0 || index >= board.m_board.size()))
+        return false;
+
+    if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
+        return false;
+
+    /*if (typeChoice == 'r') {
+        auto& row = board.m_board[index];
+        std::vector<Card> shiftedRow(row.size());
+
+        if (directionChoice == 'a') {
+            Card outCard = std::move(row[0]);
+            for (size_t i = 0; i < row.size() - 1; ++i) {
+                shiftedRow[i] = std::move(row[i + 1]);
+            }
+            shiftedRow[row.size() - 1] = std::move(outCard);
+            row = std::move(shiftedRow);
+
+            _player.returnCard(outCard);
+        }
+        else if (directionChoice == 'd') {
+            Card outCard = std::move(row[row.size() - 1]);
+            for (size_t i = row.size() - 1; i > 0; --i) {
+                shiftedRow[i] = std::move(row[i - 1]);
+            }
+            shiftedRow[0] = std::move(outCard);
+            row = std::move(shiftedRow);
+
+            _player.returnCard(outCard);
+        }
+
+    }
+    else if (typeChoice == 'c') {
+        std::vector<Card> column(board.m_board.size());
+        for (size_t i = 0; i < board.m_board.size(); ++i) {
+            column[i] = std::move(board.m_board[i][index]);
+        }
+
+        std::vector<Card> shiftedColumn(column.size());
+        if (directionChoice == 's') {
+            Card outCard = std::move(board.m_board[board.m_board.size() - 1][index]);
+            for (size_t i = board.m_board.size() - 1; i > 0; --i) {
+                board.m_board[i][index] = std::move(board.m_board[i - 1][index]);
+            }
+            board.m_board[0][index] = std::move(outCard);
+
+            _player.returnCard(outCard);
+        }
+
+        else if (directionChoice == 'w') {
+            Card outCard = std::move(board.m_board[0][index]);
+            for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
+                board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
+            }
+            board.m_board[board.m_board.size() - 1][index] = std::move(outCard);
+
+
+            _player.returnCard(outCard);
+        }
+        }
+    */
+
     return true;
 }
+
 
 bool Power::PowerAction::gust(Player& _player, Game& _game) {
     size_t x, y;
@@ -300,7 +395,96 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
-    return true;
+    size_t x, y;
+    Game::Board& board = _game.m_board;
+
+    std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
+    std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
+    std::cin >> x >> y;
+
+    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) {
+        std::cout << "Invalid coordinates or not an empty spot.\n";
+        return false;
+    }
+
+    size_t leftIndex = static_cast<size_t>(-1), rightIndex = static_cast<size_t>(-1);
+    size_t topIndex = static_cast<size_t>(-1), bottomIndex = static_cast<size_t>(-1);
+
+    if (y > 0 && !board.m_board[x][y - 1].empty())
+        leftIndex = y - 1;
+    if (y < board.m_board[x].size() - 1 && !board.m_board[x][y + 1].empty())
+        rightIndex = y + 1;
+
+    if (x > 0 && !board.m_board[x - 1][y].empty())
+        topIndex = x - 1;
+    if (x < board.m_board.size() - 1 && !board.m_board[x + 1][y].empty())
+        bottomIndex = x + 1;
+
+    bool hasRowCards = (leftIndex != static_cast<size_t>(-1) && rightIndex != static_cast<size_t>(-1));
+    bool hasColumnCards = (topIndex != static_cast<size_t>(-1) && bottomIndex != static_cast<size_t>(-1));
+
+    if (!hasRowCards && !hasColumnCards)
+        return false;
+
+    bool useRow = hasRowCards;
+    if (hasRowCards && hasColumnCards) {
+        int choice;
+        do {
+            std::cout << "Choose the direction to perform the operation:\n";
+            std::cout << "1. Row\n";
+            std::cout << "2. Column\n";
+            std::cin >> choice;
+            if (choice != 1 && choice != 2)
+                std::cout << "Invalid option!\n";
+        } while (choice != 1 && choice != 2);
+        useRow = (choice == 1);
+    }
+
+    /*    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
+            if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
+                int choice;
+                auto colorCard1 = card1->getColor();
+                auto colorCard2 = card2->getColor();
+
+                do {
+                    std::cout << "Cards have the same value. Choose which card goes on top:\n";
+                    std::cout << "1. First card (" << colorCard1 << ")\n";
+                    std::cout << "2. Second card (" << colorCard2 << ")\n";
+                    std::cin >> choice;
+
+                    if (choice != 1 && choice != 2)
+                        std::cout << "Invalid choice. Please choose 1 or 2.\n";
+                } while (choice != 1 && choice != 2);
+
+                if (choice == 1) {
+                    board.m_board[x][y] = card1;
+                    board.m_board[x][index1].pop_back();
+                }
+                else {
+                    board.m_board[x][y] = card2;
+                    board.m_board[x][index2].pop_back();
+                }
+            }
+            else {
+                if (card1->getValue() > card2->getValue()) {
+                    board.m_board[x][y] = card1;
+                    board.m_board[x][index1].pop_back();
+                }
+                else {
+                    board.m_board[x][y] = card2;
+                    board.m_board[x][index2].pop_back();
+                }
+            }
+
+            };
+
+        if (useRow) {
+            return moveCards(board.m_board[x][leftIndex], leftIndex, board.m_board[x][rightIndex], rightIndex);
+        }
+        else {
+            return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
+        }
+        */
 }
 
 
