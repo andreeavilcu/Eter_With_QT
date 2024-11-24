@@ -37,6 +37,9 @@ protected:
         std::pair<size_t, size_t> m_hole{-1, -1};
         std::pair<size_t, size_t> m_minus{ -1, -1 };
         std::pair<size_t, size_t> m_plus{ -1, -1 };
+        size_t m_restrictedRow = -1;
+        size_t m_restrictedCol = -1;
+        bool m_justBlocked = false;
 
         friend class Game;
         friend class Wizard;
@@ -63,9 +66,7 @@ protected:
 
         void resetIllusion(size_t _row, size_t _col);
 
-        [[nodiscard]] Card::Color checkRows() const;
-        [[nodiscard]] Card::Color checkCols() const;
-        [[nodiscard]] Card::Color checkDiagonals() const;
+        [[nodiscard]] Card::Color checkWin() const;
 
         [[nodiscard]] bool checkFullBoard() const;
         [[nodiscard]] Card::Color calculateWinner() const;
