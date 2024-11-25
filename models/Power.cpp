@@ -174,6 +174,59 @@ bool Power::PowerAction::ash(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::spark(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+
+    std::vector<std::tuple<size_t, size_t, Card>> coveredCards;
+
+    for (size_t row = 0; row < board.getSize(); ++row) {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            const auto& stack = board.m_board[row][col];
+            if(stack.size() >= 2) {
+                const Card& topCard = stack.back();
+                const Card& playerCard = stack[stack.size() - 2];
+
+                if(playerCard.getColor() == _player.getColor() &&
+                    topCard.getColor() != _player.getColor()) {
+                    coveredCards.emplace_back(row, col, playerCard);
+                }
+            }
+        }
+    }
+
+    if(coveredCards.empty()) {
+        return false;
+    }
+
+    for(size_t i = 0; i < coveredCards.size(); ++i) {
+        auto [row, col, card] = coveredCards[i];
+        std::cout << i + 1 << ": Card" << static_cast<int>(card.getValue()) << " at position (" << row << ", " << col << ")\n";
+    }
+
+    size_t choice;
+    std::cin >> choice;
+
+    if (choice < 1 || choice > coveredCards.size()) {
+        return false;
+    }
+
+    auto [origRow, origCol, chosenCard] = coveredCards[choice -1 ];
+
+    auto& originalStack = board.m_board[origRow][origCol];
+    originalStack.erase(originalStack.end() - 2);
+
+    size_t newRow, newCol;
+    std::cout << "Enter the new position (x, y) to place the card (0-indexed): ";
+    std::cin >> newRow >> newCol;
+
+    if(!board.checkIndexes(newRow, newCol) ||
+        !board.checkValue(newRow, newCol, chosenCard.getValue())) {
+        originalStack.insert(originalStack.end() - 1, chosenCard);
+        return false;
+    }
+
+    board.placeCard(newRow, newCol, std::move(chosenCard));
+    _player.placeCard(newRow, newCol);
+
     return true;
 }
 
