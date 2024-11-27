@@ -59,6 +59,7 @@ private:
     using FuncType = std::function<bool(Player&, Game&)>;
 
     std::array<FuncType, power_count> m_powers = {
+//      PowerAction::controlledExplosion, 
         [](Player& _player, Game& _game) { return PowerAction::controlledExplosion(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::destruction(_player, _game); },
         [](Player& _player, Game& _game) { return PowerAction::flame(_player, _game); },
