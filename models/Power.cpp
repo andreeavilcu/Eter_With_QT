@@ -88,7 +88,6 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::fire(Player& _player, Game& _game) {
     return true;
 }
@@ -298,11 +297,9 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     return true;
 }
-
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
     char line;
@@ -444,7 +441,6 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
     
 
@@ -510,14 +506,13 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::border(Player& _player, Game& _game) {
     size_t x, y;
     Game::Board& board = _game.m_board;
 
     std::cout << "Border!\n";
     std::cout << "Place a neutral card on the board to define at least one boundary.\n";
-    std::cout << "Enter the coordinates for placing the neutral  card.\n";
+    std::cout << "Enter the coordinates for placing the neutral card.\n";
     std::cin >> x >> y;
 
     if (!board.checkIndexes(x, y))
@@ -530,11 +525,10 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
 
 
 
-    //TO DO daca putem da shift puem pune cartea , daca nu return false
+    // TODO daca putem da shift puem pune cartea , daca nu return false
     // daca cartea nu defineste niciun border, iar return false
     Card neutralCard(Card::Value::Eter);
     board.placeCard(x, y, std::move(neutralCard));
-
 
     std::cout << "Now play a card from your hand.\n";
     size_t cardIndex;
@@ -542,10 +536,8 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
 
     auto cardToPlay = _player.useCard(static_cast<Card::Value>(cardIndex));
 
-    if (!cardToPlay) {
-        std::cout << "Failed to play the card.\n";
+    if (!cardToPlay)
         return false;
-    }
 
     board.placeCard(x, y, std::move(*cardToPlay));
     std::cout << "The card was placed successfully!\n";
@@ -554,7 +546,6 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
 
 bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
     return true;
-    //TO DO  
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game) {

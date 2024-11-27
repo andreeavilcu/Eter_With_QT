@@ -19,8 +19,12 @@ void Game::Board::circularShiftUp() {
         if (!m_board[0][col].empty())
             return;
 
+    auto temp = std::move(this->m_board[0]);
+
     for (std::size_t row = 0; row < this->m_board.size() - 1; ++row)
         m_board[row] = std::move(m_board[row + 1]);
+
+    this->m_board[this->m_board.size() - 1] = std::move(temp);
 
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
         m_board[this->m_board.size() - 1][col].clear();
@@ -31,8 +35,12 @@ void Game::Board::circularShiftDown() {
         if (!m_board[this->m_board.size() - 1][col].empty())
             return;
 
+    auto temp = std::move(this->m_board[this->m_board.size() - 1]);
+
     for (std::size_t row = this->m_board.size() - 1; row > 0; --row)
         m_board[row] = std::move(m_board[row - 1]);
+
+    this->m_board[0] = std::move(temp);
 
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
         m_board[0][col].clear();

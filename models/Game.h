@@ -35,10 +35,14 @@ protected:
     class Board {
         std::vector<std::vector<std::vector<Card>>> m_board{};
         std::pair<size_t, size_t> m_hole{-1, -1};
+
+        // TODO move these in their respective classes (Power i believe)
         std::pair<size_t, size_t> m_minus{ -1, -1 };
         std::pair<size_t, size_t> m_plus{ -1, -1 };
+
         size_t m_restrictedRow = -1;
         size_t m_restrictedCol = -1;
+
         bool m_justBlocked = false;
 
         friend class Game;

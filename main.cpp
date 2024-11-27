@@ -4,6 +4,6 @@ int main() {
 
     srand(time(NULL));
 
-    Game game{ Game::GameType::WizardAndPowerDuel };
+    Game game{ Game::GameType::Training };
     game.run();
 }
