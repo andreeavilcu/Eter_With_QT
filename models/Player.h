@@ -22,6 +22,7 @@ protected:
 
     bool m_playedIllusion{false};
 
+    std::vector<Card> m_eliminated_cards{}; //TODO: use addEliminatedCard in every method that eliminates a card
     std::pair<size_t, size_t> m_last_placed_card;
 public:
     friend class Wizard;
@@ -32,6 +33,9 @@ public:
     void printCards();
     void placeCard(size_t row, size_t col);
 
+    void addEliminatedCard(const Card& _card);
+
+    [[nodiscard]] std::vector<Card> getEliminatedCards();
     [[nodiscard]] Card::Color getColor() const;
     [[nodiscard]] size_t getCardCount() const;
     [[nodiscard]] size_t getCardCount(Card::Value _value) const;
