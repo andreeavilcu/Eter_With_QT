@@ -9,6 +9,7 @@
 
 class Board;
 
+
 class Game {
 public:
     enum class GameType : size_t {
@@ -34,7 +35,7 @@ protected:
     friend class Wizard;
     friend class Power;
 
-    Board m_board;
+    Board m_board; 
     GameType m_gameType;
 
     Player m_player1, m_player2;

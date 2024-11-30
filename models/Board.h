@@ -5,7 +5,6 @@
 #include "Game.h" 
 
 class Card;
-class Game;
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
