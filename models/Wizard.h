@@ -5,6 +5,7 @@
 #include <array>
 
 #include "Card.h"
+#include "Board.h"
 
 class Game;
 

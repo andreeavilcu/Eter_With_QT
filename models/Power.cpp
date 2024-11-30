@@ -1,9 +1,9 @@
 ﻿#include "Power.h"
-
+#include "Board.h"
 #include "Game.h"
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     auto explosionEffects = _game.generateExplosion(board.getSize());
     auto returnedCards = board.useExplosion(explosionEffects);
@@ -23,7 +23,7 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::destruction(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     auto& opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
 
@@ -50,7 +50,7 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::flame(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     size_t illusionRow = -1, illusionCol = -1;
     bool illusionFound = false;
@@ -99,7 +99,7 @@ bool Power::PowerAction::lava(Player& _player, Game& _game) {
     Card::Value targetValue = static_cast<Card::Value>(chosenValue);
 
     size_t count = 0;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
     for (size_t row = 0; row < board.getSize(); ++row) {
         for (size_t col = 0; col < board.getSize(); ++col) {
             if (!board.m_board[row][col].empty() &&
@@ -137,7 +137,7 @@ bool Power::PowerAction::lava(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::ash(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     const auto& eliminatedCards = _player.getEliminatedCards();
     if (eliminatedCards.empty()) {
@@ -174,7 +174,7 @@ bool Power::PowerAction::ash(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::spark(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::vector<std::tuple<size_t, size_t, Card>> coveredCards;
 
@@ -231,7 +231,7 @@ bool Power::PowerAction::spark(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::squall(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::vector<std::tuple<size_t, size_t, Card>> visibleOpponentCards;
 
@@ -284,7 +284,7 @@ bool Power::PowerAction::squall(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::gale(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::vector<std::tuple<Card, size_t, size_t>> coveredCards;
 
@@ -323,7 +323,7 @@ bool Power::PowerAction::gale(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
     std::cout << "Shift a full row or column in the desired direction.\n";
 
     char typeChoice, directionChoice;
@@ -423,7 +423,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
 
 bool Power::PowerAction::gust(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
@@ -456,7 +456,7 @@ bool Power::PowerAction::gust(Player& _player, Game& _game) {
 
 bool Power::PowerAction::mirage(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Replace your own placed illusion with another illusion.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
@@ -484,7 +484,7 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game) {
 
 bool Power::PowerAction::storm(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Remove from play any pile of cards containing 2 or more cards.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
@@ -504,7 +504,7 @@ bool Power::PowerAction::storm(Player& _player, Game& _game) {
 
 bool Power::PowerAction::tide(Player& _player, Game& _game) {
     size_t x, y,v,w;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Switch 2 pile of cards.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)(FIRST Pile)\n";
@@ -525,7 +525,7 @@ bool Power::PowerAction::tide(Player& _player, Game& _game) {
 
 bool Power::PowerAction::mist(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Play an extra illusion.\n"; 
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
@@ -553,7 +553,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game) {
 
 bool Power::PowerAction::wave(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Move the stack to an adjacent empty position. Play a card on the new empty position.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed): ";
@@ -609,7 +609,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
 
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
@@ -703,7 +703,7 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
     char line;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
     std::cout << "Tsunami!";
     std::cout << "Choose a row ('r') ora column ('c') to restrict:\n";
     std::cin >> line;
@@ -747,7 +747,7 @@ bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
     size_t row;
     char direction;
 
@@ -807,7 +807,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
 
 bool Power::PowerAction::support(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Support!";
     std::cout << " Choose a card of value 1, 2 or 3 to increase its value by 1.\n";
@@ -843,9 +843,7 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
-    
-
-    Game::Board& board= _game.m_board;
+    Board& board= _game.m_board;
     bool anyRemoved = false;
     
 
@@ -871,7 +869,7 @@ bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
 
 bool Power::PowerAction::crumble(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Choose an opponent's card of value 2, 3, or 4 to decrease its value by 1.\n";
     std::cout << "Enter the coordinates of the card:\n";
@@ -910,7 +908,7 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
 
 bool Power::PowerAction::border(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Border!\n";
     std::cout << "Place a neutral card on the board to define at least one boundary.\n";
@@ -978,7 +976,7 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
 
 bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
     size_t x1, y1, x2, y2;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
 
     std::cout << "Avalanche!\n";
     std::cout << "Choose two adiacent stacks on the board.\n";
@@ -1031,7 +1029,7 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
 
 bool Power::PowerAction::rock(Player& _player, Game& _game) {
     size_t x, y;
-    Game::Board& board = _game.m_board;
+    Board& board = _game.m_board;
     
     std::cout << "Rock.\n";
     std::cout << "Cover any illusion with a card (from your hand) without flipping the illusion face up.";

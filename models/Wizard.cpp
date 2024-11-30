@@ -1,10 +1,10 @@
 #include "Wizard.h"
-
+#include "Board.h"
 #include "Game.h"
 
 bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
     size_t x, y;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Eliminate an opponent's card that covers your own.\n";
     std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
@@ -32,7 +32,7 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
 bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
     size_t index;
     char choice;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Eliminate an entire row or column of stacks.\n";
     std::cout << "Enter 'r' for row or 'c' for column: ";
@@ -113,7 +113,7 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
 
 bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     size_t x, y, cardValue;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Cover an opponent's card with one of your own of strictly lower value.\n";
     std::cout << "Enter (x, y) coordinates for the target card (0-indexed) and the card value: ";
@@ -155,7 +155,7 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
 
 bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
     size_t x, y;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Transform an empty space on the board into a sinkhole.\n";
     std::cout << "Enter (x, y) coordinates for the empty space (0-indexed): ";
@@ -177,7 +177,7 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
 
 bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
     size_t startX, startY, endX, endY;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Move a stack with your own card on top to an empty position.\n";
     std::cout << "Enter the coordinates of the stack:\n";
@@ -215,7 +215,7 @@ bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
 
 bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     size_t x, y;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "You received an extra Eter card.Place now!\n";
     std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
@@ -234,7 +234,7 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
 
 bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
     size_t startX, startY, endX, endY;
-    Game::Board &board = _game.m_board;
+    Board &board = _game.m_board;
 
     std::cout << "Move an opponent's stack with your card on top to an empty position.\n";
     std::cout << "Enter coordinates of the stack:\n";
@@ -272,7 +272,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
 }
 
 bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board; 
+    Board& board = _game.m_board; 
     std::cout << "Move edge of the playing field and move it to a different edge\n";
     char choice;
     std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
