@@ -262,11 +262,15 @@ bool Power::PowerAction::squall(Player& _player, Game& _game) {
     std::cin >> choice;
 
     if (choice < 1 || choice > visibleOpponentCards.size()) {
-        std::cout << "Invalid choice!\n";
         return false;
     }
 
     auto [selectedRow, selectedCol, selectedCard] = visibleOpponentCards[choice - 1];
+
+    if (!board.checkBoardIntegrity()) {
+        board.m_board[selectedRow][selectedCol].push_back(selectedCard);
+        return false;
+    }
 
     board.m_board[selectedRow][selectedCol].pop_back();
 
@@ -280,8 +284,43 @@ bool Power::PowerAction::squall(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::gale(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+
+    std::vector<std::tuple<Card, size_t, size_t>> coveredCards;
+
+    for (size_t row = 0; row < board.getSize(); ++row) {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            const auto& stack = board.m_board[row][col];
+            if (stack.size() > 1) {
+                for (size_t i = 0; i < stack.size() - 1; ++i) {
+                    coveredCards.emplace_back(stack[i], row, col);
+                }
+            }
+        }
+    }
+
+    if (coveredCards.empty()) {
+        return false;
+    }
+
+    for (const auto& [card, row, col] : coveredCards) {
+        auto& stack = board.m_board[row][col];
+
+        auto it = std::find(stack.begin(), stack.end(), card);
+        if (it != stack.end()) {
+            stack.erase(it);
+        }
+
+        if (card.getColor() == Card::Color::Player1) {
+            _game.m_player1.returnCard(card);
+        } else if (card.getColor() == Card::Color::Player2) {
+            _game.m_player2.returnCard(card);
+        }
+    }
+
     return true;
 }
+
 
 bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
     Game::Board& board = _game.m_board;
