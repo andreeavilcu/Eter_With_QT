@@ -3,14 +3,14 @@
 #include "Game.h"
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
-    Game::Board& board = _game.m_board;
+    Game::Board &board = _game.m_board;
 
     auto explosionEffects = _game.generateExplosion(board.getSize());
     auto returnedCards = board.useExplosion(explosionEffects);
 
-    auto& opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
+    auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
 
-    for (auto& card : returnedCards)
+    for (auto &card: returnedCards)
         if (card.getColor() == _player.getColor())
             _player.returnCard(card);
 
@@ -231,8 +231,53 @@ bool Power::PowerAction::spark(Player& _player, Game& _game) {
 }
 
 bool Power::PowerAction::squall(Player& _player, Game& _game) {
+    Game::Board& board = _game.m_board;
+
+    std::vector<std::tuple<size_t, size_t, Card>> visibleOpponentCards;
+
+    for (size_t row = 0; row < board.getSize(); ++row) {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            if (!board.m_board[row][col].empty()) {
+                const Card& topCard = board.m_board[row][col].back();
+
+                if (topCard.getColor() != _player.getColor() && !topCard.isIllusion()) {
+                    visibleOpponentCards.emplace_back(row, col, topCard);
+                }
+            }
+        }
+    }
+
+    if (visibleOpponentCards.empty()) {
+        return false;
+    }
+
+    std::cout << "Choose a card to return to opponent's hand:\n";
+    for (size_t i = 0; i < visibleOpponentCards.size(); ++i) {
+        auto [row, col, card] = visibleOpponentCards[i];
+        std::cout << i + 1 << ": Card " << static_cast<int>(card.getValue())
+                  << " at position (" << row << ", " << col << ")\n";
+    }
+
+    size_t choice;
+    std::cin >> choice;
+
+    if (choice < 1 || choice > visibleOpponentCards.size()) {
+        std::cout << "Invalid choice!\n";
+        return false;
+    }
+
+    auto [selectedRow, selectedCol, selectedCard] = visibleOpponentCards[choice - 1];
+
+    board.m_board[selectedRow][selectedCol].pop_back();
+
+    auto& opponent = (_player.getColor() == Card::Color::Player1)
+                     ? _game.m_player2
+                     : _game.m_player1;
+    opponent.returnCard(selectedCard);
+
     return true;
 }
+
 
 bool Power::PowerAction::gale(Player& _player, Game& _game) {
     return true;
