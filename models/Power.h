@@ -58,33 +58,32 @@ private:
         return m_powers[_index](_player, _game);
     }
 
-    using FuncType = std::function<bool(Player&, Game&)>;
+    using FuncType = bool (*)(Player&, Game&);
 
     std::array<FuncType, power_count> m_powers = {
-//      PowerAction::controlledExplosion, 
-        [](Player& _player, Game& _game) { return PowerAction::controlledExplosion(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::destruction(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::flame(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::lava(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::ash(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::spark(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::squall(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::gale(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::hurricane(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::gust(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::mirage(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::storm(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::tide(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::mist(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::wave(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::whirlpool(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::tsunami(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::waterfall(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::support(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::earthquake(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::crumble(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::border(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::avalanche(_player, _game); },
-        [](Player& _player, Game& _game) { return PowerAction::rock(_player, _game); }
+        &PowerAction::controlledExplosion,
+        &PowerAction::destruction,
+        &PowerAction::flame,
+        &PowerAction::lava,
+        &PowerAction::ash,
+        &PowerAction::spark,
+        &PowerAction::squall,
+        &PowerAction::gale,
+        &PowerAction::hurricane,
+        &PowerAction::gust,
+        &PowerAction::mirage,
+        &PowerAction::storm,
+        &PowerAction::tide,
+        &PowerAction::mist,
+        &PowerAction::wave,
+        &PowerAction::whirlpool,
+        &PowerAction::tsunami,
+        &PowerAction::waterfall,
+        &PowerAction::support,
+        &PowerAction::earthquake,
+        &PowerAction::crumble,
+        &PowerAction::border,
+        &PowerAction::avalanche,
+        &PowerAction::rock
     };
 };
