@@ -25,17 +25,21 @@ std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosio
 
     const size_t effectCount = indexDistribution(gen) + (_size - 1);
 
+    bool sinkHoleGenerated = false;
+
     for (int _ = 0; _ < effectCount; _++) {
         size_t x, y;
 
         do {
             x = indexDistribution(gen);
             y = indexDistribution(gen);
-        }
-        while (explosionEffects[x][y] != ExplosionEffect::None);
+        } while (explosionEffects[x][y] != ExplosionEffect::None);
 
-        if (const size_t effect = effectDistribution(gen); !effect)
+        if (const size_t effect = effectDistribution(gen); !effect && !sinkHoleGenerated) {
             explosionEffects[x][y] = ExplosionEffect::SinkHole;
+            sinkHoleGenerated = true;
+        }
+            
 
         else
             explosionEffects[x][y] = removeOrReplaceDistribution(gen)
