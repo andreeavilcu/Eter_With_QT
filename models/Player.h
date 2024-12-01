@@ -12,7 +12,7 @@
 class Game;
 
 class Player {
-public: // TODO: protected + get & set
+protected: 
     Card::Color m_color{};
 
     std::vector<Card> m_cards{};
@@ -24,8 +24,12 @@ public: // TODO: protected + get & set
 
     std::vector<Card> m_eliminated_cards{}; //TODO: use addEliminatedCard in every method that eliminates a card
     std::pair<size_t, size_t> m_last_placed_card;
+    
 public:
     friend class Wizard;
+
+    [[nodiscard]] const std::vector<Card>& getCards() const;
+    void setCards(const std::vector<Card>& _cards);
 
     explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
     void returnCard(const Card& _card);
@@ -36,13 +40,26 @@ public:
     void addEliminatedCard(const Card& _card);
 
     [[nodiscard]] std::vector<Card> getEliminatedCards();
+    void setEliminatedCards(const std::vector<Card>& _cards);
+
     [[nodiscard]] Card::Color getColor() const;
+    void setColor(Card::Color _color);
+
     [[nodiscard]] size_t getCardCount() const;
     [[nodiscard]] size_t getCardCount(Card::Value _value) const;
+
     [[nodiscard]] std::pair<size_t, size_t> getLastPlacedCard() const;
+    void setLastPlacedCard(std::pair<size_t, size_t> _cardPosition);
 
     [[nodiscard]] int getWizardIndex() const;
+    void setWizardIndex(size_t _index);
+
     [[nodiscard]] std::pair<int, int> getPowersIndex() const;
+    void setPowersIndex(std::pair<size_t, size_t> _index);
+
+    [[nodiscard]] bool getPlayedIllusion() const;
+    void setPlayedIllusion(bool _played);
+
     [[nodiscard]] bool wasIllusionPlayed() const;
 
     bool useWizard(Game& _game);

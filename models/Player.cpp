@@ -1,5 +1,15 @@
 #include "Player.h"
 
+const std::vector<Card>& Player::getCards() const
+{
+    return m_cards;
+}
+
+void Player::setCards(const std::vector<Card>& _cards)
+{
+    this->m_cards = _cards;
+}
+
 Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const bool _wizard, const bool _powers) :
     m_color{ _color },
     m_cards{ _cards } {
@@ -44,8 +54,18 @@ std::vector<Card> Player::getEliminatedCards() {
     return m_eliminated_cards;
 }
 
+void Player::setEliminatedCards(const std::vector<Card>& _cards)
+{
+    this->m_eliminated_cards = _cards;
+}
+
 Card::Color Player::getColor() const {
     return this->m_color;
+}
+
+void Player::setColor(Card::Color _color)
+{
+    this->m_color = _color;
 }
 
 size_t Player::getCardCount() const {
@@ -66,12 +86,37 @@ std::pair<size_t, size_t> Player::getLastPlacedCard() const {
     return m_last_placed_card;
 }
 
+void Player::setLastPlacedCard(std::pair<size_t, size_t> _cardPosition)
+{
+    this->m_last_placed_card = _cardPosition;
+}
+
 int Player::getWizardIndex() const {
     return static_cast<int>(this->m_wizard_index);
 }
 
+void Player::setWizardIndex(size_t _index)
+{
+    this->m_wizard_index = _index;
+}
+
 std::pair<int, int> Player::getPowersIndex() const {
     return this->m_powers_index;
+}
+
+void Player::setPowersIndex(std::pair<size_t, size_t> _index)
+{
+    this->m_powers_index = _index;
+}
+
+bool Player::getPlayedIllusion() const
+{
+    return m_playedIllusion;
+}
+
+void Player::setPlayedIllusion(bool _played)
+{
+    this->m_playedIllusion = _played;
 }
 
 bool Player::wasIllusionPlayed() const {
