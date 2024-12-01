@@ -1,10 +1,12 @@
 #pragma once
 
 #include <vector>
-#include "Card.h"
-#include "Game.h" 
+#include <iostream>
+#include <array>
+#include <ranges>
 
-class Card;
+#include "Card.h"
+#include "Explosion.h"
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
@@ -49,7 +51,7 @@ class Board {
     [[nodiscard]] Card::Color calculateWinner() const;
 
     [[nodiscard]] bool checkTwoRows() const;
-    std::vector<Card> useExplosion(const std::vector<std::vector<Game::ExplosionEffect>>& _matrix);
+    std::vector<Card> useExplosion(const std::vector<std::vector<Explosion::ExplosionEffect>>& _matrix);
 
     [[nodiscard]] bool checkBoardIntegrity() const;
 

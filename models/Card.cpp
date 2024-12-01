@@ -35,6 +35,10 @@ bool Card::isIllusion() const {
 	return this->m_illusion;
 }
 
+bool Card::operator==(const Card &other) const {
+	return this->m_value == other.m_value;
+}
+
 void Card::setColor(const Color _color) {
 	m_color = _color;
 }

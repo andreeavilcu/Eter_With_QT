@@ -5,14 +5,14 @@
 #include <vector>
 #include <random>
 
-#include "Power.h"
 #include "Card.h"
 #include "Wizard.h"
+#include "Power.h"
 
-class Board;
+class Game;
 
 class Player {
-protected:
+public: // TODO: protected + get & set
     Card::Color m_color{};
 
     std::vector<Card> m_cards{};

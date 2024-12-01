@@ -8,6 +8,7 @@
 #include "Board.h"
 
 class Game;
+class Player;
 
 class Wizard {
 public:

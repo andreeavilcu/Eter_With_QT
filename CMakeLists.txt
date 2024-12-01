@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(Eter main.cpp
+        models/Explosion.h
+        models/Explosion.cpp
         models/Wizard.h
         models/Wizard.cpp
         models/Power.h
@@ -13,6 +15,8 @@ add_executable(Eter main.cpp
         models/Card.cpp
         models/Player.h
         models/Player.cpp
+        models/Board.h
+        models/Board.cpp
         models/Game.h
         models/Game.cpp
 )

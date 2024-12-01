@@ -6,7 +6,9 @@
 
 #include "Card.h"
 #include "Board.h"
+
 class Game;
+class Player;
 
 class Power {
 public:

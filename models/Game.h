@@ -1,14 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <stack>
+
 #include "Player.h"
-#include "Board.h" 
+#include "Board.h"
+#include "Explosion.h"
 
 #ifndef GAME_H
 #define GAME_H
-
-class Board;
-
 
 class Game {
 public:
@@ -22,13 +22,6 @@ public:
     enum class GridSize : size_t {
         Three = 3,
         Four = 4,
-    };
-
-    enum class ExplosionEffect : size_t {
-        None = 0,
-        RemoveCard,
-        ReturnCard,
-        SinkHole,
     };
 
 protected:
@@ -65,11 +58,6 @@ protected:
     [[nodiscard]] bool playPower(Card::Color _color);
 
     void playExplosion();
-
-    [[nodiscard]] std::vector<std::vector<Game::ExplosionEffect>> generateExplosion(size_t _size);
-    [[nodiscard]] bool rotateExplosion(std::vector<std::vector<Game::ExplosionEffect>>& _matrix, bool& _quit);
-    void rotateMatrixRight(std::vector<std::vector<Game::ExplosionEffect>>& _matrix);
-    void printExplosion(const std::vector<std::vector<Game::ExplosionEffect>>& _matrix) const;
 
     bool playerTurn(Card::Color _color, size_t _iterationIndex);
 };

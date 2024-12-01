@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-class Player;
-
 class Card {
 public:
     enum class Value: size_t {
@@ -36,17 +34,17 @@ public:
     [[nodiscard]] bool isIllusion() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Card& card);
-    friend class Player;
 
+    bool operator==(const Card& other) const;
 
 private:
     Value m_value;
     Color m_color;
 
     bool m_illusion = false;
-    void setIllusion();
 
 public:
+    void setIllusion();
     void resetIllusion();
     
 };

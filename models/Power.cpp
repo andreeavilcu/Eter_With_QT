@@ -5,7 +5,7 @@
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
     Board &board = _game.m_board;
 
-    auto explosionEffects = _game.generateExplosion(board.getSize());
+    auto explosionEffects = Explosion::getInstance().generateExplosion(board.getSize());
     auto returnedCards = board.useExplosion(explosionEffects);
 
     auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
@@ -606,7 +606,6 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     size_t x, y;
     Board& board = _game.m_board;
@@ -653,7 +652,7 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
         useRow = (choice == 1);
     }
 
-    /*    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
+    /*auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
             if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
                 int choice;
                 auto colorCard1 = card1->getColor();
@@ -670,21 +669,21 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
                 } while (choice != 1 && choice != 2);
 
                 if (choice == 1) {
-                    board.m_board[x][y] = card1;
+                    board.m_board[x][y].push_back(*card1);
                     board.m_board[x][index1].pop_back();
                 }
                 else {
-                    board.m_board[x][y] = card2;
+                    board.m_board[x][y].push_back(*card2);
                     board.m_board[x][index2].pop_back();
                 }
             }
             else {
                 if (card1->getValue() > card2->getValue()) {
-                    board.m_board[x][y] = card1;
+                    board.m_board[x][y].push_back(*card1);
                     board.m_board[x][index1].pop_back();
                 }
                 else {
-                    board.m_board[x][y] = card2;
+                    board.m_board[x][y].push_back(*card2);
                     board.m_board[x][index2].pop_back();
                 }
             }
@@ -696,10 +695,10 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
         }
         else {
             return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
-        }
-        */
-}
+        }*/
 
+    return false;
+}
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
     char line;
@@ -841,7 +840,6 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
     Board& board= _game.m_board;
     bool anyRemoved = false;
@@ -904,7 +902,6 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
 
     return true;
 }
-
 
 bool Power::PowerAction::border(Player& _player, Game& _game) {
     size_t x, y;

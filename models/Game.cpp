@@ -1,7 +1,5 @@
 #include "Game.h"
 
-#include <stack>
-
 Game::Game(const GameType _gameType) :
     m_board{ _gameType == Game::GameType::Training
        ? static_cast<size_t>(GridSize::Three)
@@ -260,7 +258,7 @@ bool Game::playPower(const Card::Color _color) {
 }
 
 void Game::playExplosion() {
-    std::vector<std::vector<Game::ExplosionEffect>> explosionEffects = generateExplosion(this->m_board.getSize());
+    std::vector<std::vector<Explosion::ExplosionEffect>> explosionEffects = Explosion::getInstance().generateExplosion(this->m_board.getSize());
 
     std::cout << "Player 2's turn\n";
     std::cout << "---------------\n";
@@ -270,12 +268,12 @@ void Game::playExplosion() {
     bool quit = false;
 
     do {
-        printExplosion(explosionEffects);
+        Explosion::getInstance().printExplosion(explosionEffects);
 
         std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
         std::cout << "Press 'x' to to quit using explosion.\n";
     }
-    while (!quit && rotateExplosion(explosionEffects, quit));
+    while (!quit && Explosion::getInstance().rotateExplosion(explosionEffects, quit));
 
     m_playedExplosion = true;
 
@@ -288,95 +286,6 @@ void Game::playExplosion() {
         card.getColor() == Card::Color::Player1
             ? m_player1.returnCard(card)
             : m_player2.returnCard(card);
-    }
-}
-
-std::vector<std::vector<Game::ExplosionEffect>> Game::generateExplosion(const size_t _size) {
-    std::random_device rd;
-    std::mt19937 gen{ rd() };
-
-    std::uniform_int_distribution<size_t> indexDistribution{ 0, _size - 1};
-
-    std::uniform_int_distribution<size_t> effectDistribution{ 0, 10 };
-    std::bernoulli_distribution removeOrReplaceDistribution{ 0.5 };
-
-    std::vector<std::vector<ExplosionEffect>> explosionEffects;
-
-    explosionEffects.resize(_size);
-    for (auto& row : explosionEffects)
-        row.resize(_size);
-
-    const size_t effectCount = indexDistribution(gen) + (_size - 1);
-
-    for (int _ = 0; _ < effectCount; _++) {
-        size_t x, y;
-
-        do {
-            x = indexDistribution(gen);
-            y = indexDistribution(gen);
-        }
-        while (explosionEffects[x][y] != ExplosionEffect::None);
-
-        if (const size_t effect = effectDistribution(gen); !effect)
-            explosionEffects[x][y] = ExplosionEffect::SinkHole;
-
-        else
-            explosionEffects[x][y] = removeOrReplaceDistribution(gen)
-                ? ExplosionEffect::ReturnCard
-                : ExplosionEffect::RemoveCard;
-    }
-
-    return explosionEffects;
-}
-
-bool Game::rotateExplosion(std::vector<std::vector<Game::ExplosionEffect>> &_matrix, bool &_quit) {
-    char choice;
-    std::cin >> choice;
-
-    if (tolower(choice) == 'c')
-        return false;
-
-    if (tolower(choice) == 'x') {
-        _quit = true;
-        return false;
-    }
-
-    if (tolower(choice) == 'r')
-        rotateMatrixRight(_matrix);
-
-    return true;
-}
-
-void Game::rotateMatrixRight(std::vector<std::vector<Game::ExplosionEffect>> &_matrix) {
-    const std::vector<std::vector<Game::ExplosionEffect>> temp = _matrix;
-
-    for (int i = 0; i < _matrix.size(); ++i) {
-        for (int j = 0; j < _matrix.size(); ++j) {
-            _matrix[j][_matrix.size() - 1 - i] = temp[i][j];
-        }
-    }
-}
-
-void Game::printExplosion(const std::vector<std::vector<Game::ExplosionEffect>>& _matrix) const {
-    for (size_t i = 0; i < _matrix.size(); ++i) {
-        for (size_t j = 0; j < _matrix.size(); ++j) {
-            switch (_matrix[i][j]) {
-                case ExplosionEffect::None:
-                    std::cout << "- ";
-                    break;
-                case ExplosionEffect::SinkHole:
-                    std::cout << "H ";
-                    break;
-                case ExplosionEffect::RemoveCard:
-                    std::cout << "R ";
-                    break;
-                case ExplosionEffect::ReturnCard:
-                    std::cout << "r ";
-                    break;
-            }
-        }
-
-        std::cout << std::endl;
     }
 }
 

@@ -1,7 +1,4 @@
 #include "Board.h"
-#include <iostream>
-#include <array>
-#include <ranges>
 
 Board::Board(size_t _size) {
     this->m_board.resize(_size);
@@ -240,7 +237,7 @@ bool Board::checkTwoRows() const {
     for (size_t row = 0; row < this->m_board.size(); ++row) {
         bool isRowFull = true;
 
-        for (size_t col = 0; !this->m_board.empty(); ++col)
+        for (size_t col = 0; col < this->m_board.size(); ++col)
             if (m_board[row][col].empty()) {
                 isRowFull = false;
                 break;
@@ -267,15 +264,15 @@ bool Board::checkTwoRows() const {
     return (rowCount >= 2 || colCount >= 2);
 }
 
-std::vector<Card> Board::useExplosion(const std::vector<std::vector<ExplosionEffect>>& _matrix) {
+std::vector<Card> Board::useExplosion(const std::vector<std::vector<Explosion::ExplosionEffect>>& _matrix) {
     std::vector<Card> returnedCards{};
 
     for (size_t row = 0; row < this->m_board.size(); ++row) {
         for (size_t col = 0; col < this->m_board.size(); ++col) {
-            if (_matrix[row][col] == ExplosionEffect::None)
+            if (_matrix[row][col] == Explosion::ExplosionEffect::None)
                 continue;
 
-            if (_matrix[row][col] == ExplosionEffect::SinkHole) {
+            if (_matrix[row][col] == Explosion::ExplosionEffect::SinkHole) {
                 auto deletedStack = std::move(this->m_board[row][col]);
                 this->m_board[row][col].clear();
 
@@ -294,7 +291,7 @@ std::vector<Card> Board::useExplosion(const std::vector<std::vector<ExplosionEff
             Card affectedCard = this->m_board[row][col].back();
 
             switch (_matrix[row][col]) {
-            case ExplosionEffect::RemoveCard:
+            case Explosion::ExplosionEffect::RemoveCard:
                 this->m_board[row][col].pop_back();
 
                 if (!this->checkBoardIntegrity())
@@ -302,7 +299,7 @@ std::vector<Card> Board::useExplosion(const std::vector<std::vector<ExplosionEff
 
                 break;
 
-            case ExplosionEffect::ReturnCard:
+            case Explosion::ExplosionEffect::ReturnCard:
                 this->m_board[row][col].pop_back();
 
                 if (!this->checkBoardIntegrity())
