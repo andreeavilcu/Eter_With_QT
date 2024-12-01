@@ -4,7 +4,7 @@
 #include <iostream>
 #include <array>
 #include <ranges>
-
+#include <stack>
 #include "Card.h"
 #include "Explosion.h"
 

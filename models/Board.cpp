@@ -134,7 +134,7 @@ bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _
 
 bool Board::checkHole(size_t _row, size_t _col) const {
     return Explosion::getInstance().getHole() == std::pair{ _row, _col } ||
-        Wizard::getInstance.getHole() == std::pair{ _row, _col };
+        Wizard::getInstance().getHole() == std::pair{_row, _col};
 }
 
 bool Board::checkIllusion(const size_t _row, const size_t _col, const Card::Color _color) const {

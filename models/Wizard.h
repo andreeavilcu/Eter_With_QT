@@ -45,14 +45,16 @@ private:
     using FuncType = std::function<bool(Player&, Game&)>;
 
     std::array<FuncType, wizard_count> m_wizards = {
-        [](Player& _player, Game& _game) { return WizardActions::eliminateCard(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::eliminateRow(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::coverCard(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::sinkHole(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::moveStackOwn(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::extraEter(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::moveStackOpponent(_player, _game); },
-        [](Player& _player, Game& _game) { return WizardActions::moveEdge(_player, _game); }
+        
+        &WizardActions::eliminateCard,
+        &WizardActions::eliminateRow,
+        &WizardActions::coverCard,
+        &WizardActions::sinkHole,
+        &WizardActions::moveStackOwn,
+        &WizardActions::extraEter,
+        &WizardActions::moveStackOpponent,
+        &WizardActions::moveEdge
+ 
     };
 
 public:
