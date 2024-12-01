@@ -14,6 +14,7 @@ class Power {
 public:
     static constexpr auto power_count = 24;
     friend class Player;
+    friend class Board;
 
     Power(const Power&) = delete;
     Power& operator=(const Power&) = delete;
@@ -23,9 +24,36 @@ public:
         return instance;
     }
 
+    using FuncType = bool (*)(Player&, Game&);
+
+    [[nodiscard]] FuncType getPowerAction(size_t _index) const;
+     void setPowerAction(size_t _index, FuncType _func);
+
+    [[nodiscard]] std::pair<size_t, size_t> getMinus() const;
+    void setMinus(size_t _row, size_t _col);
+
+    [[nodicard]] std::pair<size_t, size_t> getPlus() const;
+    void setPlus(size_t _row, size_t _col);
+
+    [[nodiscard]] size_t getRestrictedRow() const;
+    void setRestrictedRow(size_t _row);
+
+    [[nodiscard]]size_t getRestrictedCol() const;
+    void setRestrictedCol(size_t _col);
+
+    [[nodiscard]]bool getJustBlocked() const;
+    void setJustBlocked(bool _blocked);
 private:
     Power() = default;
     ~Power() = default;
+
+    std::pair<size_t, size_t> m_minus{ -1, -1 };
+    std::pair<size_t, size_t> m_plus{ -1, -1 };
+
+    size_t m_restrictedRow = -1;
+    size_t m_restrictedCol = -1;
+
+    bool m_justBlocked = false;
 
     struct PowerAction {
         static bool controlledExplosion(Player& _player, Game& _game);
@@ -58,7 +86,7 @@ private:
         return m_powers[_index](_player, _game);
     }
 
-    using FuncType = bool (*)(Player&, Game&);
+    
 
     std::array<FuncType, power_count> m_powers = {
         &PowerAction::controlledExplosion,

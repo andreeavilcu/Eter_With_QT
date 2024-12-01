@@ -46,6 +46,8 @@ Game::Game(const GameType _gameType) :
 void Game::run() {
     size_t iterationIndex = 0;
 
+    Power& power = Power::getInstance();
+
     while (checkEndOfGame(!(iterationIndex % 2) ? Card::Color::Player1 : Card::Color::Player2)) {
         std::cout << "Player " << iterationIndex % 2 + 1 << "'s turn!" << std::endl;
 
@@ -54,12 +56,12 @@ void Game::run() {
         if (playerTurn(iterationIndex % 2 ? Card::Color::Player2 : Card::Color::Player1, iterationIndex)) {
             iterationIndex++;
 
-            if (m_board.m_justBlocked)
-                m_board.m_justBlocked = false;
+            if (power.getJustBlocked())
+                power.setJustBlocked(false);
 
-            else if (m_board.m_restrictedCol == -1 || m_board.m_restrictedRow == -1) {
-                m_board.m_restrictedCol = -1;
-                m_board.m_restrictedRow = -1;
+            else if (power.getRestrictedCol() == -1 || power.getRestrictedRow() == -1) {
+                power.setRestrictedCol(-1);
+                power.setRestrictedRow(-1);
             }
         }
 
@@ -159,7 +161,10 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     if (_iterationIndex && !this->m_board.checkNeighbours(_x, _y))
         return false;
 
-    if ( _x == this->m_board.m_restrictedRow ||  _y == this->m_board.m_restrictedCol) {
+
+    const auto& power = Power::getInstance();
+
+    if (_x == power.getRestrictedRow() || _y == power.getRestrictedCol()) {
         return false;
     }
     return true;

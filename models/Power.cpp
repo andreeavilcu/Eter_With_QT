@@ -734,14 +734,16 @@ bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
         return false;
     }
 
+    Power& power = Power::getInstance();
+
     if (line == 'r') {
-        board.m_restrictedRow = index;
+        power.setRestrictedRow(index);
     }
     else {
-        board.m_restrictedCol = index;
+        power.setRestrictedCol(index);
     }
 
-    board.m_justBlocked = true;
+    power.setJustBlocked(true);
     return true;
 }
 
@@ -834,7 +836,8 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
         return false;
     }
 
-    board.m_plus = { x,y };
+    Power& power = Power::getInstance(); 
+    power.setPlus(x, y);
     std::cout << "The value of the selected card has been increased by 1.\n";
 
     return true;
@@ -897,7 +900,8 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
         return false;
     }
 
-    board.m_minus = { x,y };
+    Power& power = Power::getInstance();
+    power.setMinus(x, y);
     std::cout << "The value of the selected card has been decreased by 1.\n";
 
     return true;
@@ -1053,4 +1057,70 @@ bool Power::PowerAction::rock(Player& _player, Game& _game) {
    
     std::cout << "Illusion covered with a card.\n";
     return true;
+}
+
+Power::FuncType Power::getPowerAction(size_t _index) const
+{
+    if (_index >= power_count) {
+        throw std::out_of_range("Index exceeds the number of powers!");
+    }
+    return m_powers[_index];
+}
+
+void Power::setPowerAction(size_t _index, FuncType _func)
+{
+    if (_index >= power_count) {
+        throw std::out_of_range("Index exceeds the number of powers.");
+    }
+    m_powers[_index] = _func;
+}
+
+std::pair<size_t, size_t> Power::getMinus() const
+{
+    return m_minus;
+}
+
+void Power::setMinus(size_t _row, size_t _col)
+{
+    this->m_minus = { _row, _col };
+}
+
+std::pair<size_t, size_t> Power::getPlus() const
+{
+    return m_plus;
+}
+
+void Power::setPlus(size_t _row, size_t _col)
+{
+    this->m_plus = { _row, _col };
+}
+
+size_t Power::getRestrictedRow() const
+{
+    return m_restrictedRow;
+}
+
+void Power::setRestrictedRow(size_t _row)
+{
+    this->m_restrictedRow = _row;
+}
+
+size_t Power::getRestrictedCol() const
+{
+    return m_restrictedCol;
+}
+
+void Power::setRestrictedCol(size_t _col)
+{
+    this->m_restrictedCol = _col;
+}
+
+bool Power::getJustBlocked() const
+{
+    return m_justBlocked;
+}
+
+void Power::setJustBlocked(bool _blocked)
+{
+    this->m_justBlocked = _blocked;
 }
