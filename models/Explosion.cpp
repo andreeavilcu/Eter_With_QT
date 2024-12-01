@@ -1,5 +1,13 @@
 #include "Explosion.h"
 
+std::pair<size_t, size_t> Explosion::getHole() {
+    return this->m_hole;
+}
+
+void Explosion::setHole(const std::pair<size_t, size_t> &_hole) {
+    this->m_hole = _hole;
+}
+
 std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosion(const size_t _size) {
     std::random_device rd;
     std::mt19937 gen{ rd() };

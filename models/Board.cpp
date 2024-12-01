@@ -1,5 +1,7 @@
 #include "Board.h"
 
+#include "Wizard.h"
+
 Board::Board(size_t _size) {
     this->m_board.resize(_size);
 
@@ -72,7 +74,7 @@ void Board::circularShiftRight() {
 void Board::printBoard() const {
     for (size_t i = 0; i < this->m_board.size(); ++i) {
         for (size_t j = 0; j < this->m_board.size(); ++j)
-            if (this->m_hole == std::pair{ i, j })
+            if (checkHole(i, j))
                 std::cout << "HH ";
 
             else if (!m_board[i][j].empty())
@@ -131,7 +133,8 @@ bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _
 }
 
 bool Board::checkHole(size_t _row, size_t _col) const {
-    return this->m_hole == std::pair{ _row, _col };
+    return Explosion::getInstance().getHole() == std::pair{ _row, _col } ||
+        Wizard::getInstance.getHole() == std::pair{ _row, _col };
 }
 
 bool Board::checkIllusion(const size_t _row, const size_t _col, const Card::Color _color) const {
@@ -280,7 +283,7 @@ std::vector<Card> Board::useExplosion(const std::vector<std::vector<Explosion::E
                     this->m_board[row][col] = std::move(deletedStack);
 
                 else
-                    this->m_hole = { row, col };
+                    Explosion::getInstance().setHole(std::make_pair(row, col));
 
                 continue;
             }

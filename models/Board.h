@@ -10,7 +10,6 @@
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
-    std::pair<size_t, size_t> m_hole{ -1, -1 };
 
     std::pair<size_t, size_t> m_minus{ -1, -1 };
     std::pair<size_t, size_t> m_plus{ -1, -1 };

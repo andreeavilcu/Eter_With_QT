@@ -19,6 +19,8 @@ private:
     Explosion() = default;
     ~Explosion() = default;
 
+    std::pair<size_t, size_t> m_hole{ -1, -1 };
+
 public:
     enum class ExplosionEffect : size_t {
         None = 0,
@@ -26,6 +28,9 @@ public:
         ReturnCard,
         SinkHole,
     };
+
+    std::pair<size_t, size_t> getHole();
+    void setHole(const std::pair<size_t, size_t>& _hole);
 
     std::vector<std::vector<ExplosionEffect>> generateExplosion(size_t _size);
     bool rotateExplosion(std::vector<std::vector<ExplosionEffect>>& _matrix, bool& _quit);

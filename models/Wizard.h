@@ -54,4 +54,12 @@ private:
         [](Player& _player, Game& _game) { return WizardActions::moveStackOpponent(_player, _game); },
         [](Player& _player, Game& _game) { return WizardActions::moveEdge(_player, _game); }
     };
+
+public:
+    std::pair<size_t, size_t> getHole();
+    void setHole(const std::pair<size_t, size_t>& _hole);
+
+private:
+    std::pair<size_t, size_t> m_hole{-1, -1};
+
 };

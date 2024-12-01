@@ -170,7 +170,7 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
     if (board.checkHole(y, x))
         return false;
 
-    board.m_hole = std::make_pair(y, x);
+    Wizard::getInstance().setHole(std::make_pair(y, x));
 
     return true;
 }
@@ -319,6 +319,14 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {
     }
     }
     return true;
+}
+
+std::pair<size_t, size_t> Wizard::getHole() {
+    return this->m_hole;
+}
+
+void Wizard::setHole(const std::pair<size_t, size_t> &_hole) {
+    this->m_hole = _hole;
 }
 
 
