@@ -355,3 +355,11 @@ bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
             return false;
     }
 }
+
+std::vector<Card> Game::getEliminatedCards() const {
+    return m_eliminatedCards;
+}
+
+void Game::setEliminatedCards(const std::vector<Card> &m_eliminated_cards) {
+    m_eliminatedCards = m_eliminated_cards;
+}

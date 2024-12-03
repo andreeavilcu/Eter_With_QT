@@ -34,7 +34,9 @@ protected:
     Player m_player1, m_player2;
     Card::Color m_winner{ Card::Color::Undefined };
     std::vector<Card> m_returnedCards{};
+    std::vector<Card> m_eliminatedCards{};
 
+protected:
     bool m_playedExplosion{ false };
 
 public:
@@ -44,6 +46,10 @@ public:
 
 protected:
     void shiftBoard();
+
+    [[nodiscard]] std::vector<Card> getEliminatedCards() const;
+
+    void setEliminatedCards(const std::vector<Card> &m_eliminated_cards);
 
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] bool checkCardAfterReturn(Card::Color _color, Card::Value _value) const;
