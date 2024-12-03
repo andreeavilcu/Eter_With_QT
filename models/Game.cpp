@@ -69,9 +69,15 @@ void Game::run() {
             this->playExplosion();
 
         else if (!m_returnedCards.empty()) {
-            for (auto& card : m_returnedCards)
-                auto _ = std::move(card);
+            for (auto& card : m_returnedCards) {
+                auto returnedCard = std::move(card);
 
+                if (returnedCard.getColor() == Card::Color::Player1)
+                    m_player1.returnCard(std::move(returnedCard));
+
+                else
+                    m_player2.returnCard(std::move(returnedCard));
+            }
             m_returnedCards.clear();
         }
     }

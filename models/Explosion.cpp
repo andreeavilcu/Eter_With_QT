@@ -35,7 +35,7 @@ std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosio
             y = indexDistribution(gen);
         } while (explosionEffects[x][y] != ExplosionEffect::None);
 
-        if (const size_t effect = effectDistribution(gen); !effect && !sinkHoleGenerated) {
+        if (const size_t effect = effectDistribution(gen); effect && !sinkHoleGenerated) {
             explosionEffects[x][y] = ExplosionEffect::SinkHole;
             sinkHoleGenerated = true;
         }

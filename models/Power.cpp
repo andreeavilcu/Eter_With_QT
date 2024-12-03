@@ -6,6 +6,17 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
     Board &board = _game.m_board;
 
     auto explosionEffects = Explosion::getInstance().generateExplosion(board.getSize());
+
+    bool quit = false;
+
+    do {
+        Explosion::getInstance().printExplosion(explosionEffects);
+
+        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
+        std::cout << "Press 'x' to to quit using explosion.\n";
+    }
+    while (!quit && Explosion::getInstance().rotateExplosion(explosionEffects, quit));
+
     auto returnedCards = board.useExplosion(explosionEffects);
 
     auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
@@ -71,28 +82,32 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
         board.resetIllusion(illusionRow, illusionCol);
     }
 
+    board.printBoard();
+
     size_t x, y, int_value;
     std::cin >> x >> y >> int_value;
 
-    if (!_game.checkPartial(x, y, int_value, 0)) {
-        return false;
-    }
+    // player.playCard();
 
-    auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
-    if (!playedCard) {
-        return false;
-    }
-
-    board.placeCard(x, y, std::move(*playedCard));
-    _player.placeCard(x, y);
-    return true;
+    // if (!_game.checkPartial(x, y, int_value, 0)) {
+    //     return false;
+    // }
+    //
+    // auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
+    // if (!playedCard) {
+    //     return false;
+    // }
+    //
+    // board.placeCard(x, y, std::move(*playedCard));
+    // _player.placeCard(x, y);
+    // return true;
 }
 
 bool Power::PowerAction::lava(Player& _player, Game& _game) {
     size_t chosenValue;
     std::cin >> chosenValue;
 
-    if (chosenValue < 1 || chosenValue > 4) {
+    if (chosenValue < 0 || chosenValue > 4) {
         return false;
     }
 
@@ -117,17 +132,10 @@ bool Power::PowerAction::lava(Player& _player, Game& _game) {
     for (size_t row = 0; row < board.getSize(); ++row) {
         for (size_t col = 0; col < board.getSize(); ++col) {
             if (!board.m_board[row][col].empty()) {
-                Card topCard = board.m_board[row][col].back();
+                Card topCard = std::move(board.m_board[row][col].back());
                 if (topCard.getValue() == targetValue && !topCard.isIllusion()) {
-                    Card::Color cardOwner = topCard.getColor();
-
+                    _game.m_returnedCards.push_back(std::move(topCard));
                     board.m_board[row][col].pop_back();
-
-                    if (cardOwner == Card::Color::Player1) {
-                        _game.m_player1.returnCard(topCard);
-                    } else if (cardOwner == Card::Color::Player2) {
-                        _game.m_player2.returnCard(topCard);
-                    }
                 }
             }
         }
