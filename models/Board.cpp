@@ -1,5 +1,7 @@
 #include "Board.h"
 
+#include <bits/ranges_algo.h>
+
 #include "Wizard.h"
 
 Board::Board(size_t _size) {

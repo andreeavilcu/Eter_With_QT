@@ -7,9 +7,11 @@ Card::Card(const Value _value, const Color _color)
 
 Card::Card(Card&& other) noexcept
 	: m_value(other.m_value),
-	m_color(other.m_color) {
+	m_color(other.m_color),
+	m_illusion(other.m_illusion) {
 	other.m_value = Value::Eter;
 	other.m_color = Color::Undefined;
+	other.m_illusion = false;
 }
 
 
@@ -17,8 +19,10 @@ Card& Card::operator=(Card&& other) noexcept {
 	if (this != &other) {
 		m_value = other.m_value;
 		m_color = other.m_color;
+		m_illusion = other.m_illusion;
 		other.m_value = Value::Eter;
 		other.m_color = Color::Undefined;
+		other.m_illusion = false;
 	}
 	return *this;
 }
