@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <array>
+#include<map>
 
 #include "Card.h"
 #include "Board.h"

@@ -329,7 +329,6 @@ bool Power::PowerAction::gale(Player& _player, Game& _game) {
     return true;
 }
 
-
 bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
     Board& board = _game.m_board;
     std::cout << "Shift a full row or column in the desired direction.\n";
@@ -369,97 +368,127 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
     if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
         return false;
 
-    /*if (typeChoice == 'r') {
+    for (size_t i = 0; i < board.m_board.size(); ++i)
+        if (board.m_board[index][i].empty() || board.m_board[i][index].empty())
+            return 0;
+
+    if (typeChoice == 'r') {
         auto& row = board.m_board[index];
-        std::vector<Card> shiftedRow(row.size());
 
         if (directionChoice == 'a') {
-            Card outCard = std::move(row[0]);
+            auto outStack = std::move(row[0]);
             for (size_t i = 0; i < row.size() - 1; ++i) {
-                shiftedRow[i] = std::move(row[i + 1]);
+                row[i] = std::move(row[i + 1]);
             }
-            shiftedRow[row.size() - 1] = std::move(outCard);
-            row = std::move(shiftedRow);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(row[row.size() - 1]);
+            row[row.size() - 1].clear();
+
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
         else if (directionChoice == 'd') {
-            Card outCard = std::move(row[row.size() - 1]);
+            auto outStack=std::move(row[row.size() - 1]);
             for (size_t i = row.size() - 1; i > 0; --i) {
-                shiftedRow[i] = std::move(row[i - 1]);
+                row[i] = std::move(row[i - 1]);
             }
-            shiftedRow[0] = std::move(outCard);
-            row = std::move(shiftedRow);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(row[0]);
+            row[0].clear();
+            
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
 
     }
     else if (typeChoice == 'c') {
-        std::vector<Card> column(board.m_board.size());
-        for (size_t i = 0; i < board.m_board.size(); ++i) {
-            column[i] = std::move(board.m_board[i][index]);
-        }
-
-        std::vector<Card> shiftedColumn(column.size());
         if (directionChoice == 's') {
-            Card outCard = std::move(board.m_board[board.m_board.size() - 1][index]);
+            auto outStack = std::move(board.m_board[board.m_board.size() - 1][index]);
             for (size_t i = board.m_board.size() - 1; i > 0; --i) {
                 board.m_board[i][index] = std::move(board.m_board[i - 1][index]);
             }
-            board.m_board[0][index] = std::move(outCard);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(board.m_board[0][index]);
+            board.m_board[0][index].clear();
+
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
 
-        else if (directionChoice == 'w') {
-            Card outCard = std::move(board.m_board[0][index]);
-            for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
-                board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
+        else
+            if (directionChoice == 'w') {
+                auto outStack = std::move(board.m_board[0][index]);
+                for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
+                    board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
+                }
+
+                auto removed = std::move(board.m_board[board.m_board.size() - 1][index]);
+                board.m_board[board.m_board.size() - 1][index].clear();
+
+                for (auto& card : outStack)
+                    _game.m_returnedCards.push_back(card);
             }
-            board.m_board[board.m_board.size() - 1][index] = std::move(outCard);
-
-
-            _player.returnCard(outCard);
-        }
-        }
-    */
+    }
 
     return true;
 }
-
 
 bool Power::PowerAction::gust(Player& _player, Game& _game) {
     size_t x, y;
     Board& board = _game.m_board;
 
     std::cout << "Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates for card (0-indexed): ";
     std::cin >> x >> y;
 
     if (board.m_board[x][y].empty()) {
         std::cout << "There is no card in this position!\n";
         return false;
     }
-    Card& currentCard = board.m_board[x][y].back();
-    std::vector<std::pair<size_t, size_t>> adjacents = {
-        {x - 1, y}, {x + 1, y},
-        {x, y - 1}, {x, y + 1}
+
+    std::map<char, std::pair<int, int>> directionMap = {
+        {'w', {-1, 0}}, 
+        {'s', {1, 0}},  
+        {'a', {0, -1}}, 
+        {'d', {0, 1}}   
     };
-    for (auto& adj : adjacents) {
-        size_t row = adj.first;
-        size_t col = adj.second;
-        if (board.checkIndexes(row, col) && !board.m_board[row][col].empty()) {
-            Card& adjacentCard = board.m_board[row][col].back();
-            if (static_cast<size_t>(currentCard.getValue()) > static_cast<size_t>(adjacentCard.getValue())) {
-                board.m_board[row][col].emplace_back(currentCard.getValue(), currentCard.getColor());
-                board.m_board[x][y].pop_back();
-            }
-            return true;
-        }
+
+    std::cout << "Choose a direction (w = up, a = left, s = down, d = right): ";
+    char direction;
+    std::cin >> direction;
+
+    if (directionMap.find(direction) == directionMap.end()) {
+        std::cout << "Invalid direction!\n";
+        return false;
     }
-    std::cout << "No valid adjacent position was found to move the card.\n";
-    return false;
+
+    auto offset = directionMap[direction];
+    size_t newX = x + offset.first;
+    size_t newY = y + offset.second;
+
+    if (!board.checkIndexes(newX, newY)) {
+        std::cout << "The move is outside the board boundaries!\n";
+        return false;
+    }
+
+    if (board.m_board[newX][newY].empty()) {
+        std::cout << "The target position is empty. Cannot move card there!\n";
+        return false;
+    }
+
+    Card& currentCard = board.m_board[x][y].back();
+    Card& targetCard = board.m_board[newX][newY].back();
+
+    if (static_cast<size_t>(currentCard.getValue()) <= static_cast<size_t>(targetCard.getValue())) {
+        return false;
+    }
+
+    if(board.checkBoardIntegrity())
+        return true;
+    
+    board.m_board[x][y].push_back(std::move(currentCard));
+    board.m_board[newX][newY].pop_back();
+
 }
 
 bool Power::PowerAction::mirage(Player& _player, Game& _game) {
@@ -467,7 +496,7 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game) {
     Board& board = _game.m_board;
 
     std::cout << "Replace your own placed illusion with another illusion.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates for illusion (0-indexed)\n";
     std::cin >> x >> y;
     
     ///isIlusionEnable
@@ -480,10 +509,15 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game) {
         return false;
     }
 
-    auto& topCard = board.m_board[x][y].back();
+    auto topCard = std::move(board.m_board[x][y].back());
     if (topCard.isIllusion() && topCard.getColor() == _player.getColor()) {
         topCard.resetIllusion();
-        topCard.setColor(_player.getColor());
+        
+        _game.m_returnedCards.push_back(topCard);
+
+        // codul pentru a juca alta iuluzie
+        // player.playIllusion
+
         return true;
     }
     std::cout << " Could not replace the ilusion!" << std::endl;
@@ -506,6 +540,11 @@ bool Power::PowerAction::storm(Player& _player, Game& _game) {
 
     auto eliminatedCard = std::move(board.m_board[x][y].back());
     board.m_board[x][y].pop_back();
+
+    if (board.checkBoardIntegrity()) {
+        board.m_board[x][y].push_back(std::move(eliminatedCard));
+        return false;
+    }
 
     return true;
 }
@@ -540,10 +579,11 @@ bool Power::PowerAction::mist(Player& _player, Game& _game) {
     std::cin >> x >> y;
 
     ///isIlusionEnable
+
     if (!board.checkIndexes(x, y))
         return false;
 
-    if (!board.m_board[x][y].empty()) {
+    if (board.m_board[x][y].back().isIllusion()) {
         std::cout << "There is a illusion in this position!\n";
         return false;
     }
@@ -555,7 +595,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game) {
         }
     }
 
-    ///board.m_board[x][y].emplace_back(static_cast<Card::Value>(Value), _player.getColor());
+    // player.playIllusion()
     return true;
 }
 
@@ -574,9 +614,12 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
         return false;
     
     const std::array<std::pair<int, int>, 8> directions = { {
-        {-1, 0}, {1, 0}, {0, -1}, {0, 1},
+        {-1, 0}, {1, 0}, {0, -1}, {0, 1}, // diag? sau doar wasd (notes)
         {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
     } };
+
+    // citesti directia si verifici cu map
+    // daca nu se poate return false (aici verifici si dupa ce ai mutat teancul boardintegrity) ???????? (notes)
 
     std::vector<std::pair<size_t, size_t>> emptyNeighbours;
     for (const auto& direction : directions) {
@@ -609,7 +652,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     board.m_board[Y][X] = std::move(board.m_board[y][x]);
     board.m_board[y][x].clear();
 
-    /// board.playCard();
+    /// player.playCard(); ca la alea 2 mai sus
 
     return true;
 }
@@ -617,6 +660,11 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     size_t x, y;
     Board& board = _game.m_board;
+
+    // intai citesti rand/col si dupa index
+    // verifici sa fie goala poz aia
+    // dupa verifici sa fie ca cel putin o carte pe alea 2 poz, le compari si le dai push in ordine (puhs_back(std::move))
+    // dai clear la alea golite
 
     std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
@@ -660,7 +708,7 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
         useRow = (choice == 1);
     }
 
-    /*auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
+    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
             if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
                 int choice;
                 auto colorCard1 = card1->getColor();
@@ -703,7 +751,7 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
         }
         else {
             return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
-        }*/
+        }
 
     return false;
 }
