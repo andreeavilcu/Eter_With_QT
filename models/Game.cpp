@@ -164,8 +164,9 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     if (!this->m_board.checkValue(_x, _y, value))
         return false;
 
-    if (_iterationIndex && !this->m_board.checkNeighbours(_x, _y))
-        return false;
+    if (!this->m_board.checkNeighbours(_x, _y))
+        if (!this->m_board.checkBoardIntegrity())
+            return false;
 
 
     const auto& power = Power::getInstance();

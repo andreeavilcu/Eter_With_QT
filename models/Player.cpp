@@ -24,10 +24,10 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
 
     m_wizard_index = _wizard ? wizardDistribution(gen) : -1;
-    m_powers_index.first = _powers ? powerDistribution(gen) : -1;
+    m_powers_index.first = _powers ? /*powerDistribution(gen)*/ 16: -1;
 
     do {
-        m_powers_index.second = _powers ? powerDistribution(gen) : -1;
+        m_powers_index.second = _powers ? /*powerDistribution(gen)*/ 17: -1;
     } while (m_powers_index.first == m_powers_index.second && _powers);
 }
 

@@ -757,13 +757,16 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
 
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
+    
+    //dupa ce player 1 a ales coloana restrictionata pentru player2 player 2 nu mai poate pune  carti niciunde
     char line;
     Board& board = _game.m_board;
     std::cout << "Tsunami!";
     std::cout << "Choose a row ('r') ora column ('c') to restrict:\n";
     std::cin >> line;
 
-    if (line != 'r' && line != 'c')
+    
+   if (line != 'r' && line != 'c')
         return false;
 
     size_t index;
@@ -805,22 +808,40 @@ bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
 
 bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
     Board& board = _game.m_board;
-    size_t row;
+    char choice;
+    size_t index;
     char direction;
 
     std::cout << "Waterfall!";
-    std::cout << "Choose a row with at least 3 occupied positions.\n";
-    std::cin >> row;
+    std::cout << "Do you want to choose a row or a column? (r for row, c for column)\n";
+    std::cin >> choice;
 
-    if (row >= board.getSize()) {
-        std::cout << "Invalid row selection";
+    if (choice != 'r' && choice != 'c') {
+        std::cout << "Invalid choice.\n";
         return false;
     }
 
+    std::cout << "Choose an index (row/column) with at least 3 occupied positions.\n";
+    std::cin >> index;
+
+    if ((choice == 'r' && index >= board.getSize()) || (choice == 'c' && index >= board.getSize())) {
+        std::cout << "Invalid index selection.\n";
+        return false;
+    }
+
+    // Verificăm numărul de poziții ocupate în rând sau coloană
     int occupiedPositions = 0;
-    for (size_t col = 0; col < board.getSize(); ++col) {
-        if (!board.m_board[row][col].empty())
-            ++occupiedPositions;
+    if (choice == 'r') {
+        for (size_t col = 0; col < board.getSize(); ++col) {
+            if (!board.m_board[index][col].empty())
+                ++occupiedPositions;
+        }
+    }
+    else {
+        for (size_t row = 0; row < board.getSize(); ++row) {
+            if (!board.m_board[row][index].empty())
+                ++occupiedPositions;
+        }
     }
 
     if (occupiedPositions < 3) {
@@ -828,39 +849,83 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
         return false;
     }
 
-    std::cout << "Choose the direction of the cascade(l for left, 1 for right)\n";
+    std::cout << "Choose the direction of the cascade (l for left, r for right, u for up, d for down)\n";
     std::cin >> direction;
 
-    if (direction != 'l' && direction != 'r') {
-        std::cout << "\n";
+    if ((choice == 'r' && direction != 'l' && direction != 'r') ||
+        (choice == 'c' && direction != 'u' && direction != 'd')) {
+        std::cout << "Invalid direction.\n";
         return false;
     }
 
     std::vector<Card> mergedStack;
 
-    if (direction == 'l') {
-        for (size_t col = 0; col < board.getSize(); ++col) {
-            while (!board.m_board[row][col].empty()) {
-                mergedStack.push_back(std::move(board.m_board[row][col].back()));
-                board.m_board[row][col].pop_back();
+    if (choice == 'r') {
+        // Mutăm pe rând
+        if (direction == 'l') {
+            for (size_t col = 0; col < board.getSize(); ++col) {
+                while (!board.m_board[index][col].empty()) {
+                    mergedStack.push_back(std::move(board.m_board[index][col].back()));
+                    board.m_board[index][col].pop_back();
+                }
             }
-        }
-        board.m_board[row][0] = std::move(mergedStack);
-    }
-    else {
-        for (size_t col = board.getSize() - 1; col >= 0; --col) {
-            while (!board.m_board[row][col].empty()) {
-                mergedStack.push_back(std::move(board.m_board[row][col].back()));
-                board.m_board[row][col].pop_back();
-            }
-        }
+            board.m_board[index][0] = std::move(mergedStack);
 
-        board.m_board[row][board.getSize() - 1] = std::move(mergedStack);
+            // Curățăm restul coloanelor din rând
+            for (size_t col = 1; col < board.getSize(); ++col) {
+                board.m_board[index][col].clear();
+            }
+        }
+        else { // direction == 'r'
+            for (int col = board.getSize() - 1; col >= 0; --col) {
+                while (!board.m_board[index][col].empty()) {
+                    mergedStack.push_back(std::move(board.m_board[index][col].back()));
+                    board.m_board[index][col].pop_back();
+                }
+            }
+            board.m_board[index][board.getSize() - 1] = std::move(mergedStack);
+
+            // Curățăm restul coloanelor din rând
+            for (size_t col = 0; col < board.getSize() - 1; ++col) {
+                board.m_board[index][col].clear();
+            }
+        }
+    }
+    else { // Mutăm pe coloană
+        if (direction == 'u') {
+            for (size_t row = 0; row < board.getSize(); ++row) {
+                while (!board.m_board[row][index].empty()) {
+                    mergedStack.push_back(std::move(board.m_board[row][index].back()));
+                    board.m_board[row][index].pop_back();
+                }
+            }
+            board.m_board[0][index] = std::move(mergedStack);
+
+            // Curățăm restul rândurilor din coloană
+            for (size_t row = 1; row < board.getSize(); ++row) {
+                board.m_board[row][index].clear();
+            }
+        }
+        else { // direction == 'd'
+            for (int row = board.getSize() - 1; row >= 0; --row) {
+                while (!board.m_board[row][index].empty()) {
+                    mergedStack.push_back(std::move(board.m_board[row][index].back()));
+                    board.m_board[row][index].pop_back();
+                }
+            }
+            board.m_board[board.getSize() - 1][index] = std::move(mergedStack);
+
+            // Curățăm restul rândurilor din coloană
+            for (size_t row = 0; row < board.getSize() - 1; ++row) {
+                board.m_board[row][index].clear();
+            }
+        }
     }
 
     std::cout << "Cards have merged successfully.\n";
     return true;
 }
+
 
 bool Power::PowerAction::support(Player& _player, Game& _game) {
     size_t x, y;
@@ -906,8 +971,11 @@ bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
 
     for (size_t row = 0; row < board.m_board.size(); ++row) {
         for (size_t col = 0; col < board.m_board.size(); ++col) {
+            if (board.m_board[row][col].empty()) continue;
+
             if (board.m_board[row][col].back().getValue() == Card::Value::One && !board.m_board[row][col].back().isIllusion())
             {
+                // sa le dam move in m_removedCards
                 board.m_board[row][col].pop_back();
                 anyRemoved = true;
             }
