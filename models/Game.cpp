@@ -46,6 +46,9 @@ Game::Game(const GameType _gameType) :
 void Game::run() {
     bool player1Turn = true;
 
+    Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
+    Explosion::getInstance().printExplosion();
+
     Power& power = Power::getInstance();
 
     while (checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2)) {
@@ -65,10 +68,7 @@ void Game::run() {
             }
         }
 
-        if (!this->m_playedExplosion && this->m_board.checkTwoRows())
-            this->playExplosion();
-
-        else if (!m_returnedCards.empty()) {
+        if (!m_returnedCards.empty()) {
             for (auto& card : m_returnedCards) {
                 auto returnedCard = std::move(card);
 
@@ -153,38 +153,6 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
         return false;
     }
     return true;
-}
-
-void Game::playExplosion() {
-    std::vector<std::vector<Explosion::ExplosionEffect>> explosionEffects = Explosion::getInstance().generateExplosion(this->m_board.getSize());
-
-    std::cout << "Player 2's turn\n";
-    std::cout << "---------------\n";
-
-    this->m_board.printBoard();
-
-    bool quit = false;
-
-    do {
-        Explosion::getInstance().printExplosion(explosionEffects);
-
-        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
-        std::cout << "Press 'x' to to quit using explosion.\n";
-    }
-    while (!quit && Explosion::getInstance().rotateExplosion(explosionEffects, quit));
-
-    m_playedExplosion = true;
-
-    if (quit)
-        return;
-
-    this->m_returnedCards = this->m_board.useExplosion(explosionEffects);
-
-    for (auto card : this->m_returnedCards) {
-        card.getColor() == Card::Color::Player1
-            ? m_player1.returnCard(card)
-            : m_player2.returnCard(card);
-    }
 }
 
 std::vector<Card> Game::getEliminatedCards() const {

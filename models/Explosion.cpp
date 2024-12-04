@@ -9,6 +9,8 @@ void Explosion::setHole(const std::pair<size_t, size_t> &_hole) {
 }
 
 std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosion(const size_t _size) {
+    m_explosionEffects = std::vector(_size, std::vector<ExplosionEffect>(_size));
+
     std::random_device rd;
     std::mt19937 gen{ rd() };
 
@@ -16,12 +18,6 @@ std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosio
 
     std::uniform_int_distribution<size_t> effectDistribution{ 0, 10 };
     std::bernoulli_distribution removeOrReplaceDistribution{ 0.5 };
-
-    std::vector<std::vector<ExplosionEffect>> explosionEffects;
-
-    explosionEffects.resize(_size);
-    for (auto& row : explosionEffects)
-        row.resize(_size);
 
     const size_t effectCount = indexDistribution(gen) + (_size - 1);
 
@@ -33,24 +29,24 @@ std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosio
         do {
             x = indexDistribution(gen);
             y = indexDistribution(gen);
-        } while (explosionEffects[x][y] != ExplosionEffect::None);
+        } while (m_explosionEffects[x][y] != ExplosionEffect::None);
 
         if (const size_t effect = effectDistribution(gen); effect && !sinkHoleGenerated) {
-            explosionEffects[x][y] = ExplosionEffect::SinkHole;
+            m_explosionEffects[x][y] = ExplosionEffect::SinkHole;
             sinkHoleGenerated = true;
         }
             
 
         else
-            explosionEffects[x][y] = removeOrReplaceDistribution(gen)
+            m_explosionEffects[x][y] = removeOrReplaceDistribution(gen)
                 ? ExplosionEffect::ReturnCard
                 : ExplosionEffect::RemoveCard;
     }
 
-    return explosionEffects;
+    return m_explosionEffects;
 }
 
-bool Explosion::rotateExplosion(std::vector<std::vector<ExplosionEffect>> &_matrix, bool &_quit) {
+bool Explosion::rotateExplosion(bool &_quit) {
     char choice;
     std::cin >> choice;
 
@@ -63,25 +59,25 @@ bool Explosion::rotateExplosion(std::vector<std::vector<ExplosionEffect>> &_matr
     }
 
     if (tolower(choice) == 'r')
-        rotateMatrixRight(_matrix);
+        rotateMatrixRight();
 
     return true;
 }
 
-void Explosion::rotateMatrixRight(std::vector<std::vector<ExplosionEffect>> &_matrix) {
-    const std::vector<std::vector<ExplosionEffect>> temp = _matrix;
+void Explosion::rotateMatrixRight() {
+    const std::vector<std::vector<ExplosionEffect>> temp = m_explosionEffects;
 
-    for (int i = 0; i < _matrix.size(); ++i) {
-        for (int j = 0; j < _matrix.size(); ++j) {
-            _matrix[j][_matrix.size() - 1 - i] = temp[i][j];
+    for (int i = 0; i < m_explosionEffects.size(); ++i) {
+        for (int j = 0; j < m_explosionEffects.size(); ++j) {
+            m_explosionEffects[j][m_explosionEffects.size() - 1 - i] = temp[i][j];
         }
     }
 }
 
-void Explosion::printExplosion(const std::vector<std::vector<ExplosionEffect>>& _matrix) const {
-    for (size_t i = 0; i < _matrix.size(); ++i) {
-        for (size_t j = 0; j < _matrix.size(); ++j) {
-            switch (_matrix[i][j]) {
+void Explosion::printExplosion() const {
+    for (size_t i = 0; i < m_explosionEffects.size(); ++i) {
+        for (size_t j = 0; j < m_explosionEffects.size(); ++j) {
+            switch (m_explosionEffects[i][j]) {
                 case ExplosionEffect::None:
                     std::cout << "- ";
                     break;

@@ -289,8 +289,39 @@ bool Player::playPower(Game &_game, const bool _check = false) {
     return this->usePower(_game, first, _check);
 }
 
+void Player::playExplosion(Game& _game) {
+    std::cout << "Player 2's turn\n";
+    std::cout << "---------------\n";
+
+    _game.getBoard().printBoard();
+
+    bool quit = false;
+
+    do {
+        Explosion::getInstance().printExplosion();
+
+        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
+        std::cout << "Press 'x' to to quit using explosion.\n";
+    }
+    while (!quit && Explosion::getInstance().rotateExplosion(quit));
+
+    _game.m_playedExplosion = true;
+
+    if (quit)
+        return;
+
+    _game.m_returnedCards = _game.getBoard().useExplosion();
+
+    for (auto card : _game.m_returnedCards) {
+        card.getColor() == Card::Color::Player1
+            ? _game.getPlayer1().returnCard(card)
+            : _game.getPlayer2().returnCard(card);
+    }
+}
+
 bool Player::playerTurn(Game &_game) {
     char choice;
+    bool legal = false;
 
     std::cout << "Play a card   (c) ";
     this->printCards();
@@ -314,23 +345,39 @@ bool Player::playerTurn(Game &_game) {
 
     switch (choice) {
         case 'c':
-            return this->playCard(_game);
+            legal = this->playCard(_game);
+            break;
 
         case 's':
             this->shiftBoard(_game);
-            return false;
+            legal = false;
+            break;
 
         case 'i':
-            return this->playIllusion(_game);
+            legal = this->playIllusion(_game);
+            break;
 
         case 'w':
             if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                return this->playWizard(_game);
+                legal = this->playWizard(_game);
+
+            break;
 
         case 'p':
             if (_game.getGameType() == Game::GameType::PowerDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                return this->playPower(_game);
+                legal = this->playPower(_game);
+
+            break;
+
         default:
-            return false;
+            break;
     }
+
+    if (!legal)
+        return false;
+
+    if (!_game.m_playedExplosion && _game.getBoard().checkTwoRows())
+        this->playExplosion(_game);
+
+    return true;
 }

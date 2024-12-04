@@ -38,14 +38,15 @@ public:
     std::vector<Card> m_returnedCards{};
     std::vector<Card> m_eliminatedCards{};
 
-protected:
     bool m_playedExplosion{ false };
 
-public:
     explicit Game(GameType _gameType);
 
     Board& getBoard() { return m_board; }
     GameType getGameType() { return m_gameType; }
+
+    Player& getPlayer1() { return m_player1; }
+    Player& getPlayer2() { return m_player2; }
 
     void run();
 
@@ -61,8 +62,6 @@ public:
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
 
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
-
-    void playExplosion();
 
 };
 

@@ -10,14 +10,14 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const
     bool quit = false;
 
     do {
-        Explosion::getInstance().printExplosion(explosionEffects);
+        Explosion::getInstance().printExplosion();
 
         std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
         std::cout << "Press 'x' to to quit using explosion.\n";
     }
-    while (!quit && Explosion::getInstance().rotateExplosion(explosionEffects, quit));
+    while (!quit && Explosion::getInstance().rotateExplosion(quit));
 
-    auto returnedCards = board.useExplosion(explosionEffects);
+    auto returnedCards = board.useExplosion();
 
     auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
 

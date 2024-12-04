@@ -79,5 +79,7 @@ public:
     [[nodiscard]] bool playWizard(Game& _game, bool _check);
     [[nodiscard]] bool playPower(Game& _game, bool _check);
 
+    void playExplosion(Game& _game);
+
     bool playerTurn(Game& _game);
 };

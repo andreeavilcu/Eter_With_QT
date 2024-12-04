@@ -269,15 +269,17 @@ bool Board::checkTwoRows() const {
     return (rowCount >= 2 || colCount >= 2);
 }
 
-std::vector<Card> Board::useExplosion(const std::vector<std::vector<Explosion::ExplosionEffect>>& _matrix) {
+std::vector<Card> Board::useExplosion() {
     std::vector<Card> returnedCards{};
+
+    auto explosionEffects = Explosion::getInstance().getExplosionEffect();
 
     for (size_t row = 0; row < this->m_board.size(); ++row) {
         for (size_t col = 0; col < this->m_board.size(); ++col) {
-            if (_matrix[row][col] == Explosion::ExplosionEffect::None)
+            if (explosionEffects[row][col] == Explosion::ExplosionEffect::None)
                 continue;
 
-            if (_matrix[row][col] == Explosion::ExplosionEffect::SinkHole) {
+            if (explosionEffects[row][col] == Explosion::ExplosionEffect::SinkHole) {
                 auto deletedStack = std::move(this->m_board[row][col]);
                 this->m_board[row][col].clear();
 
@@ -295,7 +297,7 @@ std::vector<Card> Board::useExplosion(const std::vector<std::vector<Explosion::E
 
             Card affectedCard = this->m_board[row][col].back();
 
-            switch (_matrix[row][col]) {
+            switch (explosionEffects[row][col]) {
             case Explosion::ExplosionEffect::RemoveCard:
                 this->m_board[row][col].pop_back();
 
