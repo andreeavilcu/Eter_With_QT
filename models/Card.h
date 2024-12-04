@@ -33,7 +33,7 @@ public:
     void setColor(Color _color);
     [[nodiscard]] bool isIllusion() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const Card& card);
+    friend std::ostream& operator<<(std::ostream& os, const Card& _card);
 
     bool operator==(const Card& other) const;
 

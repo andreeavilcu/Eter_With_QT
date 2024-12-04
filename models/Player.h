@@ -67,4 +67,14 @@ public:
 
     std::optional<Card> useCard(Card::Value _value);
     std::optional<Card> useIllusion(Card::Value _value);
+
+    void shiftBoard(Game& _game);
+
+    bool playCard(Game& _game);
+    std::optional<Card> playCardCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
+
+    bool playIllusion(Game& _game);
+    std::optional<Card> playIllusionCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
+
+    bool playerTurn(Game& _game);
 };

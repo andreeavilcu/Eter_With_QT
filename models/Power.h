@@ -33,7 +33,7 @@ public:
     [[nodiscard]] std::pair<size_t, size_t> getMinus() const;
     void setMinus(size_t _row, size_t _col);
 
-    [[nodicard]] std::pair<size_t, size_t> getPlus() const;
+    [[nodiscard]] std::pair<size_t, size_t> getPlus() const;
     void setPlus(size_t _row, size_t _col);
 
     [[nodiscard]] size_t getRestrictedRow() const;

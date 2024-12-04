@@ -11,6 +11,7 @@
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
+public:
 
     friend class Game;
     friend class Wizard;

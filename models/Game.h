@@ -33,6 +33,8 @@ protected:
 
     Player m_player1, m_player2;
     Card::Color m_winner{ Card::Color::Undefined };
+
+public:
     std::vector<Card> m_returnedCards{};
     std::vector<Card> m_eliminatedCards{};
 
@@ -42,30 +44,29 @@ protected:
 public:
     explicit Game(GameType _gameType);
 
+    Board& getBoard() { return m_board; }
+    GameType getGameType() { return m_gameType; }
+
     void run();
 
 protected:
-    void shiftBoard();
-
     [[nodiscard]] std::vector<Card> getEliminatedCards() const;
 
     void setEliminatedCards(const std::vector<Card> &m_eliminated_cards);
 
+public:
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] bool checkCardAfterReturn(Card::Color _color, Card::Value _value) const;
 
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
 
-    [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value, size_t _iterationIndex) const;
+    [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
 
-    [[nodiscard]] bool playCard(Card::Color _color, size_t _iterationIndex);
-    [[nodiscard]] bool playIllusion(Card::Color _color, size_t _iterationIndex);
     [[nodiscard]] bool playWizard(Card::Color _color);
     [[nodiscard]] bool playPower(Card::Color _color);
 
     void playExplosion();
 
-    bool playerTurn(Card::Color _color, size_t _iterationIndex);
 };
 
 #endif 

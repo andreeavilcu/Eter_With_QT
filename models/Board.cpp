@@ -136,7 +136,7 @@ bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _
 
 bool Board::checkHole(size_t _row, size_t _col) const {
     return Explosion::getInstance().getHole() == std::pair{ _row, _col } ||
-        Wizard::getInstance().getHole() == std::pair{_row, _col};
+        Wizard::getInstance().getHole() == std::pair{ _row, _col };
 }
 
 bool Board::checkIllusion(const size_t _row, const size_t _col, const Card::Color _color) const {
@@ -201,11 +201,6 @@ bool Board::checkFullBoard() const {
 Card::Color Board::calculateWinner() const {
     std::pair<int, int> winner = { 0, 0 };
 
-    const Power& power = Power::getInstance();
-
-    auto plusPosition = power.getPlus();
-    auto minusPosition = power.getMinus();
-
     for (std::size_t row = 0; row < this->m_board.size(); ++row) {
         for (std::size_t col = 0; col < this->m_board.size(); ++col) {
             if (!m_board[row][col].empty()) {
@@ -215,10 +210,10 @@ Card::Color Board::calculateWinner() const {
                 if (cardValue == static_cast<size_t>(Card::Value::Eter))
                     cardValue = 1;
 
-                if (plusPosition == std::pair{ row,col })
+                if (Power::getInstance().getPlus() == std::pair{ row,col })
                     cardValue++;
 
-                if (minusPosition == std::pair{ row,col })
+                if (Power::getInstance().getMinus() == std::pair{ row,col })
                     cardValue--;
 
                 if (topCard.getColor() == Card::Color::Player1) {

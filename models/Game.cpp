@@ -44,17 +44,17 @@ Game::Game(const GameType _gameType) :
     } {}
 
 void Game::run() {
-    size_t iterationIndex = 0;
+    bool player1Turn = true;
 
     Power& power = Power::getInstance();
 
-    while (checkEndOfGame(!(iterationIndex % 2) ? Card::Color::Player1 : Card::Color::Player2)) {
-        std::cout << "Player " << iterationIndex % 2 + 1 << "'s turn!" << std::endl;
+    while (checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2)) {
+        std::cout << "Player " << static_cast<int>(!player1Turn) + 1 << "'s turn!" << std::endl;
 
         this->m_board.printBoard();
 
-        if (playerTurn(iterationIndex % 2 ? Card::Color::Player2 : Card::Color::Player1, iterationIndex)) {
-            iterationIndex++;
+        if (auto& player = player1Turn ? m_player1 : m_player2; player.playerTurn(*this)) {
+            player1Turn = !player1Turn;
 
             if (power.getJustBlocked())
                 power.setJustBlocked(false);
@@ -91,28 +91,6 @@ void Game::run() {
 
     std::cout << "Winner: " << (m_winner == Card::Color::Player1 ? "Player 1" : "Player 2") << std::endl;
 }
-void Game::shiftBoard() {
-    char choice;
-
-    std::cin >> choice;
-
-    switch (choice) {
-        case 'w':
-            this->m_board.circularShiftUp();
-        break;
-        case 'a':
-            this->m_board.circularShiftLeft();
-        break;
-        case 's':
-            this->m_board.circularShiftDown();
-        break;
-        case 'd':
-            this->m_board.circularShiftRight();
-        break;
-        default:
-            break;
-    }
-}
 
 bool Game::checkEmptyDeck() const {
     return !m_player1.getCardCount() || !m_player2.getCardCount();
@@ -142,7 +120,7 @@ bool Game::checkEndOfGame(const Card::Color _color) {
         std::cout << "Player " << (_color == Card::Color::Player1 ? 1 : 2) << "'s turn!" << std::endl;
         this->m_board.printBoard();
 
-        playerTurn(_color, -1);
+        m_player1.playerTurn(*this);
 
         this->m_winner = this->m_board.calculateWinner();
 
@@ -152,7 +130,7 @@ bool Game::checkEndOfGame(const Card::Color _color) {
     return true;
 }
 
-bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_value, const size_t _iterationIndex) const {
+bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_value) const {
     if (!this->m_board.checkIndexes(_x, _y) || this->m_board.checkHole(_x, _y))
         return false;
 
@@ -174,70 +152,6 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     if (_x == power.getRestrictedRow() || _y == power.getRestrictedCol()) {
         return false;
     }
-    return true;
-}
-
-bool Game::playCard(const Card::Color _color, const size_t _iterationIndex) {
-    size_t x, y, int_value;
-
-    std::cin >> x;
-    std::cin >> y;
-    std::cin >> int_value;
-
-    if (!this->checkPartial(x, y, int_value, _iterationIndex))
-        return false;
-
-    if (this->m_board.checkIllusion(x, y, _color))
-        return false;
-
-    auto playedCard =
-        m_player1.getColor() == _color ?
-            m_player1.useCard(static_cast<Card::Value>(int_value)) :
-            m_player2.useCard(static_cast<Card::Value>(int_value));
-
-    if (!playedCard)
-        return false;
-
-    if (!this->m_board.checkIllusion(x, y, Card::Color::Undefined) && this->m_board.checkIllusionValue(x, y, int_value)) {
-        this->m_board.placeCard(x, y, std::move(*playedCard));
-        (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
-    }
-
-    else {
-        this->m_board.resetIllusion(x, y);
-        playedCard.reset();
-    }
-
-
-
-    return true;
-}
-
-bool Game::playIllusion(const Card::Color _color, const size_t _iterationIndex) {
-    size_t x, y, int_value;
-
-    std::cin >> x;
-    std::cin >> y;
-    std::cin >> int_value;
-
-    if (!this->checkPartial(x, y, int_value, _iterationIndex))
-        return false;
-
-    if (this->m_board.checkIllusion(x, y, Card::Color::Player1) || this->m_board.checkIllusion(x, y, Card::Color::Player2))
-        return false;
-
-    auto playedCard =
-        _color == Card::Color::Player1 ?
-            m_player1.useIllusion(static_cast<Card::Value>(int_value)) :
-            m_player2.useIllusion(static_cast<Card::Value>(int_value));
-
-    if (!playedCard)
-        return false;
-
-    this->m_board.placeCard(x, y, std::move(*playedCard));
-
-    (m_player1.getColor() == _color ? m_player1 : m_player2).placeCard(x, y);
-
     return true;
 }
 
@@ -298,62 +212,6 @@ void Game::playExplosion() {
         card.getColor() == Card::Color::Player1
             ? m_player1.returnCard(card)
             : m_player2.returnCard(card);
-    }
-}
-
-bool Game::playerTurn(const Card::Color _color, const size_t _iterationIndex) {
-    char choice;
-
-    std::cout << "Play a card   (c) ";
-    _color == Card::Color::Player1
-        ? m_player1.printCards()
-        : m_player2.printCards();
-
-    std::cout << "Shift board   (s)\n";
-
-    if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel) {
-        std::cout << "Play wizard   (w) " << (
-        _color == Card::Color::Player1
-            ? m_player1.getWizardIndex()
-            : m_player2.getWizardIndex()
-        ) << "\n";
-    }
-
-    if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel) {
-        std::cout << "Play power    (p) " << (
-            _color == Card::Color::Player1
-                ? std::to_string(m_player1.getPowersIndex().first) + " " + std::to_string(m_player1.getPowersIndex().second)
-                : std::to_string(m_player2.getPowersIndex().first) + " " + std::to_string(m_player2.getPowersIndex().second)
-        ) << "\n";
-    }
-
-    std::cout << "Play illusion (i) " << (
-        _color == Card::Color::Player1
-            ? (m_player1.wasIllusionPlayed() ? "(already played)" : "")
-            : (m_player2.wasIllusionPlayed() ? "(already played)" : "")
-    ) << "\n";
-    std::cin >> choice;
-
-    switch (choice) {
-        case 'c':
-            return this->playCard(_color, _iterationIndex);
-
-        case 's':
-            this->shiftBoard();
-            return false;
-
-        case 'i':
-            return this->playIllusion(_color, _iterationIndex);
-
-        case 'w':
-            if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel)
-                return this->playWizard(_color);
-
-        case 'p':
-            if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel)
-                return this->playPower(_color);
-        default:
-            return false;
     }
 }
 

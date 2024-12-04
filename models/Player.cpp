@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#include "Game.h"
+
 const std::vector<Card>& Player::getCards() const
 {
     return m_cards;
@@ -171,4 +173,142 @@ std::optional<Card> Player::useIllusion(const Card::Value _value) {
     playedCard->setIllusion();
 
     return playedCard;
+}
+
+void Player::shiftBoard(Game& _game) {
+    char choice;
+
+    std::cout << "enter direction (wasd)";
+    std::cin >> choice;
+
+    switch (choice) {
+        case 'w':
+            _game.getBoard().circularShiftUp();
+        break;
+        case 'a':
+            _game.getBoard().circularShiftLeft();
+        break;
+        case 's':
+            _game.getBoard().circularShiftDown();
+        break;
+        case 'd':
+            _game.getBoard().circularShiftRight();
+        break;
+        default:
+            break;
+    }
+}
+
+bool Player::playCard(Game &_game) {
+    size_t x, y, int_value;
+
+    std::cin >> x;
+    std::cin >> y;
+    std::cin >> int_value;
+
+    auto playedCard = this->playCardCheck(_game, x, y, int_value);
+
+    if (!playedCard)
+        return false;
+
+    if (!_game.getBoard().checkIllusion(x, y, Card::Color::Undefined) && _game.getBoard().checkIllusionValue(x, y, int_value)) {
+        _game.getBoard().placeCard(x, y, std::move(*playedCard));
+        this->placeCard(x, y);
+    }
+
+    else {
+        _game.getBoard().resetIllusion(x, y);
+        _game.m_eliminatedCards.push_back(std::move(*playedCard));
+    }
+
+    return true;
+}
+
+std::optional<Card> Player::playCardCheck(Game &_game, const size_t _x, const size_t _y, const size_t _int_value) {
+    if (!_game.checkPartial(_x, _y, _int_value))
+        return std::nullopt;
+
+    if (_game.getBoard().checkIllusion(_x, _y, this->m_color))
+        return std::nullopt;
+
+    auto playedCard = this->useCard(static_cast<Card::Value>(_int_value));
+
+    return playedCard;
+}
+
+bool Player::playIllusion(Game &_game) {
+    size_t x, y, int_value;
+
+    std::cin >> x;
+    std::cin >> y;
+    std::cin >> int_value;
+
+    auto playedCard = this->playCardCheck(_game, x, y, int_value);
+
+    if (!playedCard)
+        return false;
+
+    _game.getBoard().placeCard(x, y, std::move(*playedCard));
+
+    this->placeCard(x, y);
+
+    return true;
+}
+
+std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, const size_t _y, const size_t _int_value) {
+    if (!_game.checkPartial(_x, _y, _int_value))
+        return std::nullopt;
+
+    if (_game.getBoard().checkIllusion(_x, _y, Card::Color::Player1) || _game.getBoard().checkIllusion(_x, _y, Card::Color::Player2))
+        return std::nullopt;
+
+    auto playedCard = this->useCard(static_cast<Card::Value>(_int_value));
+
+    return playedCard;
+}
+
+bool Player::playerTurn(Game &_game) {
+    char choice;
+
+    std::cout << "Play a card   (c) ";
+    this->printCards();
+
+    std::cout << "Shift board   (s)\n";
+
+    if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
+        std::cout << "Play wizard   (w) " << this->getWizardIndex() << "\n";
+    }
+
+    if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
+        std::cout << "Play power    (p) " <<
+        std::to_string(this->getPowersIndex().first) + " " + std::to_string(this->getPowersIndex().second)
+         << "\n";
+    }
+
+    std::cout << "Play illusion (i) " << (
+         this->wasIllusionPlayed() ? "(already played)" : ""
+    ) << "\n";
+    std::cin >> choice;
+
+    switch (choice) {
+        case 'c':
+            return this->playCard(_game);
+
+        case 's':
+            this->shiftBoard(_game);
+            return false;
+
+        case 'i':
+            return this->playIllusion(_game);
+
+        // case 'w':
+        //     if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel)
+        //         return this->playWizard(_color);
+        //
+        // case 'p':
+        //     if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel)
+        //         return this->playPower(_color);
+        default:
+            return false;
+    }
 }
