@@ -62,9 +62,6 @@ public:
 
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
 
-    [[nodiscard]] bool playWizard(Card::Color _color);
-    [[nodiscard]] bool playPower(Card::Color _color);
-
     void playExplosion();
 
 };

@@ -2,7 +2,7 @@
 #include "Board.h"
 #include "Game.h"
 
-bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
+bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game, const bool _check) {
     size_t x, y;
     Board &board = _game.m_board;
 
@@ -29,7 +29,7 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
+bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const bool _check) {
     size_t index;
     char choice;
     Board &board = _game.m_board;
@@ -111,7 +111,7 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
+bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _check) {
     size_t x, y, cardValue;
     Board &board = _game.m_board;
 
@@ -152,8 +152,7 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game) {
     return true;
 }
 
-
-bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
+bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game, const bool _check) {
     size_t x, y;
     Board &board = _game.m_board;
 
@@ -175,7 +174,7 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
+bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game, const bool _check) {
     size_t startX, startY, endX, endY;
     Board &board = _game.m_board;
 
@@ -213,7 +212,7 @@ bool Wizard::WizardActions::moveStackOwn(Player &_player, Game &_game) {
     return false;
 }
 
-bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
+bool Wizard::WizardActions::extraEter(Player &_player, Game &_game, const bool _check) {
     size_t x, y;
     Board &board = _game.m_board;
 
@@ -232,7 +231,7 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game) {
     return true;
 }
 
-bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
+bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game, const bool _check) {
     size_t startX, startY, endX, endY;
     Board &board = _game.m_board;
 
@@ -271,7 +270,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game) {
     return false;
 }
 
-bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {
+bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board; 
     std::cout << "Move edge of the playing field and move it to a different edge\n";
     char choice;
@@ -320,13 +319,3 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game) {
     }
     return true;
 }
-
-std::pair<size_t, size_t> Wizard::getHole() {
-    return this->m_hole;
-}
-
-void Wizard::setHole(const std::pair<size_t, size_t> &_hole) {
-    this->m_hole = _hole;
-}
-
-

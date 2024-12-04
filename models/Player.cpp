@@ -125,11 +125,11 @@ bool Player::wasIllusionPlayed() const {
     return this->m_playedIllusion;
 }
 
-bool Player::useWizard(Game& _game) {
+bool Player::useWizard(Game& _game, const bool _check) {
     if (m_wizard_index == -1)
         return false;
 
-    const bool legal = Wizard::getInstance().play(m_wizard_index, *this, _game);
+    const bool legal = Wizard::getInstance().play(m_wizard_index, *this, _game, _check);
 
     if (legal)
         m_wizard_index = -1;
@@ -137,11 +137,11 @@ bool Player::useWizard(Game& _game) {
     return legal;
 }
 
-bool Player::usePower(Game& _game, const bool _first) {
+bool Player::usePower(Game& _game, const bool _first, const bool _check) {
     if (_first ? m_powers_index.first == -1 : m_powers_index.second == -1)
         return false;
 
-    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second, *this, _game);
+    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second, *this, _game, _check);
 
     if (legal)
         _first ? m_powers_index.first = -1 : m_powers_index.second = -1;
@@ -267,6 +267,28 @@ std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, cons
     return playedCard;
 }
 
+bool Player::playWizard(Game& _game, const bool _check = false) {
+    return this->useWizard(_game, _check);
+}
+
+bool Player::playPower(Game &_game, const bool _check = false) {
+    char choice;
+    bool first;
+
+    std::cout << "Press 'f' for first power and 's' for second power.\n";
+    std::cin >> choice;
+
+    if (tolower(choice) == 'f')
+        first = true;
+
+    else if (tolower(choice) == 's')
+        first = false;
+
+    else return false;
+
+    return this->usePower(_game, first, _check);
+}
+
 bool Player::playerTurn(Game &_game) {
     char choice;
 
@@ -279,7 +301,7 @@ bool Player::playerTurn(Game &_game) {
         std::cout << "Play wizard   (w) " << this->getWizardIndex() << "\n";
     }
 
-    if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
+    if (_game.getGameType() == Game::GameType::PowerDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
         std::cout << "Play power    (p) " <<
         std::to_string(this->getPowersIndex().first) + " " + std::to_string(this->getPowersIndex().second)
          << "\n";
@@ -301,13 +323,13 @@ bool Player::playerTurn(Game &_game) {
         case 'i':
             return this->playIllusion(_game);
 
-        // case 'w':
-        //     if (m_gameType == GameType::WizardDuel || m_gameType == GameType::WizardAndPowerDuel)
-        //         return this->playWizard(_color);
-        //
-        // case 'p':
-        //     if (m_gameType == GameType::PowerDuel || m_gameType == GameType::WizardAndPowerDuel)
-        //         return this->playPower(_color);
+        case 'w':
+            if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                return this->playWizard(_game);
+
+        case 'p':
+            if (_game.getGameType() == Game::GameType::PowerDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                return this->playPower(_game);
         default:
             return false;
     }

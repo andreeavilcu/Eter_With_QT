@@ -155,34 +155,6 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     return true;
 }
 
-bool Game::playWizard(const Card::Color _color) {
-    if (_color == Card::Color::Player1)
-        return m_player1.useWizard(*this);
-
-    return m_player2.useWizard(*this);
-}
-
-bool Game::playPower(const Card::Color _color) {
-    char choice;
-    bool first;
-
-    std::cout << "Press 'f' for first power and 's' for second power.\n";
-    std::cin >> choice;
-
-    if (tolower(choice) == 'f')
-        first = true;
-
-    else if (tolower(choice) == 's')
-        first = false;
-
-    else return false;
-
-    if (_color == Card::Color::Player1)
-        return m_player1.usePower(*this, first);
-
-    return m_player2.usePower(*this, first);
-}
-
 void Game::playExplosion() {
     std::vector<std::vector<Explosion::ExplosionEffect>> explosionEffects = Explosion::getInstance().generateExplosion(this->m_board.getSize());
 

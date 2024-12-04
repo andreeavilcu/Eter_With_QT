@@ -62,8 +62,8 @@ public:
 
     [[nodiscard]] bool wasIllusionPlayed() const;
 
-    bool useWizard(Game& _game);
-    bool usePower(Game& _game, bool _first);
+    bool useWizard(Game& _game, bool _check);
+    bool usePower(Game& _game, bool _first, bool _check);
 
     std::optional<Card> useCard(Card::Value _value);
     std::optional<Card> useIllusion(Card::Value _value);
@@ -75,6 +75,9 @@ public:
 
     bool playIllusion(Game& _game);
     std::optional<Card> playIllusionCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
+
+    [[nodiscard]] bool playWizard(Game& _game, bool _check);
+    [[nodiscard]] bool playPower(Game& _game, bool _check);
 
     bool playerTurn(Game& _game);
 };

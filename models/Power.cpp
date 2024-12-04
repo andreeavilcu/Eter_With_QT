@@ -2,7 +2,7 @@
 #include "Board.h"
 #include "Game.h"
 
-bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
+bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const bool _check) {
     Board &board = _game.m_board;
 
     auto explosionEffects = Explosion::getInstance().generateExplosion(board.getSize());
@@ -33,7 +33,7 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::destruction(Player& _player, Game& _game) {
+bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     auto& opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
@@ -60,7 +60,7 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::flame(Player& _player, Game& _game) {
+bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     size_t illusionRow = -1, illusionCol = -1;
@@ -103,7 +103,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::lava(Player& _player, Game& _game) {
+bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
     size_t chosenValue;
     std::cin >> chosenValue;
 
@@ -144,7 +144,7 @@ bool Power::PowerAction::lava(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::ash(Player& _player, Game& _game) {
+bool Power::PowerAction::ash(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     const auto& eliminatedCards = _player.getEliminatedCards();
@@ -181,7 +181,7 @@ bool Power::PowerAction::ash(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::spark(Player& _player, Game& _game) {
+bool Power::PowerAction::spark(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     std::vector<std::tuple<size_t, size_t, Card>> coveredCards;
@@ -238,7 +238,7 @@ bool Power::PowerAction::spark(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::squall(Player& _player, Game& _game) {
+bool Power::PowerAction::squall(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     std::vector<std::tuple<size_t, size_t, Card>> visibleOpponentCards;
@@ -290,8 +290,7 @@ bool Power::PowerAction::squall(Player& _player, Game& _game) {
     return true;
 }
 
-
-bool Power::PowerAction::gale(Player& _player, Game& _game) {
+bool Power::PowerAction::gale(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     std::vector<std::tuple<Card, size_t, size_t>> coveredCards;
@@ -329,7 +328,7 @@ bool Power::PowerAction::gale(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
+bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
     std::cout << "Shift a full row or column in the desired direction.\n";
 
@@ -433,7 +432,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::gust(Player& _player, Game& _game) {
+bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -491,7 +490,7 @@ bool Power::PowerAction::gust(Player& _player, Game& _game) {
 
 }
 
-bool Power::PowerAction::mirage(Player& _player, Game& _game) {
+bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -524,7 +523,7 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game) {
     return false;
 }
 
-bool Power::PowerAction::storm(Player& _player, Game& _game) {
+bool Power::PowerAction::storm(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -549,7 +548,7 @@ bool Power::PowerAction::storm(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::tide(Player& _player, Game& _game) {
+bool Power::PowerAction::tide(Player& _player, Game& _game, const bool _check) {
     size_t x, y,v,w;
     Board& board = _game.m_board;
 
@@ -570,7 +569,7 @@ bool Power::PowerAction::tide(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::mist(Player& _player, Game& _game) {
+bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -599,7 +598,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::wave(Player& _player, Game& _game) {
+bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -654,7 +653,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
+bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
     /*size_t x, y;
     Board& board = _game.m_board;
 
@@ -755,8 +754,7 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game) {
     return true;
 }
 
-
-bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
+bool Power::PowerAction::tsunami(Player& _player, Game& _game, const bool _check) {
     
     //dupa ce player 1 a ales coloana restrictionata pentru player2 player 2 nu mai poate pune  carti niciunde
     char line;
@@ -806,7 +804,7 @@ bool Power::PowerAction::tsunami(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
+bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
     char choice;
     size_t index;
@@ -926,8 +924,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game) {
     return true;
 }
 
-
-bool Power::PowerAction::support(Player& _player, Game& _game) {
+bool Power::PowerAction::support(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -964,7 +961,7 @@ bool Power::PowerAction::support(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
+bool Power::PowerAction::earthquake(Player& _player, Game& _game, const bool _check) {
     Board& board= _game.m_board;
     bool anyRemoved = false;
     
@@ -992,7 +989,7 @@ bool Power::PowerAction::earthquake(Player& _player, Game& _game) {
     return anyRemoved;
 }
 
-bool Power::PowerAction::crumble(Player& _player, Game& _game) {
+bool Power::PowerAction::crumble(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -1031,7 +1028,7 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::border(Player& _player, Game& _game) {
+bool Power::PowerAction::border(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
@@ -1099,7 +1096,7 @@ bool Power::PowerAction::border(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
+bool Power::PowerAction::avalanche(Player& _player, Game& _game, const bool _check) {
     size_t x1, y1, x2, y2;
     Board& board = _game.m_board;
 
@@ -1152,7 +1149,7 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game) {
     return true;
 }
 
-bool Power::PowerAction::rock(Player& _player, Game& _game) {
+bool Power::PowerAction::rock(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
     
@@ -1181,70 +1178,4 @@ bool Power::PowerAction::rock(Player& _player, Game& _game) {
    
     std::cout << "Illusion covered with a card.\n";
     return true;
-}
-
-Power::FuncType Power::getPowerAction(size_t _index) const
-{
-    if (_index >= power_count) {
-        throw std::out_of_range("Index exceeds the number of powers!");
-    }
-    return m_powers[_index];
-}
-
-void Power::setPowerAction(size_t _index, FuncType _func)
-{
-    if (_index >= power_count) {
-        throw std::out_of_range("Index exceeds the number of powers.");
-    }
-    m_powers[_index] = _func;
-}
-
-std::pair<size_t, size_t> Power::getMinus() const
-{
-    return m_minus;
-}
-
-void Power::setMinus(size_t _row, size_t _col)
-{
-    this->m_minus = { _row, _col };
-}
-
-std::pair<size_t, size_t> Power::getPlus() const
-{
-    return m_plus;
-}
-
-void Power::setPlus(size_t _row, size_t _col)
-{
-    this->m_plus = { _row, _col };
-}
-
-size_t Power::getRestrictedRow() const
-{
-    return m_restrictedRow;
-}
-
-void Power::setRestrictedRow(size_t _row)
-{
-    this->m_restrictedRow = _row;
-}
-
-size_t Power::getRestrictedCol() const
-{
-    return m_restrictedCol;
-}
-
-void Power::setRestrictedCol(size_t _col)
-{
-    this->m_restrictedCol = _col;
-}
-
-bool Power::getJustBlocked() const
-{
-    return m_justBlocked;
-}
-
-void Power::setJustBlocked(bool _blocked)
-{
-    this->m_justBlocked = _blocked;
 }
