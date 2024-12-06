@@ -147,7 +147,7 @@ bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
 bool Power::PowerAction::ash(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
-    const auto& eliminatedCards = _game.getEliminatedCards();
+    const auto& eliminatedCards = _game.m_eliminatedCards;
     if (eliminatedCards.empty()) {
         return false;
     }
@@ -165,14 +165,14 @@ bool Power::PowerAction::ash(Player& _player, Game& _game, const bool _check) {
 
     Card chosenCard = eliminatedCards[cardIndex - 1];
 
-    _game.getEliminatedCards().erase(_game.getEliminatedCards().begin() + 1);
+    _game.m_eliminatedCards.erase(_game.m_eliminatedCards.begin() + 1);
 
     size_t x, y;
     std::cout << "Enter (x, y) coordinates to place the card (0-indexed): ";
     std::cin >> x >> y;
 
     if(!board.checkIndexes(x, y) || !board.checkValue(x, y, chosenCard.getValue())) {
-        _game.addEliminatedCard(chosenCard);
+        _game.m_eliminatedCards.push_back(chosenCard);
         return false;
     }
 

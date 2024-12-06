@@ -154,15 +154,3 @@ bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_valu
     }
     return true;
 }
-
-void Game::addEliminatedCard(const Card &_card) {
-    m_eliminatedCards.push_back(_card);
-}
-
-std::vector<Card> Game::getEliminatedCards() const {
-    return m_eliminatedCards;
-}
-
-void Game::setEliminatedCards(const std::vector<Card> &m_eliminated_cards) {
-    m_eliminatedCards = m_eliminated_cards;
-}

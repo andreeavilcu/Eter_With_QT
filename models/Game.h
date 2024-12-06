@@ -50,20 +50,12 @@ public:
 
     void run();
 
-protected:
-    [[nodiscard]] std::vector<Card> getEliminatedCards() const;
-
-    void setEliminatedCards(const std::vector<Card> &m_eliminated_cards);
-
-public:
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] bool checkCardAfterReturn(Card::Color _color, Card::Value _value) const;
 
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
 
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
-
-    void addEliminatedCard(const Card& _card);
 
 };
 

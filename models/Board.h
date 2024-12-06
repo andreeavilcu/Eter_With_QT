@@ -19,7 +19,7 @@ public:
 
     explicit Board(size_t _size);
     [[nodiscard]] size_t getSize() const;
-    [[nodiscard]] std::vector<std::vector<std::vector<Card>>> getBoard() const;
+    [[nodiscard]] std::vector<std::vector<std::vector<Card>>>& getBoard();
 
     void circularShiftUp();
     void circularShiftDown();

@@ -15,7 +15,7 @@ size_t Board::getSize() const {
     return this->m_board.size();
 }
 
-std::vector<std::vector<std::vector<Card>>> Board::getBoard() const{
+std::vector<std::vector<std::vector<Card>>>& Board::getBoard() {
     return m_board;
 }
 
