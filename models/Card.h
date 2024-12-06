@@ -37,15 +37,12 @@ public:
 
     bool operator==(const Card& other) const;
 
+    void setIllusion();
+    void resetIllusion();
 private:
     Value m_value;
     Color m_color;
 
     bool m_illusion = false;
-
-public:
-    void setIllusion();
-    void resetIllusion();
-    
 };
 

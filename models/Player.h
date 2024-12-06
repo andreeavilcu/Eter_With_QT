@@ -27,6 +27,7 @@ protected:
     
 public:
     friend class Wizard;
+    friend class Board;
 
     [[nodiscard]] const std::vector<Card>& getCards() const;
     void setCards(const std::vector<Card>& _cards);

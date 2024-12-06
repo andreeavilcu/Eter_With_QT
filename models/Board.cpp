@@ -1,6 +1,6 @@
 #include "Board.h"
 
-//#include <bits/ranges_algo.h>
+#include <bits/ranges_algo.h>
 
 #include "Wizard.h"
 
@@ -13,6 +13,10 @@ Board::Board(size_t _size) {
 
 size_t Board::getSize() const {
     return this->m_board.size();
+}
+
+std::vector<std::vector<std::vector<Card>>> Board::getBoard() const{
+    return m_board;
 }
 
 void Board::circularShiftUp() {
@@ -153,9 +157,6 @@ bool Board::checkIllusionValue(const size_t _row, const size_t _col, const size_
         return true;
 
     return static_cast<size_t>(m_board[_row][_col].back().getValue()) < _value;
-}
-void Board::resetIllusion(const size_t _row, const size_t _col) {
-    this->m_board[_row][_col].back().resetIllusion();
 }
 
 Card::Color Board::checkWin() const {

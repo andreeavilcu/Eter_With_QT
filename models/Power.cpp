@@ -79,7 +79,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
     }
 
     if (illusionFound) {
-        board.resetIllusion(illusionRow, illusionCol);
+        board.m_board[illusionRow][illusionCol].back().resetIllusion();
     }
 
     board.printBoard();

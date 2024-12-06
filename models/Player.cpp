@@ -217,7 +217,7 @@ bool Player::playCard(Game &_game) {
     }
 
     else {
-        _game.getBoard().resetIllusion(x, y);
+        _game.getBoard().getBoard()[x][y].back().resetIllusion();
         _game.m_eliminatedCards.push_back(std::move(*playedCard));
     }
 

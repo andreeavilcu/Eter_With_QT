@@ -19,6 +19,7 @@ public:
 
     explicit Board(size_t _size);
     [[nodiscard]] size_t getSize() const;
+    [[nodiscard]] std::vector<std::vector<std::vector<Card>>> getBoard() const;
 
     void circularShiftUp();
     void circularShiftDown();
@@ -35,8 +36,6 @@ public:
 
     [[nodiscard]] bool checkIllusion(size_t _row, size_t _col, Card::Color _color) const;
     [[nodiscard]] bool checkIllusionValue(size_t _row, size_t _col, size_t _value) const;
-
-    void resetIllusion(size_t _row, size_t _col);
 
     [[nodiscard]] Card::Color checkWin() const;
 
