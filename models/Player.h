@@ -22,7 +22,6 @@ protected:
 
     bool m_playedIllusion{false};
 
-    std::vector<Card> m_eliminated_cards{}; //TODO: use addEliminatedCard in every method that eliminates a card
     std::pair<size_t, size_t> m_last_placed_card;
     
 public:
@@ -37,11 +36,6 @@ public:
 
     void printCards();
     void placeCard(size_t row, size_t col);
-
-    void addEliminatedCard(const Card& _card);
-
-    [[nodiscard]] std::vector<Card> getEliminatedCards();
-    void setEliminatedCards(const std::vector<Card>& _cards);
 
     [[nodiscard]] Card::Color getColor() const;
     void setColor(Card::Color _color);
