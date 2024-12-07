@@ -17,11 +17,11 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const
     }
     while (!quit && Explosion::getInstance().rotateExplosion(quit));
 
-    auto returnedCards = board.useExplosion();
+    board.useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
 
     auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
 
-    for (auto &card: returnedCards)
+    for (auto &card: _game.m_returnedCards)
         if (card.getColor() == _player.getColor())
             _player.returnCard(card);
 

@@ -297,7 +297,7 @@ void Player::playExplosion(Game& _game) {
     if (quit)
         return;
 
-    _game.m_returnedCards = _game.getBoard().useExplosion();
+    _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
 
     for (auto card : _game.m_returnedCards) {
         card.getColor() == Card::Color::Player1
