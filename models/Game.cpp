@@ -2,46 +2,78 @@
 
 Game::Game(const GameType _gameType) :
     m_board{ _gameType == Game::GameType::Training
-       ? static_cast<size_t>(GridSize::Three)
-       : static_cast<size_t>(GridSize::Four) },
+        ? static_cast<size_t>(GridSize::Three)
+        : static_cast<size_t>(GridSize::Four) },
 
-    m_gameType{ _gameType },
+    m_gameType{ _gameType }
+    ,m_player1{ Card::Color::Undefined, {}, 0, 0, 0 }, 
+    m_player2{ Card::Color::Undefined, {}, 0, 0, 0 }
+{
+    std::random_device rd;
+    std::mt19937 gen{ rd() };
+    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
+    std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
 
-    m_player1{ Card::Color::Player1, (_gameType == GameType::Training
-        ? std::vector<Card>{
-            Card{Card::Value::One}, Card{Card::Value::One},
-            Card{Card::Value::Two}, Card{Card::Value::Two},
-            Card{Card::Value::Three}, Card{Card::Value::Three},
-            Card{Card::Value::Four}
-        }
-        : std::vector<Card>{
-            Card{Card::Value::Eter}, Card{Card::Value::One},
-            Card{Card::Value::One}, Card{Card::Value::Two},
-            Card{Card::Value::Two}, Card{Card::Value::Two},
-            Card{Card::Value::Three}, Card{Card::Value::Three},
-            Card{Card::Value::Three}, Card{Card::Value::Four}
-        }),
-        _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel,
-        _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
-    },
+    size_t wizardIndex1 = _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel
+        ? wizardDistribution(gen)
+        : static_cast<size_t>(-1);
 
-    m_player2{ Card::Color::Player2, (_gameType == GameType::Training
-        ? std::vector<Card>{
-            Card{Card::Value::One}, Card{Card::Value::One},
-            Card{Card::Value::Two}, Card{Card::Value::Two},
-            Card{Card::Value::Three}, Card{Card::Value::Three},
-            Card{Card::Value::Four}
-        }
-        : std::vector<Card>{
-            Card{Card::Value::Eter}, Card{Card::Value::One},
-            Card{Card::Value::One}, Card{Card::Value::Two},
-            Card{Card::Value::Two}, Card{Card::Value::Two},
-            Card{Card::Value::Three}, Card{Card::Value::Three},
-            Card{Card::Value::Three}, Card{Card::Value::Four}
-        }),
-        _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel,
-        _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
-    } {}
+    size_t wizardIndex2 = _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel
+        ? wizardDistribution(gen)
+        : static_cast<size_t>(-1);
+
+    std::pair<size_t, size_t> powerIndices1 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
+        ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
+        : std::make_pair(static_cast<size_t>(-1), static_cast<size_t>(-1));
+
+    std::pair<size_t, size_t> powerIndices2 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
+        ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
+        : std::make_pair(static_cast<size_t>(-1), static_cast<size_t>(-1));
+
+   
+    m_player1 = Player{
+     Card::Color::Player1,
+     (_gameType == GameType::Training
+         ? std::vector<Card>{
+             Card{Card::Value::One}, Card{Card::Value::One},
+             Card{Card::Value::Two}, Card{Card::Value::Two},
+             Card{Card::Value::Three}, Card{Card::Value::Three},
+             Card{Card::Value::Four}
+         }
+         : std::vector<Card>{
+             Card{Card::Value::Eter}, Card{Card::Value::One},
+             Card{Card::Value::One}, Card{Card::Value::Two},
+             Card{Card::Value::Two}, Card{Card::Value::Two},
+             Card{Card::Value::Three}, Card{Card::Value::Three},
+             Card{Card::Value::Three}, Card{Card::Value::Four}
+         }),
+     wizardIndex1,                   
+     powerIndices1.first,            
+     powerIndices1.second    
+    };
+
+    m_player2 = Player{
+        Card::Color::Player2,
+        (_gameType == GameType::Training
+            ? std::vector<Card>{
+                Card{Card::Value::One}, Card{Card::Value::One},
+                Card{Card::Value::Two}, Card{Card::Value::Two},
+                Card{Card::Value::Three}, Card{Card::Value::Three},
+                Card{Card::Value::Four}
+            }
+            : std::vector<Card>{
+                Card{Card::Value::Eter}, Card{Card::Value::One},
+                Card{Card::Value::One}, Card{Card::Value::Two},
+                Card{Card::Value::Two}, Card{Card::Value::Two},
+                Card{Card::Value::Three}, Card{Card::Value::Three},
+                Card{Card::Value::Three}, Card{Card::Value::Four}
+            }),
+        wizardIndex2,                   
+        powerIndices2.first,            
+        powerIndices2.second   
+    };
+}
+
 
 void Game::run() {
     bool player1Turn = true;

@@ -31,7 +31,7 @@ public:
     [[nodiscard]] const std::vector<Card>& getCards() const;
     void setCards(const std::vector<Card>& _cards);
 
-    explicit Player(Card::Color _color, const std::vector<Card>& _cards, bool _wizard, bool _powers);
+    explicit Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond);
     void returnCard(const Card& _card);
 
     void printCards();

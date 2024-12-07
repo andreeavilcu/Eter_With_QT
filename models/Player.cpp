@@ -12,25 +12,16 @@ void Player::setCards(const std::vector<Card>& _cards)
     this->m_cards = _cards;
 }
 
-Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const bool _wizard, const bool _powers) :
+Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond) :
     m_color{ _color },
-    m_cards{ _cards } {
+    m_cards{ _cards },
+    m_wizard_index{ _wizardIndex},
+    m_powers_index{_powerIndexFirst, _powerIndexSecond} {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
 
-    std::random_device rd;
-    std::mt19937 gen{ rd() };
-
-    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
-    std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
-
-    m_wizard_index = _wizard ? wizardDistribution(gen) : -1;
-    m_powers_index.first = _powers ? /*powerDistribution(gen)*/ 22: -1;
-
-    do {
-        m_powers_index.second = _powers ? /*powerDistribution(gen)*/ 23: -1;
-    } while (m_powers_index.first == m_powers_index.second && _powers);
+    
 }
 
 void Player::returnCard(const Card &_card) {

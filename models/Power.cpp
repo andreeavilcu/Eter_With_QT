@@ -827,7 +827,6 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
         return false;
     }
 
-    // Verificăm numărul de poziții ocupate în rând sau coloană
     int occupiedPositions = 0;
     if (choice == 'r') {
         for (size_t col = 0; col < board.getSize(); ++col) {
@@ -859,7 +858,6 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
     std::vector<Card> mergedStack;
 
     if (choice == 'r') {
-        // Mutăm pe rând
         if (direction == 'l') {
             for (size_t col = 0; col < board.getSize(); ++col) {
                 while (!board.m_board[index][col].empty()) {
@@ -869,12 +867,11 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[index][0] = std::move(mergedStack);
 
-            // Curățăm restul coloanelor din rând
             for (size_t col = 1; col < board.getSize(); ++col) {
                 board.m_board[index][col].clear();
             }
         }
-        else { // direction == 'r'
+        else { 
             for (int col = board.getSize() - 1; col >= 0; --col) {
                 while (!board.m_board[index][col].empty()) {
                     mergedStack.push_back(std::move(board.m_board[index][col].back()));
@@ -883,13 +880,12 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[index][board.getSize() - 1] = std::move(mergedStack);
 
-            // Curățăm restul coloanelor din rând
             for (size_t col = 0; col < board.getSize() - 1; ++col) {
                 board.m_board[index][col].clear();
             }
         }
     }
-    else { // Mutăm pe coloană
+    else {
         if (direction == 'u') {
             for (size_t row = 0; row < board.getSize(); ++row) {
                 while (!board.m_board[row][index].empty()) {
@@ -899,12 +895,12 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[0][index] = std::move(mergedStack);
 
-            // Curățăm restul rândurilor din coloană
+           
             for (size_t row = 1; row < board.getSize(); ++row) {
                 board.m_board[row][index].clear();
             }
         }
-        else { // direction == 'd'
+        else { 
             for (int row = board.getSize() - 1; row >= 0; --row) {
                 while (!board.m_board[row][index].empty()) {
                     mergedStack.push_back(std::move(board.m_board[row][index].back()));
@@ -913,7 +909,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[board.getSize() - 1][index] = std::move(mergedStack);
 
-            // Curățăm restul rândurilor din coloană
+            
             for (size_t row = 0; row < board.getSize() - 1; ++row) {
                 board.m_board[row][index].clear();
             }
@@ -972,7 +968,7 @@ bool Power::PowerAction::earthquake(Player& _player, Game& _game, const bool _ch
 
             if (board.m_board[row][col].back().getValue() == Card::Value::One && !board.m_board[row][col].back().isIllusion())
             {
-                // sa le dam move in m_removedCards
+                _game.m_eliminatedCards.push_back(std::move(board.m_board[row][col].back()));
                 board.m_board[row][col].pop_back();
                 anyRemoved = true;
             }
@@ -1107,10 +1103,11 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game, const bool _che
     std::cout << "Eneter the coordinates for the second stack/.\n";
     std::cin >> x2 >> y2;
 
+  
     if (!board.checkIndexes(x1, y1) && !board.checkIndexes(x2, y2))
         return false;
 
-    if (!(x1 == x2 && abs(static_cast<int>(y1) - static_cast<int>(y2)) == 1) || (y1 == y2 && abs(static_cast<int>(x1) - static_cast<int>(x2)) == 1))
+    if (!(x1 == x2 && abs(static_cast<int>(y1) - static_cast<int>(y2)) == 1) && !(y1 == y2 && abs(static_cast<int>(x1) - static_cast<int>(x2)) == 1))
         return false;
 
     if (x1 == x2) {
@@ -1150,6 +1147,7 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game, const bool _che
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game, const bool _check) {
+    //TO DO: putere disponibila doar daca se joaca jocul cu iluzii
     size_t x, y;
     Board& board = _game.m_board;
     
