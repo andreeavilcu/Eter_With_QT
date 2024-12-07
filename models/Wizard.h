@@ -22,33 +22,10 @@ public:
         static Wizard instance;
         return instance;
     }
-    
-    using FuncType = std::function<bool(Player&, Game&, bool)>;
-
-    std::pair<size_t, size_t> getHole() {
-        return this->m_hole;
-    }
-
-    void setHole(const std::pair<size_t, size_t>& _hole) {
-        this->m_hole = _hole;
-    }
-
-
-    const std::array<FuncType, wizard_count>& getWizards() const {
-        return m_wizards;
-    }
-    void setWizards(const std::array<FuncType, wizard_count>& _wizards) {
-        this->m_wizards = _wizards;
-    }
-
-    static constexpr auto getWizardCount() {
-        return wizard_count;
-    }
 
 private:
     Wizard() = default;
     ~Wizard() = default;
-
 
     struct WizardActions {
         static bool eliminateCard(Player& _player, Game& _game, bool _check);
@@ -65,7 +42,7 @@ private:
         return m_wizards[_index](_player, _game, _check);
     }
 
-    
+    using FuncType = std::function<bool(Player&, Game&, bool)>;
 
     std::array<FuncType, wizard_count> m_wizards = {
         
@@ -79,6 +56,15 @@ private:
         &WizardActions::moveEdge
  
     };
+
+public:
+    std::pair<size_t, size_t> getHole() {
+        return this->m_hole;
+    }
+
+    void setHole(const std::pair<size_t, size_t> &_hole) {
+        this->m_hole = _hole;
+    }
 
 private:
     std::pair<size_t, size_t> m_hole{-1, -1};

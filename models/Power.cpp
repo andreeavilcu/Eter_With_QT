@@ -83,20 +83,24 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
         board.m_board[illusionRow][illusionCol].back().resetIllusion();
     }
 
+    board.printBoard();
+
     size_t x, y, int_value;
     std::cin >> x >> y >> int_value;
 
-    if (!_game.checkPartial(x, y, int_value)) {
-        return false;
-    }
+    // player.playCard();
 
-    auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
-    if (!playedCard) {
-        return false;
-    }
-
-    board.placeCard(x, y, std::move(*playedCard));
-    _player.placeCard(x, y);
+    // if (!_game.checkPartial(x, y, int_value, 0)) {
+    //     return false;
+    // }
+    //
+    // auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
+    // if (!playedCard) {
+    //     return false;
+    // }
+    //
+    // board.placeCard(x, y, std::move(*playedCard));
+    // _player.placeCard(x, y);
     return true;
 }
 
@@ -104,7 +108,7 @@ bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
     size_t chosenValue;
     std::cin >> chosenValue;
 
-    if (chosenValue < 1 || chosenValue > 4) {
+    if (chosenValue < 0 || chosenValue > 4) {
         return false;
     }
 
@@ -129,17 +133,10 @@ bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
     for (size_t row = 0; row < board.getSize(); ++row) {
         for (size_t col = 0; col < board.getSize(); ++col) {
             if (!board.m_board[row][col].empty()) {
-                Card topCard = board.m_board[row][col].back();
+                Card topCard = std::move(board.m_board[row][col].back());
                 if (topCard.getValue() == targetValue && !topCard.isIllusion()) {
-                    Card::Color cardOwner = topCard.getColor();
-
+                    _game.m_returnedCards.push_back(std::move(topCard));
                     board.m_board[row][col].pop_back();
-
-                    if (cardOwner == Card::Color::Player1) {
-                        _game.m_player1.returnCard(topCard);
-                    } else if (cardOwner == Card::Color::Player2) {
-                        _game.m_player2.returnCard(topCard);
-                    }
                 }
             }
         }
@@ -371,61 +368,67 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
     if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
         return false;
 
-    /*if (typeChoice == 'r') {
+    for (size_t i = 0; i < board.m_board.size(); ++i)
+        if (board.m_board[index][i].empty() || board.m_board[i][index].empty())
+            return 0;
+
+    if (typeChoice == 'r') {
         auto& row = board.m_board[index];
-        std::vector<Card> shiftedRow(row.size());
 
         if (directionChoice == 'a') {
-            Card outCard = std::move(row[0]);
+            auto outStack = std::move(row[0]);
             for (size_t i = 0; i < row.size() - 1; ++i) {
-                shiftedRow[i] = std::move(row[i + 1]);
+                row[i] = std::move(row[i + 1]);
             }
-            shiftedRow[row.size() - 1] = std::move(outCard);
-            row = std::move(shiftedRow);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(row[row.size() - 1]);
+            row[row.size() - 1].clear();
+
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
         else if (directionChoice == 'd') {
-            Card outCard = std::move(row[row.size() - 1]);
+            auto outStack=std::move(row[row.size() - 1]);
             for (size_t i = row.size() - 1; i > 0; --i) {
-                shiftedRow[i] = std::move(row[i - 1]);
+                row[i] = std::move(row[i - 1]);
             }
-            shiftedRow[0] = std::move(outCard);
-            row = std::move(shiftedRow);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(row[0]);
+            row[0].clear();
+            
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
 
     }
     else if (typeChoice == 'c') {
-        std::vector<Card> column(board.m_board.size());
-        for (size_t i = 0; i < board.m_board.size(); ++i) {
-            column[i] = std::move(board.m_board[i][index]);
-        }
-
-        std::vector<Card> shiftedColumn(column.size());
         if (directionChoice == 's') {
-            Card outCard = std::move(board.m_board[board.m_board.size() - 1][index]);
+            auto outStack = std::move(board.m_board[board.m_board.size() - 1][index]);
             for (size_t i = board.m_board.size() - 1; i > 0; --i) {
                 board.m_board[i][index] = std::move(board.m_board[i - 1][index]);
             }
-            board.m_board[0][index] = std::move(outCard);
 
-            _player.returnCard(outCard);
+            auto removed = std::move(board.m_board[0][index]);
+            board.m_board[0][index].clear();
+
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(card);
         }
 
-        else if (directionChoice == 'w') {
-            Card outCard = std::move(board.m_board[0][index]);
-            for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
-                board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
+        else
+            if (directionChoice == 'w') {
+                auto outStack = std::move(board.m_board[0][index]);
+                for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
+                    board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
+                }
+
+                auto removed = std::move(board.m_board[board.m_board.size() - 1][index]);
+                board.m_board[board.m_board.size() - 1][index].clear();
+
+                for (auto& card : outStack)
+                    _game.m_returnedCards.push_back(card);
             }
-            board.m_board[board.m_board.size() - 1][index] = std::move(outCard);
-
-
-            _player.returnCard(outCard);
-        }
-        }
-    */
+    }
 
     return true;
 }
@@ -435,42 +438,65 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     std::cout << "Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates for card (0-indexed): ";
     std::cin >> x >> y;
 
     if (board.m_board[x][y].empty()) {
         std::cout << "There is no card in this position!\n";
         return false;
     }
-    Card& currentCard = board.m_board[x][y].back();
-    std::vector<std::pair<size_t, size_t>> adjacents = {
-        {x - 1, y}, {x + 1, y},
-        {x, y - 1}, {x, y + 1}
-    };
-    for (auto& adj : adjacents) {
-        size_t row = adj.first;
-        size_t col = adj.second;
-        if (board.checkIndexes(row, col) && !board.m_board[row][col].empty()) {
-            Card& adjacentCard = board.m_board[row][col].back();
-            if (static_cast<size_t>(currentCard.getValue()) > static_cast<size_t>(adjacentCard.getValue())) {
-                board.m_board[row][col].emplace_back(currentCard.getValue(), currentCard.getColor());
-                board.m_board[x][y].pop_back();
-            }
-            return true;
-        }
-    }
-    std::cout << "No valid adjacent position was found to move the card.\n";
-    return false;
-}
 
-   
+    std::map<char, std::pair<int, int>> directionMap = {
+        {'w', {-1, 0}}, 
+        {'s', {1, 0}},  
+        {'a', {0, -1}}, 
+        {'d', {0, 1}}   
+    };
+
+    std::cout << "Choose a direction (w = up, a = left, s = down, d = right): ";
+    char direction;
+    std::cin >> direction;
+
+    if (directionMap.find(direction) == directionMap.end()) {
+        std::cout << "Invalid direction!\n";
+        return false;
+    }
+
+    auto offset = directionMap[direction];
+    size_t newX = x + offset.first;
+    size_t newY = y + offset.second;
+
+    if (!board.checkIndexes(newX, newY)) {
+        std::cout << "The move is outside the board boundaries!\n";
+        return false;
+    }
+
+    if (board.m_board[newX][newY].empty()) {
+        std::cout << "The target position is empty. Cannot move card there!\n";
+        return false;
+    }
+
+    Card& currentCard = board.m_board[x][y].back();
+    Card& targetCard = board.m_board[newX][newY].back();
+
+    if (static_cast<size_t>(currentCard.getValue()) <= static_cast<size_t>(targetCard.getValue())) {
+        return false;
+    }
+
+    if(board.checkBoardIntegrity())
+        return true;
+    
+    board.m_board[x][y].push_back(std::move(currentCard));
+    board.m_board[newX][newY].pop_back();
+
+}
 
 bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
     std::cout << "Replace your own placed illusion with another illusion.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates for illusion (0-indexed)\n";
     std::cin >> x >> y;
     
     ///isIlusionEnable
@@ -483,10 +509,15 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
         return false;
     }
 
-    auto& topCard = board.m_board[x][y].back();
+    auto topCard = std::move(board.m_board[x][y].back());
     if (topCard.isIllusion() && topCard.getColor() == _player.getColor()) {
         topCard.resetIllusion();
-        topCard.setColor(_player.getColor());
+        
+        _game.m_returnedCards.push_back(topCard);
+
+        // codul pentru a juca alta iuluzie
+        // player.playIllusion
+
         return true;
     }
     std::cout << " Could not replace the ilusion!" << std::endl;
@@ -509,6 +540,11 @@ bool Power::PowerAction::storm(Player& _player, Game& _game, const bool _check) 
 
     auto eliminatedCard = std::move(board.m_board[x][y].back());
     board.m_board[x][y].pop_back();
+
+    if (board.checkBoardIntegrity()) {
+        board.m_board[x][y].push_back(std::move(eliminatedCard));
+        return false;
+    }
 
     return true;
 }
@@ -546,7 +582,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
     if (!board.checkIndexes(x, y))
         return false;
 
-    if (!board.m_board[x][y].empty()) {
+    if (board.m_board[x][y].back().isIllusion()) {
         std::cout << "There is a illusion in this position!\n";
         return false;
     }
@@ -558,7 +594,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
         }
     }
 
-    ///board.m_board[x][y].emplace_back(static_cast<Card::Value>(Value), _player.getColor());
+    // player.playIllusion()
     return true;
 }
 
@@ -570,49 +606,49 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     std::cout << "Enter (x, y) coordinates for power action (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y)) 
-        return false;
-    
-    if (!board.isAPile(y, x)) 
-        return false;
-    
-    const std::array<std::pair<int, int>, 8> directions = { {
-        {-1, 0}, {1, 0}, {0, -1}, {0, 1},
-        {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
-    } };
-
-    std::vector<std::pair<size_t, size_t>> emptyNeighbours;
-    for (const auto& direction : directions) {
-        int newRow = static_cast<int>(y) + direction.first;
-        int newCol = static_cast<int>(x) + direction.second;
-
-        if (newRow >= 0 && newRow < board.getSize() &&  newCol >= 0 && newCol < board.getSize() && board.m_board[newRow][newCol].empty()) {
-            emptyNeighbours.emplace_back(newRow, newCol);
-        }
-    }
-    if (emptyNeighbours.empty()) 
-        return false;
-    
-    std::cout << "Available positions:\n";
-    for (size_t i = 0; i < emptyNeighbours.size(); ++i) 
-        std::cout << i + 1 << ": (" << emptyNeighbours[i].first << ", " << emptyNeighbours[i].second << ")\n";
-    
-    size_t choice;
-    std::cout << "Choose a position by number: ";
-    std::cin >> choice;
-
-    if (choice < 1 || choice > emptyNeighbours.size()) {
-        std::cout << "Invalid choice.\n";
+    if (!board.checkIndexes(x, y)) {
+        std::cout << "Invalid coordinates!\n";
         return false;
     }
 
-    size_t Y = emptyNeighbours[choice - 1].first;
-    size_t X = emptyNeighbours[choice - 1].second;
+    if (!board.isAPile(x, y)) {
+        return false;
+    }
 
-    board.m_board[Y][X] = std::move(board.m_board[y][x]);
-    board.m_board[y][x].clear();
+    std::map<char, std::pair<int, int>> directionMap = {
+        {'w', {-1, 0}}, 
+        {'s', {1, 0}},  
+        {'a', {0, -1}}, 
+        {'d', {0, 1}}  
+    };
 
-    /// board.playCard();
+    std::cout << "Choose a direction (w = up, a = left, s = down, d = right): ";
+    char direction;
+    std::cin >> direction;
+
+    if (directionMap.find(direction) == directionMap.end()) {
+        std::cout << "Invalid direction!\n";
+        return false;
+    }
+
+    auto offset = directionMap[direction];
+    int newX = static_cast<int>(x) + offset.first;
+    int newY = static_cast<int>(y) + offset.second;
+
+    if (!board.checkIndexes(newX, newY)) {
+        std::cout << "The move is outside the board boundaries!\n";
+        return false;
+    }
+
+    if (!board.m_board[newX][newY].empty()) {
+        std::cout << "The target position is not empty!\n";
+        return false;
+    }
+
+    board.m_board[newX][newY] = std::move(board.m_board[x][y]);
+    board.m_board[x][y].clear();
+
+    ///_player.playCard();
 
     return true;
 }
@@ -620,6 +656,11 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
     /*size_t x, y;
     Board& board = _game.m_board;
+
+    // intai citesti rand/col si dupa index
+    // verifici sa fie goala poz aia
+    // dupa verifici sa fie ca cel putin o carte pe alea 2 poz, le compari si le dai push in ordine (puhs_back(std::move))
+    // dai clear la alea golite
 
     std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
@@ -663,57 +704,57 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
         useRow = (choice == 1);
     }
 
-    /*auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
-            if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
-                int choice;
-                auto colorCard1 = card1->getColor();
-                auto colorCard2 = card2->getColor();
+    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
+        if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
+            int choice;
+            auto colorCard1 = card1->getColor();
+            auto colorCard2 = card2->getColor();
 
-                do {
-                    std::cout << "Cards have the same value. Choose which card goes on top:\n";
-                    std::cout << "1. First card (" << colorCard1 << ")\n";
-                    std::cout << "2. Second card (" << colorCard2 << ")\n";
-                    std::cin >> choice;
+            do {
+                std::cout << "Cards have the same value. Choose which card goes on top:\n";
+                std::cout << "1. First card (" << colorCard1 << ")\n";
+                std::cout << "2. Second card (" << colorCard2 << ")\n";
+                std::cin >> choice;
 
-                    if (choice != 1 && choice != 2)
-                        std::cout << "Invalid choice. Please choose 1 or 2.\n";
-                } while (choice != 1 && choice != 2);
+                if (choice != 1 && choice != 2)
+                    std::cout << "Invalid choice. Please choose 1 or 2.\n";
+            } while (choice != 1 && choice != 2);
 
-                if (choice == 1) {
-                    board.m_board[x][y].push_back(*card1);
-                    board.m_board[x][index1].pop_back();
-                }
-                else {
-                    board.m_board[x][y].push_back(*card2);
-                    board.m_board[x][index2].pop_back();
-                }
+            if (choice == 1) {
+                board.m_board[x][y].push_back(*card1);
+                board.m_board[x][index1].pop_back();
             }
             else {
-                if (card1->getValue() > card2->getValue()) {
-                    board.m_board[x][y].push_back(*card1);
-                    board.m_board[x][index1].pop_back();
-                }
-                else {
-                    board.m_board[x][y].push_back(*card2);
-                    board.m_board[x][index2].pop_back();
-                }
+                board.m_board[x][y].push_back(*card2);
+                board.m_board[x][index2].pop_back();
             }
-
-            };
-
-        if (useRow) {
-            return moveCards(board.m_board[x][leftIndex], leftIndex, board.m_board[x][rightIndex], rightIndex);
         }
         else {
-            return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
-        }*/
+            if (card1->getValue() > card2->getValue()) {
+                board.m_board[x][y].push_back(*card1);
+                board.m_board[x][index1].pop_back();
+            }
+            else {
+                board.m_board[x][y].push_back(*card2);
+                board.m_board[x][index2].pop_back();
+            }
+        }
+
+        };
+
+    if (useRow) {
+        return moveCards(board.m_board[x][leftIndex], leftIndex, board.m_board[x][rightIndex], rightIndex);
+    }
+    else {
+        return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
+    }
 
     return false;
+    */
+    return true;
 }
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game, const bool _check) {
-    
-    
     
     //dupa ce player 1 a ales coloana restrictionata pentru player2 player 2 nu mai poate pune  carti niciunde
     char line;
@@ -786,7 +827,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
         return false;
     }
 
-   
+    // Verificăm numărul de poziții ocupate în rând sau coloană
     int occupiedPositions = 0;
     if (choice == 'r') {
         for (size_t col = 0; col < board.getSize(); ++col) {
@@ -818,7 +859,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
     std::vector<Card> mergedStack;
 
     if (choice == 'r') {
-        
+        // Mutăm pe rând
         if (direction == 'l') {
             for (size_t col = 0; col < board.getSize(); ++col) {
                 while (!board.m_board[index][col].empty()) {
@@ -828,12 +869,12 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[index][0] = std::move(mergedStack);
 
-            
+            // Curățăm restul coloanelor din rând
             for (size_t col = 1; col < board.getSize(); ++col) {
                 board.m_board[index][col].clear();
             }
         }
-        else { 
+        else { // direction == 'r'
             for (int col = board.getSize() - 1; col >= 0; --col) {
                 while (!board.m_board[index][col].empty()) {
                     mergedStack.push_back(std::move(board.m_board[index][col].back()));
@@ -842,13 +883,13 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[index][board.getSize() - 1] = std::move(mergedStack);
 
-            
+            // Curățăm restul coloanelor din rând
             for (size_t col = 0; col < board.getSize() - 1; ++col) {
                 board.m_board[index][col].clear();
             }
         }
     }
-    else { 
+    else { // Mutăm pe coloană
         if (direction == 'u') {
             for (size_t row = 0; row < board.getSize(); ++row) {
                 while (!board.m_board[row][index].empty()) {
@@ -858,12 +899,12 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[0][index] = std::move(mergedStack);
 
-            
+            // Curățăm restul rândurilor din coloană
             for (size_t row = 1; row < board.getSize(); ++row) {
                 board.m_board[row][index].clear();
             }
         }
-        else { 
+        else { // direction == 'd'
             for (int row = board.getSize() - 1; row >= 0; --row) {
                 while (!board.m_board[row][index].empty()) {
                     mergedStack.push_back(std::move(board.m_board[row][index].back()));
@@ -872,7 +913,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
             board.m_board[board.getSize() - 1][index] = std::move(mergedStack);
 
-            
+            // Curățăm restul rândurilor din coloană
             for (size_t row = 0; row < board.getSize() - 1; ++row) {
                 board.m_board[row][index].clear();
             }
