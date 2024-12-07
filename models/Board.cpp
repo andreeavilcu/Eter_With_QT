@@ -1,6 +1,6 @@
 #include "Board.h"
 
-#include <bits/ranges_algo.h>
+//#include <bits/ranges_algo.h>
 
 #include "Wizard.h"
 
@@ -270,8 +270,8 @@ bool Board::checkTwoRows() const {
     return (rowCount >= 2 || colCount >= 2);
 }
 
-/*std::vector<Card>*/ void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
-    //std::vector<Card> returnedCards{};
+std::vector<Card> Board::useExplosion() {
+    std::vector<Card> returnedCards{};
 
     auto explosionEffects = Explosion::getInstance().getExplosionEffect();
 
@@ -305,9 +305,6 @@ bool Board::checkTwoRows() const {
                 if (!this->checkBoardIntegrity())
                     this->m_board[row][col].push_back(std::move(affectedCard));
 
-                else
-                    eliminatedCards.push_back(std::move(affectedCard));
-
                 break;
 
             case Explosion::ExplosionEffect::ReturnCard:
@@ -327,7 +324,7 @@ bool Board::checkTwoRows() const {
         }
     }
 
-    //return returnedCards;
+    return returnedCards;
 }
 
 bool Board::checkBoardIntegrity() const {
