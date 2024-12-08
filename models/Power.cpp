@@ -499,7 +499,10 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
     std::cout << "Enter (x, y) coordinates for illusion (0-indexed)\n";
     std::cin >> x >> y;
     
-    ///isIlusionEnable
+    if (!_player.wasIllusionPlayed()) {
+        std::cout << "No illusion has been played yet!\n";
+        return false;
+    }
 
     if (!board.checkIndexes(x, y))
         return false;
@@ -515,8 +518,7 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
         
         _game.m_returnedCards.push_back(topCard);
 
-        // codul pentru a juca alta iuluzie
-        // player.playIllusion
+        _player.playIllusion(_game);
 
         return true;
     }
@@ -578,7 +580,11 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
     std::cin >> x >> y;
 
-    ///isIlusionEnable
+    if (_player.wasIllusionPlayed()) {
+        std::cout << "You have already played an illusion. You cannot have two illusions at the same time!\n";
+        return false;
+    }
+
     if (!board.checkIndexes(x, y))
         return false;
 
@@ -594,7 +600,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
         }
     }
 
-    // player.playIllusion()
+    _player.playIllusion(_game);
     return true;
 }
 
@@ -648,7 +654,7 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     board.m_board[newX][newY] = std::move(board.m_board[x][y]);
     board.m_board[x][y].clear();
 
-    ///_player.playCard();
+    _player.playCard(_game);
 
     return true;
 }
