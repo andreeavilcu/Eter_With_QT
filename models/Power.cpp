@@ -654,15 +654,23 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
 }
 
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
-    /*size_t x, y;
+    size_t x, y;
     Board& board = _game.m_board;
-
-    // intai citesti rand/col si dupa index
-    // verifici sa fie goala poz aia
-    // dupa verifici sa fie ca cel putin o carte pe alea 2 poz, le compari si le dai push in ordine (puhs_back(std::move))
-    // dai clear la alea golite
-
     std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
+    
+    char choice;
+    std::cout << "Choose row ('r') or column ('c'): ";
+    std::cin >> choice;
+
+    if (choice != 'r' && choice != 'c') {
+        std::cout << "Invalid choice. Please choose 'r' for row or 'c' for column.\n";
+        return false;
+    }
+
+    std::cout << "Enter the index of the row/column (0-indexed): ";
+    size_t index;
+    std::cin >> index;
+
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
     std::cin >> x >> y;
 
@@ -670,87 +678,66 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
         std::cout << "Invalid coordinates or not an empty spot.\n";
         return false;
     }
+    size_t firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
 
-    size_t leftIndex = static_cast<size_t>(-1), rightIndex = static_cast<size_t>(-1);
-    size_t topIndex = static_cast<size_t>(-1), bottomIndex = static_cast<size_t>(-1);
-
-    if (y > 0 && !board.m_board[x][y - 1].empty())
-        leftIndex = y - 1;
-    if (y < board.m_board[x].size() - 1 && !board.m_board[x][y + 1].empty())
-        rightIndex = y + 1;
-
-    if (x > 0 && !board.m_board[x - 1][y].empty())
-        topIndex = x - 1;
-    if (x < board.m_board.size() - 1 && !board.m_board[x + 1][y].empty())
-        bottomIndex = x + 1;
-
-    bool hasRowCards = (leftIndex != static_cast<size_t>(-1) && rightIndex != static_cast<size_t>(-1));
-    bool hasColumnCards = (topIndex != static_cast<size_t>(-1) && bottomIndex != static_cast<size_t>(-1));
-
-    if (!hasRowCards && !hasColumnCards)
-        return false;
-
-    bool useRow = hasRowCards;
-    if (hasRowCards && hasColumnCards) {
-        int choice;
-        do {
-            std::cout << "Choose the direction to perform the operation:\n";
-            std::cout << "1. Row\n";
-            std::cout << "2. Column\n";
-            std::cin >> choice;
-            if (choice != 1 && choice != 2)
-                std::cout << "Invalid option!\n";
-        } while (choice != 1 && choice != 2);
-        useRow = (choice == 1);
-    }
-
-    auto moveCards = [&](Card* card1, size_t index1, Card* card2, size_t index2) -> bool {
-        if (card1->getValue() == card2->getValue() && card1->getColor() != card2->getColor()) {
-            int choice;
-            auto colorCard1 = card1->getColor();
-            auto colorCard2 = card2->getColor();
-
-            do {
-                std::cout << "Cards have the same value. Choose which card goes on top:\n";
-                std::cout << "1. First card (" << colorCard1 << ")\n";
-                std::cout << "2. Second card (" << colorCard2 << ")\n";
-                std::cin >> choice;
-
-                if (choice != 1 && choice != 2)
-                    std::cout << "Invalid choice. Please choose 1 or 2.\n";
-            } while (choice != 1 && choice != 2);
-
-            if (choice == 1) {
-                board.m_board[x][y].push_back(*card1);
-                board.m_board[x][index1].pop_back();
-            }
-            else {
-                board.m_board[x][y].push_back(*card2);
-                board.m_board[x][index2].pop_back();
-            }
-        }
-        else {
-            if (card1->getValue() > card2->getValue()) {
-                board.m_board[x][y].push_back(*card1);
-                board.m_board[x][index1].pop_back();
-            }
-            else {
-                board.m_board[x][y].push_back(*card2);
-                board.m_board[x][index2].pop_back();
-            }
-        }
-
-        };
-
-    if (useRow) {
-        return moveCards(board.m_board[x][leftIndex], leftIndex, board.m_board[x][rightIndex], rightIndex);
+    if (choice == 'r') {
+        if (y > 0 && !board.m_board[x][y - 1].empty() && !board.isAPile(x, y - 1))
+            firstIndex = y - 1;
+        if (y < board.m_board[x].size() - 1 && !board.m_board[x][y + 1].empty() && !board.isAPile(x, y + 1))
+            secondIndex = y + 1;
     }
     else {
-        return moveCards(board.m_board[topIndex][y], topIndex, board.m_board[bottomIndex][y], bottomIndex);
+        if (x > 0 && !board.m_board[x - 1][y].empty() && !board.isAPile(x - 1, y))
+            firstIndex = x - 1;
+        if (x < board.m_board.size() - 1 && !board.m_board[x + 1][y].empty() && !board.isAPile(x + 1, y))
+            secondIndex = x + 1;
     }
 
-    return false;
-    */
+    if (firstIndex == static_cast<size_t>(-1) || secondIndex == static_cast<size_t>(-1)) {
+        std::cout << "Not enough valid cards to perform the operation.\n";
+        return false;
+    }
+
+    auto& firstCard = (choice == 'r') ? board.m_board[x][firstIndex].back() : board.m_board[firstIndex][y].back();
+    auto& secondCard = (choice == 'r') ? board.m_board[x][secondIndex].back() : board.m_board[secondIndex][y].back();
+
+    if (board.isAPile(x, firstIndex) || board.isAPile(x, secondIndex)) {
+        std::cout << "Cards cannot be moved because they are part of a pile.\n";
+        return false;
+    }
+
+    if (firstCard.getValue() == secondCard.getValue()) {
+        std::cout << "Cards have the same value. Choose which card goes on top:\n";
+        std::cout << "1. First card\n2. Second card\n";
+        int choice;
+        std::cin >> choice;
+
+        if (choice == 1) {
+            board.m_board[x][y].push_back(std::move(firstCard));
+            board.m_board[x][firstIndex].clear();
+
+            board.m_board[x][y].push_back(std::move(secondCard));
+            board.m_board[x][secondIndex].clear();
+        }
+        else {
+            board.m_board[x][y].push_back(std::move(secondCard));
+            board.m_board[x][secondIndex].clear();
+
+            board.m_board[x][y].push_back(std::move(firstCard));
+            board.m_board[x][firstIndex].clear();
+        }
+    }
+    else {
+        auto& higherCard = (firstCard.getValue() > secondCard.getValue()) ? firstCard : secondCard;
+        auto& lowerCard = (firstCard.getValue() > secondCard.getValue()) ? secondCard : firstCard;
+
+        board.m_board[x][y].push_back(std::move(higherCard));
+        board.m_board[x][(choice == 'r') ? firstIndex : secondIndex].clear();
+
+        board.m_board[x][y].push_back(std::move(lowerCard));
+        board.m_board[x][(choice == 'r') ? secondIndex : firstIndex].clear();
+    }
+
     return true;
 }
 
