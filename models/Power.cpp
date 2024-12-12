@@ -88,7 +88,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
     size_t x, y, int_value;
     std::cin >> x >> y >> int_value;
 
-    _player.playerTurn(_game);
+    _player.playCard(_game);
 
     return true;
 }
