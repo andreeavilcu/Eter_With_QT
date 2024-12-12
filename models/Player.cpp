@@ -319,9 +319,12 @@ bool Player::playerTurn(Game &_game) {
          << "\n";
     }
 
-    std::cout << "Play illusion (i) " << (
-         this->wasIllusionPlayed() ? "(already played)" : ""
-    ) << "\n";
+    if (_game.m_illusionsAllowed) {
+        std::cout << "Play illusion (i) " << (
+             this->wasIllusionPlayed() ? "(already played)" : ""
+        ) << "\n";
+    }
+
     std::cin >> choice;
 
     switch (choice) {
@@ -335,7 +338,7 @@ bool Player::playerTurn(Game &_game) {
             break;
 
         case 'i':
-            legal = this->playIllusion(_game);
+            if (_game.m_illusionsAllowed) legal = this->playIllusion(_game);
             break;
 
         case 'w':
@@ -357,7 +360,7 @@ bool Player::playerTurn(Game &_game) {
     if (!legal)
         return false;
 
-    if (!_game.m_playedExplosion && _game.getBoard().checkTwoRows())
+    if (_game.m_explosionAllowed && !_game.m_playedExplosion && _game.getBoard().checkTwoRows())
         this->playExplosion(_game);
 
     return true;

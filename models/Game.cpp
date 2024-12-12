@@ -1,26 +1,19 @@
 #include "Game.h"
 
-Game::Game(const GameType _gameType) :
+Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardIndices, const bool _illusions, const bool _explosion) :
     m_board{ _gameType == Game::GameType::Training
         ? static_cast<size_t>(GridSize::Three)
         : static_cast<size_t>(GridSize::Four) },
 
-    m_gameType{ _gameType }
-    ,m_player1{ Card::Color::Undefined, {}, 0, 0, 0 }, 
+    m_gameType{ _gameType },
+    m_illusionsAllowed{ _illusions },
+    m_explosionAllowed{ _explosion },
+    m_player1{ Card::Color::Undefined, {}, 0, 0, 0 },
     m_player2{ Card::Color::Undefined, {}, 0, 0, 0 }
 {
     std::random_device rd;
     std::mt19937 gen{ rd() };
-    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
     std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
-
-    size_t wizardIndex1 = _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel
-        ? wizardDistribution(gen)
-        : static_cast<size_t>(-1);
-
-    size_t wizardIndex2 = _gameType == GameType::WizardDuel || _gameType == GameType::WizardAndPowerDuel
-        ? wizardDistribution(gen)
-        : static_cast<size_t>(-1);
 
     std::pair<size_t, size_t> powerIndices1 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
         ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
@@ -47,7 +40,7 @@ Game::Game(const GameType _gameType) :
              Card{Card::Value::Three}, Card{Card::Value::Three},
              Card{Card::Value::Three}, Card{Card::Value::Four}
          }),
-     wizardIndex1,                   
+     _wizardIndices.first,
      powerIndices1.first,            
      powerIndices1.second    
     };
@@ -68,18 +61,20 @@ Game::Game(const GameType _gameType) :
                 Card{Card::Value::Three}, Card{Card::Value::Three},
                 Card{Card::Value::Three}, Card{Card::Value::Four}
             }),
-        wizardIndex2,                   
+        _wizardIndices.second,
         powerIndices2.first,            
         powerIndices2.second   
     };
 }
 
 
-void Game::run() {
+size_t Game::run() {
     bool player1Turn = true;
 
-    Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
-    Explosion::getInstance().printExplosion();
+    if (this->m_explosionAllowed) {
+        Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
+        Explosion::getInstance().printExplosion();
+    }
 
     while (checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2)) {
         std::cout << "Player " << static_cast<int>(!player1Turn) + 1 << "'s turn!" << std::endl;
@@ -116,11 +111,14 @@ void Game::run() {
     this->m_board.printBoard();
 
     if (m_winner == Card::Color::Undefined) {
-        std::cout << "Draw" << std::endl;
-        return;
+        std::cout << "Draw\n" << std::endl;
+        return 0;
     }
 
-    std::cout << "Winner: " << (m_winner == Card::Color::Player1 ? "Player 1" : "Player 2") << std::endl;
+    bool player1Win = m_winner == Card::Color::Player1;
+
+    std::cout << "Winner: " << (player1Win ? "Player 1\n" : "Player 2\n") << std::endl;
+    return player1Win ? 1 : 2;
 }
 
 bool Game::checkEmptyDeck() const {

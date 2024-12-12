@@ -1,6 +1,9 @@
-#include "models/Game.h"
+#include "models/Match.h"
 
 int main() {
-    Game game{ Game::GameType::Training };
-    game.run();
+    Match::getInstance(
+        Match::MatchType::Normal,
+        Game::GameType::WizardAndPowerDuel,
+        false,
+        false).runMatch();
 }

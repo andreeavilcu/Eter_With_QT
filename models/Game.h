@@ -38,17 +38,20 @@ public:
     std::vector<Card> m_returnedCards{};
     std::vector<Card> m_eliminatedCards{};
 
+    bool m_illusionsAllowed{};
+    bool m_explosionAllowed{};
+
     bool m_playedExplosion{ false };
 
-    explicit Game(GameType _gameType);
+    explicit Game(GameType _gameType, const std::pair<size_t, size_t>& _wizardIndices, bool _illusions, bool _explosion);
 
     Board& getBoard() { return m_board; }
-    GameType getGameType() const { return m_gameType; }
+    [[nodiscard]] GameType getGameType() const { return m_gameType; }
 
     Player& getPlayer1() { return m_player1; }
     Player& getPlayer2() { return m_player2; }
 
-    void run();
+    size_t run();
 
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] bool checkCardAfterReturn(Card::Color _color, Card::Value _value) const;
