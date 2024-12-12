@@ -20,11 +20,13 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
-
-    
 }
 
-void Player::returnCard(const Card &_card) {
+void Player::returnCard(Card&& _card) {
+    this->m_cards.push_back(_card);
+}
+
+void Player::returnCard(Card &_card) {
     this->m_cards.push_back(_card);
 }
 
@@ -60,6 +62,11 @@ size_t Player::getCardCount(Card::Value _value) const {
             ++count;
 
     return count;
+}
+
+void Player::resetCards() {
+    for (auto & card : this->m_cards)
+        card.resetJustReturned();
 }
 
 std::pair<size_t, size_t> Player::getLastPlacedCard() const {
@@ -129,7 +136,7 @@ bool Player::usePower(Game& _game, const bool _first, const bool _check) {
 
 std::optional<Card> Player::useCard(Card::Value _value) {
     const auto iter = std::ranges::find_if(m_cards, [_value](const Card& _card) {
-        return _card.getValue() == _value;
+        return _card.getValue() == _value && !_card.isJustReturned();
     });
 
     if (iter != m_cards.end()) {
@@ -289,17 +296,13 @@ void Player::playExplosion(Game& _game) {
         return;
 
     _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
-
-    for (auto card : _game.m_returnedCards) {
-        card.getColor() == Card::Color::Player1
-            ? _game.getPlayer1().returnCard(card)
-            : _game.getPlayer2().returnCard(card);
-    }
 }
 
 bool Player::playerTurn(Game &_game) {
     char choice;
     bool legal = false;
+
+    this->resetCards();
 
     std::cout << "Play a card   (c) ";
     this->printCards();

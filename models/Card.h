@@ -39,10 +39,15 @@ public:
 
     void setIllusion();
     void resetIllusion();
+
+    [[nodiscard]] bool isJustReturned() const;
+    void setJustReturned();
+    void resetJustReturned();
 private:
     Value m_value;
     Color m_color;
 
     bool m_illusion = false;
+    size_t m_justReturned = 0;
 };
 

@@ -51,6 +51,21 @@ void Card::resetIllusion() {
 	this->m_illusion = false;
 }
 
+bool Card::isJustReturned() const {
+	return this->m_justReturned;
+}
+
+void Card::setJustReturned() {
+	this->m_justReturned = 2;
+}
+
+void Card::resetJustReturned() {
+	if (this->m_justReturned == 0)
+		return;
+
+	this->m_justReturned--;
+}
+
 
 void Card::setIllusion() {
 	this->m_illusion = true;
@@ -62,7 +77,10 @@ std::ostream& operator<<(std::ostream& os, const Card& _card) {
 
 	else os << (static_cast<int>(_card.m_value) == 0 ? "E" : std::to_string(static_cast<int>(_card.getValue())));
 
-	os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");
+	if (_card.isJustReturned())
+		os << "X ";
+
+	else os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");
 
 	return os;
 }

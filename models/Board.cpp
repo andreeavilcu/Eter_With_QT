@@ -270,9 +270,7 @@ bool Board::checkTwoRows() const {
     return (rowCount >= 2 || colCount >= 2);
 }
 
-/*std::vector<Card>*/ void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
-    //std::vector<Card> returnedCards{};
-
+void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
     auto explosionEffects = Explosion::getInstance().getExplosionEffect();
 
     for (size_t row = 0; row < this->m_board.size(); ++row) {
@@ -299,30 +297,30 @@ bool Board::checkTwoRows() const {
             Card affectedCard = this->m_board[row][col].back();
 
             switch (explosionEffects[row][col]) {
-            case Explosion::ExplosionEffect::RemoveCard:
-                this->m_board[row][col].pop_back();
+                case Explosion::ExplosionEffect::RemoveCard:
+                    this->m_board[row][col].pop_back();
 
-                if (!this->checkBoardIntegrity())
-                    this->m_board[row][col].push_back(std::move(affectedCard));
+                    if (!this->checkBoardIntegrity())
+                        this->m_board[row][col].push_back(std::move(affectedCard));
 
-                else
-                    eliminatedCards.push_back(std::move(affectedCard));
+                    else
+                        eliminatedCards.push_back(std::move(affectedCard));
 
-                break;
+                    break;
 
-            case Explosion::ExplosionEffect::ReturnCard:
-                this->m_board[row][col].pop_back();
+                case Explosion::ExplosionEffect::ReturnCard:
+                    this->m_board[row][col].pop_back();
 
-                if (!this->checkBoardIntegrity())
-                    this->m_board[row][col].push_back(std::move(affectedCard));
+                    if (!this->checkBoardIntegrity())
+                        this->m_board[row][col].push_back(std::move(affectedCard));
 
-                else
-                    returnedCards.push_back(std::move(affectedCard));
+                    else
+                        returnedCards.push_back(std::move(affectedCard));
 
-                break;
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
         }
     }

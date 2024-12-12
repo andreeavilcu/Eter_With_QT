@@ -43,7 +43,7 @@ public:
     explicit Game(GameType _gameType);
 
     Board& getBoard() { return m_board; }
-    GameType getGameType() { return m_gameType; }
+    GameType getGameType() const { return m_gameType; }
 
     Player& getPlayer1() { return m_player1; }
     Player& getPlayer2() { return m_player2; }

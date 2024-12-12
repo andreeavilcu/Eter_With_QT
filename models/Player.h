@@ -31,8 +31,9 @@ public:
     [[nodiscard]] const std::vector<Card>& getCards() const;
     void setCards(const std::vector<Card>& _cards);
 
-    explicit Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond);
-    void returnCard(const Card& _card);
+    explicit Player(Card::Color _color, const std::vector<Card>& _cards, size_t _wizardIndex, size_t _powerIndexFirst, size_t _powerIndexSecond);
+    void returnCard(Card&& _card);
+    void returnCard(Card& _card);
 
     void printCards();
     void placeCard(size_t row, size_t col);
@@ -42,6 +43,8 @@ public:
 
     [[nodiscard]] size_t getCardCount() const;
     [[nodiscard]] size_t getCardCount(Card::Value _value) const;
+
+    void resetCards();
 
     [[nodiscard]] std::pair<size_t, size_t> getLastPlacedCard() const;
     void setLastPlacedCard(std::pair<size_t, size_t> _cardPosition);

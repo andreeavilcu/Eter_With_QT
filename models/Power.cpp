@@ -88,19 +88,8 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
     size_t x, y, int_value;
     std::cin >> x >> y >> int_value;
 
-    // player.playCard();
+    _player.playerTurn(_game);
 
-    // if (!_game.checkPartial(x, y, int_value, 0)) {
-    //     return false;
-    // }
-    //
-    // auto playedCard = _player.useCard(static_cast<Card::Value>(int_value));
-    // if (!playedCard) {
-    //     return false;
-    // }
-    //
-    // board.placeCard(x, y, std::move(*playedCard));
-    // _player.placeCard(x, y);
     return true;
 }
 
@@ -108,11 +97,11 @@ bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
     size_t chosenValue;
     std::cin >> chosenValue;
 
-    if (chosenValue < 0 || chosenValue > 4) {
+    if (chosenValue > 4) {
         return false;
     }
 
-    Card::Value targetValue = static_cast<Card::Value>(chosenValue);
+    auto targetValue = static_cast<Card::Value>(chosenValue);
 
     size_t count = 0;
     Board& board = _game.m_board;
@@ -311,7 +300,7 @@ bool Power::PowerAction::gale(Player& _player, Game& _game, const bool _check) {
         return false;
     }
 
-    for (const auto& [card, row, col] : coveredCards) {
+    for (auto& [card, row, col] : coveredCards) {
         auto& stack = board.m_board[row][col];
 
         auto it = std::find(stack.begin(), stack.end(), card);
@@ -319,11 +308,7 @@ bool Power::PowerAction::gale(Player& _player, Game& _game, const bool _check) {
             stack.erase(it);
         }
 
-        if (card.getColor() == Card::Color::Player1) {
-            _game.m_player1.returnCard(card);
-        } else if (card.getColor() == Card::Color::Player2) {
-            _game.m_player2.returnCard(card);
-        }
+        _game.m_returnedCards.push_back(std::move(card));
     }
 
     return true;
@@ -340,7 +325,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
     do {
         std::cin >> typeChoice;
         if (typeChoice != 'r' && typeChoice != 'c')
-            std::cout << "Invalide choise!Choose type to shift (r: row, c: column):\n ";
+            std::cout << "Invalid choice! Choose type to shift (r: row, c: column):\n ";
     } while (typeChoice != 'r' && typeChoice != 'c');
 
     do {
@@ -370,7 +355,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
 
     for (size_t i = 0; i < board.m_board.size(); ++i)
         if (board.m_board[index][i].empty() || board.m_board[i][index].empty())
-            return 0;
+            return false;
 
     if (typeChoice == 'r') {
         auto& row = board.m_board[index];
@@ -489,6 +474,7 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     board.m_board[x][y].push_back(std::move(currentCard));
     board.m_board[newX][newY].pop_back();
 
+    return false;
 }
 
 bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check) {
@@ -684,7 +670,8 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
         std::cout << "Invalid coordinates or not an empty spot.\n";
         return false;
     }
-    size_t firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
+
+    auto firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
 
     if (choice == 'r') {
         if (y > 0 && !board.m_board[x][y - 1].empty() && !board.isAPile(x, y - 1))
@@ -715,8 +702,8 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
     if (firstCard.getValue() == secondCard.getValue()) {
         std::cout << "Cards have the same value. Choose which card goes on top:\n";
         std::cout << "1. First card\n2. Second card\n";
-        int choice;
-        std::cin >> choice;
+        int cardChoice;
+        std::cin >> cardChoice;
 
         if (choice == 1) {
             board.m_board[x][y].push_back(std::move(firstCard));
@@ -865,7 +852,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
         }
         else { 
-            for (int col = board.getSize() - 1; col >= 0; --col) {
+            for (size_t col = board.getSize() - 1; col < board.getSize(); --col) {
                 while (!board.m_board[index][col].empty()) {
                     mergedStack.push_back(std::move(board.m_board[index][col].back()));
                     board.m_board[index][col].pop_back();
@@ -894,7 +881,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
             }
         }
         else { 
-            for (int row = board.getSize() - 1; row >= 0; --row) {
+            for (size_t row = board.getSize() - 1; row < board.getSize(); --row) {
                 while (!board.m_board[row][index].empty()) {
                     mergedStack.push_back(std::move(board.m_board[row][index].back()));
                     board.m_board[row][index].pop_back();
@@ -1004,7 +991,6 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game, const bool _check
     }
 
     //TODO :daca cartea este acoperita sau întoarsă în mână isi pierde bonusul?
-
 
     if(selectedCard.getValue() == Card::Value::One || selectedCard.getValue() == Card::Value::Eter) {
         return false;

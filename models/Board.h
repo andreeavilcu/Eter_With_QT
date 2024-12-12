@@ -43,7 +43,7 @@ public:
     [[nodiscard]] Card::Color calculateWinner() const;
 
     [[nodiscard]] bool checkTwoRows() const;
-    /*std::vector<Card>*/ void useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards);
+    void useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards);
 
     [[nodiscard]] bool checkBoardIntegrity() const;
 

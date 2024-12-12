@@ -81,8 +81,6 @@ void Game::run() {
     Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
     Explosion::getInstance().printExplosion();
 
-    Power& power = Power::getInstance();
-
     while (checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2)) {
         std::cout << "Player " << static_cast<int>(!player1Turn) + 1 << "'s turn!" << std::endl;
 
@@ -91,25 +89,26 @@ void Game::run() {
         if (auto& player = player1Turn ? m_player1 : m_player2; player.playerTurn(*this)) {
             player1Turn = !player1Turn;
 
-            if (power.getJustBlocked())
-                power.setJustBlocked(false);
+            if (Power::getInstance().getJustBlocked())
+                Power::getInstance().setJustBlocked(false);
 
-            else if (power.getRestrictedCol() == -1 || power.getRestrictedRow() == -1) {
-                power.setRestrictedCol(-1);
-                power.setRestrictedRow(-1);
+            else if (Power::getInstance().getRestrictedCol() == -1 || Power::getInstance().getRestrictedRow() == -1) {
+                Power::getInstance().setRestrictedCol(-1);
+                Power::getInstance().setRestrictedRow(-1);
             }
         }
 
         if (!m_returnedCards.empty()) {
             for (auto& card : m_returnedCards) {
-                auto returnedCard = std::move(card);
+                card.setJustReturned();
 
-                if (returnedCard.getColor() == Card::Color::Player1)
-                    m_player1.returnCard(std::move(returnedCard));
+                if (card.getColor() == Card::Color::Player1)
+                    m_player1.returnCard(std::move(card));
 
                 else
-                    m_player2.returnCard(std::move(returnedCard));
+                    m_player2.returnCard(std::move(card));
             }
+
             m_returnedCards.clear();
         }
     }
