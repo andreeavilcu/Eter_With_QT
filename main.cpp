@@ -3,7 +3,8 @@
 int main() {
     Match::getInstance(
         Match::MatchType::Normal,
-        Game::GameType::WizardAndPowerDuel,
+        false,
+        Game::GameType::Training,
         false,
         false).runMatch();
 }
