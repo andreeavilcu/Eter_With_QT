@@ -347,10 +347,10 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
 
     std::cin >> index;
 
-    if (typeChoice == 'r' && (index <=0 || index >= board.m_board.size()))
+    if (typeChoice == 'r' && (index <0 || index >= board.m_board.size()))
         return false;
 
-    if (typeChoice == 'c' && (index <= 0 || index >= board.m_board[0].size()))
+    if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
         return false;
 
     for (size_t i = 0; i < board.m_board.size(); ++i)
@@ -422,12 +422,12 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
-    std::cout << "Enter (x, y) coordinates for card (0-indexed): ";
+    std::cout << "Gust\n Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
+    std::cout << "Enter (x, y) coordinates for card that you want to move(x,y): ";
     std::cin >> x >> y;
 
-    if (board.m_board[x][y].empty()) {
-        std::cout << "There is no card in this position!\n";
+    if (!board.checkIndexes(x, y) || board.m_board[x][y].empty()) {
+        std::cout << "Invalid starting position or no card in this position!\n";
         return false;
     }
 
@@ -464,17 +464,20 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     Card& currentCard = board.m_board[x][y].back();
     Card& targetCard = board.m_board[newX][newY].back();
 
-    if (static_cast<size_t>(currentCard.getValue()) <= static_cast<size_t>(targetCard.getValue())) {
+    if (currentCard.getValue() <= targetCard.getValue()) {
+        std::cout << "The target card does not have a lower value!\n";
         return false;
     }
 
-    if(board.checkBoardIntegrity())
-        return true;
+    if(_check && !board.checkBoardIntegrity()) {
+        std::cout << "Board integrity check failed. Cannot perform move.\n";
+        return false;
+    }
     
-    board.m_board[x][y].push_back(std::move(currentCard));
-    board.m_board[newX][newY].pop_back();
+    board.m_board[newX][newY].push_back(std::move(currentCard));
+    board.m_board[x][y].pop_back();
 
-    return false;
+    return true;
 }
 
 bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check) {
