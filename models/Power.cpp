@@ -347,10 +347,10 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
 
     std::cin >> index;
 
-    if (typeChoice == 'r' && (index < 0 || index >= board.m_board.size()))
+    if (typeChoice == 'r' && (index <=0 || index >= board.m_board.size()))
         return false;
 
-    if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
+    if (typeChoice == 'c' && (index <= 0 || index >= board.m_board[0].size()))
         return false;
 
     for (size_t i = 0; i < board.m_board.size(); ++i)
@@ -485,6 +485,7 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
     std::cout << "Enter (x, y) coordinates for illusion (0-indexed)\n";
     std::cin >> x >> y;
     
+    ///to do: m_IlusionsAllowed?
     if (!_player.wasIllusionPlayed()) {
         std::cout << "No illusion has been played yet!\n";
         return false;
@@ -516,24 +517,28 @@ bool Power::PowerAction::storm(Player& _player, Game& _game, const bool _check) 
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Remove from play any pile of cards containing 2 or more cards.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
+    std::cout << "Storm\nRemove from play any pile of cards containing 2 or more cards.\n";
+    std::cout << "Enter (x, y) coordinates for pile\n";
     std::cin >> x >> y;
 
     if (!board.checkIndexes(x,y))
         return false;
  
-    if (!board.isAPile(y,x))
+    if (!board.isAPile(x,y))
         return false;
 
-    auto eliminatedCard = std::move(board.m_board[x][y].back());
-    board.m_board[x][y].pop_back();
-
-    if (board.checkBoardIntegrity()) {
-        board.m_board[x][y].push_back(std::move(eliminatedCard));
+    while (!board.m_board[x][y].empty()) {
+        _game.m_eliminatedCards.push_back(std::move(board.m_board[x][y].back()));
+        board.m_board[x][y].pop_back();
+   }
+   
+    if (!board.checkBoardIntegrity()){
+        while (!_game.m_eliminatedCards.empty()) {
+            board.m_board[x][y].push_back(std::move(_game.m_eliminatedCards.back()));
+            _game.m_eliminatedCards.pop_back();
+        }
         return false;
     }
-
     return true;
 }
 
@@ -541,7 +546,7 @@ bool Power::PowerAction::tide(Player& _player, Game& _game, const bool _check) {
     size_t x, y,v,w;
     Board& board = _game.m_board;
 
-    std::cout << "Switch 2 pile of cards.\n";
+    std::cout << "Tide\ Switch 2 pile of cards.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)(FIRST Pile)\n";
     std::cin >> x >> y;
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)(SECOND Pile)\n";
@@ -562,7 +567,7 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Play an extra illusion.\n"; 
+    std::cout << "\n Mist \n Play an extra illusion.\n"; 
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
     std::cin >> x >> y;
 
@@ -644,60 +649,58 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
 
     return true;
 }
-
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
-    std::cout << "Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
-    
+
+    std::cout << "Whirlpool\nMove 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
+
     char choice;
     std::cout << "Choose row ('r') or column ('c'): ";
     std::cin >> choice;
 
-    if (choice != 'r' && choice != 'c') {
-        std::cout << "Invalid choice. Please choose 'r' for row or 'c' for column.\n";
-        return false;
-    }
+    if (choice != 'r' && choice != 'c') return false;
 
-    std::cout << "Enter the index of the row/column (0-indexed): ";
     size_t index;
+    std::cout << "Enter the index of the row/column (0-indexed): ";
     std::cin >> index;
 
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) {
-        std::cout << "Invalid coordinates or not an empty spot.\n";
-        return false;
-    }
+    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) return false;
 
-    auto firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
+    size_t firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
 
     if (choice == 'r') {
-        if (y > 0 && !board.m_board[x][y - 1].empty() && !board.isAPile(x, y - 1))
-            firstIndex = y - 1;
-        if (y < board.m_board[x].size() - 1 && !board.m_board[x][y + 1].empty() && !board.isAPile(x, y + 1))
-            secondIndex = y + 1;
+        for (size_t i = 0; i < board.m_board[x].size(); ++i) {
+            if (!board.m_board[x][i].empty() && i != y) {
+                if (firstIndex == static_cast<size_t>(-1))
+                    firstIndex = i;
+                else {
+                    secondIndex = i;
+                    break;
+                }
+            }
+        }
     }
     else {
-        if (x > 0 && !board.m_board[x - 1][y].empty() && !board.isAPile(x - 1, y))
-            firstIndex = x - 1;
-        if (x < board.m_board.size() - 1 && !board.m_board[x + 1][y].empty() && !board.isAPile(x + 1, y))
-            secondIndex = x + 1;
+        for (size_t i = 0; i < board.m_board.size(); ++i) {
+            if (!board.m_board[i][y].empty() && i != x) {
+                if (firstIndex == static_cast<size_t>(-1))
+                    firstIndex = i;
+                else {
+                    secondIndex = i;
+                    break;
+                }
+            }
+        }
     }
 
-    if (firstIndex == static_cast<size_t>(-1) || secondIndex == static_cast<size_t>(-1)) {
-        std::cout << "Not enough valid cards to perform the operation.\n";
-        return false;
-    }
+    if (firstIndex == static_cast<size_t>(-1) || secondIndex == static_cast<size_t>(-1)) return false;
 
     auto& firstCard = (choice == 'r') ? board.m_board[x][firstIndex].back() : board.m_board[firstIndex][y].back();
     auto& secondCard = (choice == 'r') ? board.m_board[x][secondIndex].back() : board.m_board[secondIndex][y].back();
-
-    if (board.isAPile(x, firstIndex) || board.isAPile(x, secondIndex)) {
-        std::cout << "Cards cannot be moved because they are part of a pile.\n";
-        return false;
-    }
 
     if (firstCard.getValue() == secondCard.getValue()) {
         std::cout << "Cards have the same value. Choose which card goes on top:\n";
@@ -705,30 +708,32 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
         int cardChoice;
         std::cin >> cardChoice;
 
-        if (choice == 1) {
+        if (cardChoice == 1) {
             board.m_board[x][y].push_back(std::move(firstCard));
-            board.m_board[x][firstIndex].clear();
-
+            board.m_board[(choice == 'r') ? x : firstIndex][(choice == 'r') ? firstIndex : y].clear();
             board.m_board[x][y].push_back(std::move(secondCard));
-            board.m_board[x][secondIndex].clear();
+            board.m_board[(choice == 'r') ? x : secondIndex][(choice == 'r') ? secondIndex : y].clear();
         }
         else {
             board.m_board[x][y].push_back(std::move(secondCard));
-            board.m_board[x][secondIndex].clear();
-
+            board.m_board[(choice == 'r') ? x : secondIndex][(choice == 'r') ? secondIndex : y].clear();
             board.m_board[x][y].push_back(std::move(firstCard));
-            board.m_board[x][firstIndex].clear();
+            board.m_board[(choice == 'r') ? x : firstIndex][(choice == 'r') ? firstIndex : y].clear();
         }
     }
     else {
-        auto& higherCard = (firstCard.getValue() > secondCard.getValue()) ? firstCard : secondCard;
-        auto& lowerCard = (firstCard.getValue() > secondCard.getValue()) ? secondCard : firstCard;
+        auto& higherCard = (firstCard.getValue() < secondCard.getValue()) ? firstCard : secondCard;
+        auto& lowerCard = (firstCard.getValue() < secondCard.getValue()) ? secondCard : firstCard;
 
         board.m_board[x][y].push_back(std::move(higherCard));
-        board.m_board[x][(choice == 'r') ? firstIndex : secondIndex].clear();
+        board.m_board[(choice == 'r') ? x : ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)]
+            [(choice == 'r') ? ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y]
+            .clear();
 
         board.m_board[x][y].push_back(std::move(lowerCard));
-        board.m_board[x][(choice == 'r') ? secondIndex : firstIndex].clear();
+        board.m_board[(choice == 'r') ? x : ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)]
+            [(choice == 'r') ? ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y]
+            .clear();
     }
 
     return true;
