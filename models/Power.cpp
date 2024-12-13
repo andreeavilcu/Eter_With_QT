@@ -549,16 +549,16 @@ bool Power::PowerAction::tide(Player& _player, Game& _game, const bool _check) {
     size_t x, y,v,w;
     Board& board = _game.m_board;
 
-    std::cout << "Tide\ Switch 2 pile of cards.\n";
+    std::cout << "Tide\nSwitch 2 pile of cards.\n";
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)(FIRST Pile)\n";
     std::cin >> x >> y;
     std::cout << "Enter (x, y) coordinates for power action (0-indexed)(SECOND Pile)\n";
     std::cin >> v >> w;
 
-    if (board.checkIndexes(x,y) || board.checkIndexes(v, w))
+    if (!board.checkIndexes(x,y) || !board.checkIndexes(v, w))
         return false;
     
-    if (!board.isAPile(y, x) || !board.isAPile(w, v))
+    if (!board.isAPile(x, y) || !board.isAPile(v, w))
         return false;
     
     std::swap(board.m_board[x][y], board.m_board[v][w]);
