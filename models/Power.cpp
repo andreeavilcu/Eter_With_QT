@@ -322,11 +322,9 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
     int index;
 
     std::cout << "Choose type to shift (r: row, c: column): ";
-    do {
-        std::cin >> typeChoice;
-        if (typeChoice != 'r' && typeChoice != 'c')
-            std::cout << "Invalid choice! Choose type to shift (r: row, c: column):\n ";
-    } while (typeChoice != 'r' && typeChoice != 'c');
+    while (std::cin >> typeChoice && typeChoice != 'r' && typeChoice != 'c') {
+        std::cout << "Invalid choice! Try again: ";
+    }
 
     do {
         std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
@@ -347,7 +345,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
 
     std::cin >> index;
 
-    if (typeChoice == 'r' && (index <0 || index >= board.m_board.size()))
+    if (typeChoice == 'r' && (index < 0 || index >= board.m_board.size()))
         return false;
 
     if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size()))
@@ -366,23 +364,21 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
                 row[i] = std::move(row[i + 1]);
             }
 
-            auto removed = std::move(row[row.size() - 1]);
             row[row.size() - 1].clear();
 
             for (auto& card : outStack)
-                _game.m_returnedCards.push_back(card);
+                _game.m_returnedCards.push_back(std::move(card));
         }
         else if (directionChoice == 'd') {
-            auto outStack=std::move(row[row.size() - 1]);
+            auto outStack = std::move(row[row.size() - 1]);
             for (size_t i = row.size() - 1; i > 0; --i) {
                 row[i] = std::move(row[i - 1]);
             }
 
-            auto removed = std::move(row[0]);
             row[0].clear();
-            
+
             for (auto& card : outStack)
-                _game.m_returnedCards.push_back(card);
+                _game.m_returnedCards.push_back(std::move(card));
         }
 
     }
@@ -393,30 +389,27 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
                 board.m_board[i][index] = std::move(board.m_board[i - 1][index]);
             }
 
-            auto removed = std::move(board.m_board[0][index]);
             board.m_board[0][index].clear();
 
             for (auto& card : outStack)
-                _game.m_returnedCards.push_back(card);
+                _game.m_returnedCards.push_back(std::move(card));
         }
-
-        else
-            if (directionChoice == 'w') {
-                auto outStack = std::move(board.m_board[0][index]);
-                for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
-                    board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
-                }
-
-                auto removed = std::move(board.m_board[board.m_board.size() - 1][index]);
-                board.m_board[board.m_board.size() - 1][index].clear();
-
-                for (auto& card : outStack)
-                    _game.m_returnedCards.push_back(card);
+        else if (directionChoice == 'w') {
+            auto outStack = std::move(board.m_board[0][index]);
+            for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
+                board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
             }
+
+            board.m_board[board.m_board.size() - 1][index].clear();
+
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(std::move(card));
+        }
     }
 
     return true;
 }
+
 
 bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
