@@ -6,6 +6,7 @@
 #include <ranges>
 #include <stack>
 #include "Card.h"
+#include <unordered_map>
 #include "Explosion.h"
 #include "Power.h"
 

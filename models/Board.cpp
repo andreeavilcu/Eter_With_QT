@@ -273,58 +273,51 @@ bool Board::checkTwoRows() const {
 void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
     auto explosionEffects = Explosion::getInstance().getExplosionEffect();
 
+
+    std::unordered_map<Explosion::ExplosionEffect, std::function<void(size_t, size_t)>> effectHandlers{
+        {Explosion::ExplosionEffect::None, [](size_t,size_t) {} },
+
+        {Explosion::ExplosionEffect::SinkHole, [this](size_t row, size_t col) {
+            auto deletedStack = std::move(this->m_board[row][col]);
+            this->m_board[row][col].clear();
+
+            if (!this->checkBoardIntegrity())
+                this->m_board[row][col] = std::move(deletedStack);
+            else
+                Explosion::getInstance().setHole(std::make_pair(row, col));
+        }},
+        {Explosion::ExplosionEffect::RemoveCard,[this, &eliminatedCards](size_t row, size_t col) {
+            Card affectedCard = this->m_board[row][col].back();
+            this->m_board[row][col].pop_back();
+
+            if (!this->checkBoardIntegrity())
+                this->m_board[row][col].push_back(std::move(affectedCard));
+            else
+                eliminatedCards.push_back(std::move(affectedCard));
+        }},
+
+        {Explosion::ExplosionEffect::ReturnCard,[this, &returnedCards](size_t row, size_t col) {
+            Card affectedCard = this->m_board[row][col].back();
+            this->m_board[row][col].pop_back();
+
+            if (!this->checkBoardIntegrity())
+                this->m_board[row][col].push_back(std::move(affectedCard));
+            else
+                returnedCards.push_back(std::move(affectedCard));
+        }},
+    };
+
     for (size_t row = 0; row < this->m_board.size(); ++row) {
         for (size_t col = 0; col < this->m_board.size(); ++col) {
-            if (explosionEffects[row][col] == Explosion::ExplosionEffect::None)
-                continue;
+            auto effect = explosionEffects[row][col];
 
-            if (explosionEffects[row][col] == Explosion::ExplosionEffect::SinkHole) {
-                auto deletedStack = std::move(this->m_board[row][col]);
-                this->m_board[row][col].clear();
-
-                if (!this->checkBoardIntegrity())
-                    this->m_board[row][col] = std::move(deletedStack);
-
-                else
-                    Explosion::getInstance().setHole(std::make_pair(row, col));
-
-                continue;
-            }
-
-            if (this->m_board[row][col].empty())
-                continue;
-
-            Card affectedCard = this->m_board[row][col].back();
-
-            switch (explosionEffects[row][col]) {
-                case Explosion::ExplosionEffect::RemoveCard:
-                    this->m_board[row][col].pop_back();
-
-                    if (!this->checkBoardIntegrity())
-                        this->m_board[row][col].push_back(std::move(affectedCard));
-
-                    else
-                        eliminatedCards.push_back(std::move(affectedCard));
-
-                    break;
-
-                case Explosion::ExplosionEffect::ReturnCard:
-                    this->m_board[row][col].pop_back();
-
-                    if (!this->checkBoardIntegrity())
-                        this->m_board[row][col].push_back(std::move(affectedCard));
-
-                    else
-                        returnedCards.push_back(std::move(affectedCard));
-
-                    break;
-
-                default:
-                    break;
+            if (effectHandlers.find(effect) != effectHandlers.end()) {
+                if (!this->m_board[row][col].empty() || effect == Explosion::ExplosionEffect::SinkHole)
+                    effectHandlers[effect](row, col);
             }
         }
     }
-
+    
     //return returnedCards;
 }
 
