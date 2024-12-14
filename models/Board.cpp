@@ -149,11 +149,14 @@ bool Board::checkIllusion(const size_t _row, const size_t _col, const Card::Colo
 
     auto& topCard = m_board[_row][_col].back();
 
+    if (topCard.getColor() == Card::Color::Undefined)
+        return false;
+
     return topCard.isIllusion() && topCard.getColor() == _color;
 }
 
 bool Board::checkIllusionValue(const size_t _row, const size_t _col, const size_t _value) const {
-    if (m_board[_row][_col].empty())
+    if (m_board[_row][_col].empty() || m_board[_row][_col].back().getColor() == Card::Color::Undefined)
         return true;
 
     return static_cast<size_t>(m_board[_row][_col].back().getValue()) < _value;
@@ -207,7 +210,7 @@ Card::Color Board::calculateWinner() const {
             if (!m_board[row][col].empty()) {
                 auto& topCard = m_board[row][col].back();
 
-                int cardValue = topCard.isIllusion() ? 1 : static_cast<int>(topCard.getValue());
+                int cardValue = topCard.isIllusion() ? 1 : static_cast<int>(topCard.getValue()) - 1;
                 if (cardValue == static_cast<size_t>(Card::Value::Eter))
                     cardValue = 1;
 

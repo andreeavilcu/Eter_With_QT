@@ -66,7 +66,6 @@ void Card::resetJustReturned() {
 	this->m_justReturned--;
 }
 
-
 void Card::setIllusion() {
 	this->m_illusion = true;
 }
@@ -77,6 +76,7 @@ std::ostream& operator<<(std::ostream& os, const Card& _card) {
 		os << "== ";
 		return os;
 	}
+
 	if (_card.m_illusion)
 		os << "#";
 	

@@ -41,7 +41,7 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
              Card{Card::Value::Three}, Card{Card::Value::Four}
          }),
      _wizardIndices.first,
-     21,//powerIndices1.first,            
+     powerIndices1.first,
      powerIndices1.second    
     };
 
@@ -62,7 +62,7 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
                 Card{Card::Value::Three}, Card{Card::Value::Four}
             }),
         _wizardIndices.second,
-        21,//powerIndices2.first,            
+        powerIndices2.first,
         powerIndices2.second   
     };
 }
