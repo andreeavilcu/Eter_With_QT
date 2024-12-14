@@ -595,8 +595,8 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Move the stack to an adjacent empty position. Play a card on the new empty position.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed): ";
+    std::cout << "Wave\n Move a pile to an adjacent empty position. Play a card on the new empty position.\n";
+    std::cout << "Enter (x, y) coordinates for pile (0-indexed): ";
     std::cin >> x >> y;
 
     if (!board.checkIndexes(x, y)) {
@@ -615,14 +615,21 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
         {'d', {0, 1}}  
     };
 
-    std::cout << "Choose a direction (w = up, a = left, s = down, d = right): ";
     char direction;
-    std::cin >> direction;
+    bool validDirection = false;
 
-    if (directionMap.find(direction) == directionMap.end()) {
-        std::cout << "Invalid direction!\n";
-        return false;
+    while (!validDirection) {
+        std::cout << "Choose a direction (w = up, a = left, s = down, d = right): ";
+        std::cin >> direction;
+
+        if (directionMap.find(direction) != directionMap.end()) {
+            validDirection = true;
+        }
+        else {
+            std::cout << "Invalid direction! Please try again.\n";
+        }
     }
+
 
     auto offset = directionMap[direction];
     int newX = static_cast<int>(x) + offset.first;
@@ -641,8 +648,10 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     board.m_board[newX][newY] = std::move(board.m_board[x][y]);
     board.m_board[x][y].clear();
 
-    _player.playCard(_game);
-
+    if (!_check) {
+        std::cout << "\n Enter again the cooronates (x,y) for the new empty space.Than insert a card!\n";
+        _player.playCard(_game);
+    }
     return true;
 }
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
@@ -655,7 +664,8 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
     std::cout << "Choose row ('r') or column ('c'): ";
     std::cin >> choice;
 
-    if (choice != 'r' && choice != 'c') return false;
+    if (choice != 'r' && choice != 'c')  
+        return false;
 
     size_t index;
     std::cout << "Enter the index of the row/column (0-indexed): ";
@@ -664,7 +674,8 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
     std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) return false;
+    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty())
+        return false;
 
     size_t firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
 
@@ -722,14 +733,10 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
         auto& lowerCard = (firstCard.getValue() < secondCard.getValue()) ? secondCard : firstCard;
 
         board.m_board[x][y].push_back(std::move(higherCard));
-        board.m_board[(choice == 'r') ? x : ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)]
-            [(choice == 'r') ? ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y]
-            .clear();
+        board.m_board[(choice == 'r') ? x : ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)][(choice == 'r') ? ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y].clear();
 
         board.m_board[x][y].push_back(std::move(lowerCard));
-        board.m_board[(choice == 'r') ? x : ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)]
-            [(choice == 'r') ? ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y]
-            .clear();
+        board.m_board[(choice == 'r') ? x : ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)][(choice == 'r') ? ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y].clear();
     }
 
     return true;
