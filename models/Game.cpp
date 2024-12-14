@@ -158,28 +158,3 @@ bool Game::checkEndOfGame(const Card::Color _color) {
 
     return true;
 }
-
-bool Game::checkPartial(const size_t _x, const size_t _y, const size_t _int_value) const {
-    if (!this->m_board.checkIndexes(_x, _y) || this->m_board.checkHole(_x, _y))
-        return false;
-
-    if (_int_value > static_cast<size_t>(Card::Value::Four))
-        return false;
-
-    const auto value = static_cast<Card::Value>(_int_value);
-
-    if (!this->m_board.checkValue(_x, _y, value))
-        return false;
-
-    if (!this->m_board.checkNeighbours(_x, _y))
-        if (!this->m_board.checkBoardIntegrity())
-            return false;
-
-
-    const auto& power = Power::getInstance();
-
-    if (_x == power.getRestrictedRow() || _y == power.getRestrictedCol()) {
-        return false;
-    }
-    return true;
-}

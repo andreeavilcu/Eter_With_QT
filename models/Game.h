@@ -58,8 +58,6 @@ public:
 
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
 
-    [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
-
 };
 
 #endif 

@@ -48,5 +48,7 @@ public:
 
     [[nodiscard]] bool checkBoardIntegrity() const;
 
+    [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
+
     void placeCard(size_t _row, size_t _col, const Card&& _card);
 };
