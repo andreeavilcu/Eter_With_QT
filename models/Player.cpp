@@ -327,34 +327,33 @@ bool Player::playerTurn(Game &_game) {
 
     std::cin >> choice;
 
-    switch (choice) {
-        case 'c':
-            legal = this->playCard(_game);
-            break;
+    std::unordered_map<char, std::function<bool(Game&)>> actions{
+         {'c', [this](Game& game) { return this->playCard(game); }},
+         {'s', [this](Game& game) {
+            this->shiftBoard(game); 
+            return false; 
+        }},
+         {'i', [this, &_game](Game& game) {
+             if (_game.m_illusionsAllowed)
+                 return this->playIllusion(game);
+             return false;
+         }},
+         {'w', [this, &_game](Game& game) {
+             if (_game.getGameType() == Game::GameType::WizardDuel ||
+                 _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                 return this->playWizard(game);
+             return false;
+         }},
+         {'p', [this, &_game](Game& game) {
+             if (_game.getGameType() == Game::GameType::PowerDuel ||
+                 _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                 return this->playPower(game);
+             return false;
+         }},
+    };
 
-        case 's':
-            this->shiftBoard(_game);
-            legal = false;
-            break;
-
-        case 'i':
-            if (_game.m_illusionsAllowed) legal = this->playIllusion(_game);
-            break;
-
-        case 'w':
-            if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                legal = this->playWizard(_game);
-
-            break;
-
-        case 'p':
-            if (_game.getGameType() == Game::GameType::PowerDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                legal = this->playPower(_game);
-
-            break;
-
-        default:
-            break;
+    if (actions.find(choice) != actions.end()) {
+        legal = actions[choice](_game);
     }
 
     if (!legal)

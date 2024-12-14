@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include <random>
+#include<unordered_map>
 
 #include "Card.h"
 #include "Wizard.h"
