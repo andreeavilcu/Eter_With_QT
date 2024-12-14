@@ -4,6 +4,7 @@
 #include <functional>
 #include <array>
 #include<map>
+#include <algorithm>
 
 #include "Card.h"
 #include "Board.h"

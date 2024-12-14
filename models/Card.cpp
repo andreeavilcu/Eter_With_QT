@@ -72,10 +72,15 @@ void Card::setIllusion() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Card& _card) {
+	
+	if (_card.m_value == Card::Value::Border) {
+		os << "== ";
+		return os;
+	}
 	if (_card.m_illusion)
 		os << "#";
-
-	else os << (static_cast<int>(_card.m_value) == 0 ? "E" : std::to_string(static_cast<int>(_card.getValue())));
+	
+	else os << ( _card.m_value== Card::Value::Eter  ? "E" : std::to_string(static_cast<int>(_card.getValue())));
 
 	if (_card.isJustReturned())
 		os << "X ";

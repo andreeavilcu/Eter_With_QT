@@ -1046,59 +1046,59 @@ bool Power::PowerAction::border(Player& _player, Game& _game, const bool _check)
     if (!board.checkIndexes(x, y))
         return false;
 
+    if (!board.m_board[x][y].empty())
+        return false;
+
     if ((x != 0 && x != board.m_board.size() - 1 && y != 0 && y != board.m_board.size() - 1)) {
         return false;
     }
 
+    short minRow = board.getSize();
+    short minCol = board.getSize();
+    short maxRow = -1;
+    short maxCol = -1;
 
-    bool canShift = false;
-    if (x == 0) { 
-        board.circularShiftUp();
-        canShift = true;
+    for (short i = 0; i < board.getSize(); ++i) {
+        for (short j = 0; j < board.getSize(); ++j) {
+            if (!board.m_board[i][j].empty()) {
+                minRow = std::min(minRow, i);
+                maxRow = std::max(maxRow, i);
+                minCol = std::min(minCol, j);
+                maxCol = std::max(maxCol, j);
+           }
+        }
     }
-    else if (x == board.m_board.size() - 1) { 
-        board.circularShiftDown();
-        canShift = true;
-    }
-    else if (y == 0) { 
-        board.circularShiftLeft();
-        canShift = true;
-    }
-    else if (y == board.m_board.size() - 1) { 
-        board.circularShiftRight();
-        canShift = true;
-    }
+    
+   short height = maxRow - minRow + 1;
+   short width = maxCol - minCol + 1;
 
-    if (!canShift) {
-        return false;
-    }
-
-    bool definesBoundary = false;
-    if (x == 0 || x == board.m_board.size() - 1 || y == 0 || y == board.m_board.size() - 1) {
-        definesBoundary = true;
-    }
-
-    if (!definesBoundary) {
-        return false;
-    }
-    //TO DO daca putem da shift puem pune cartea , daca nu return false
-    // daca cartea nu defineste niciun border, iar return false
-    Card neutralCard(Card::Value::Eter);
-    board.placeCard(x, y, std::move(neutralCard));
+   if (height != board.getSize() - 1 &&  width != board.getSize() - 1)
+       return false;
 
 
-    std::cout << "Now play a card from your hand.\n";
-    size_t cardIndex;
-    std::cin >> cardIndex;
-
-    auto cardToPlay = _player.useCard(static_cast<Card::Value>(cardIndex));
-
-    if (!cardToPlay) {
-        std::cout << "Failed to play the card.\n";
-        return false;
+   if (height == board.getSize() - 1) {
+       if (minRow == x || maxRow == x)
+           return false;
     }
 
-    board.placeCard(x, y, std::move(*cardToPlay));
+   if (width == board.getSize() - 1) {
+       if (minCol == y || maxCol == y) {
+           return false;
+       }
+   }
+
+   board.m_board[x][y].emplace_back( Card::Value::Border, Card::Color::Undefined );
+
+   if (!board.checkBoardIntegrity()) {
+       board.m_board[x][y].pop_back();
+       return false;
+   }
+
+   if (!_player.playCard(_game)) {
+       board.m_board[x][y].pop_back();
+       return false;
+   }
+
     return true;
 }
 

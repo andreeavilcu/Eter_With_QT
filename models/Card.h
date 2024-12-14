@@ -6,7 +6,8 @@
 
 class Card {
 public:
-    enum class Value: size_t {
+    enum class Value : short {
+        Border = -1,
         Eter = 0,
         One,
         Two,

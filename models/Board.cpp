@@ -120,7 +120,7 @@ bool Board::checkNeighbours(const size_t _row, const size_t _col) const {
 }
 
 bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _value, const bool _illusion) const {
-    if (m_board[_row][_col].empty())
+    if (m_board[_row][_col].empty() || m_board[_row][_col].back().getValue() == Card::Value::Border)
         return true;
 
     if (_illusion)
@@ -318,7 +318,7 @@ void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& el
         }
     }
     
-    //return returnedCards;
+    
 }
 
 bool Board::checkBoardIntegrity() const {
