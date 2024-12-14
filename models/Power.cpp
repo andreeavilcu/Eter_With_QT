@@ -4,6 +4,10 @@
 
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const bool _check) {
+    if (!_game.m_explosionAllowed) {
+        return false;
+    }
+
     Board &board = _game.m_board;
 
     auto explosionEffects = Explosion::getInstance().generateExplosion(board.getSize());
@@ -58,10 +62,16 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _c
         return false;
     }
 
+    _game.m_eliminatedCards.push_back(std::move(affectedCard));
+
     return true;
 }
 
 bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) {
+    if (!_game.m_illusionsAllowed) {
+        return false;
+    }
+
     Board& board = _game.m_board;
 
     size_t illusionRow = -1, illusionCol = -1;
@@ -79,18 +89,16 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
         if (illusionFound) break;
     }
 
-    if (illusionFound) {
-        board.m_board[illusionRow][illusionCol].back().resetIllusion();
+    if (!illusionFound) {
+        return false;
     }
+
+    board.m_board[illusionRow][illusionCol].back().resetIllusion();
 
     board.printBoard();
 
-    size_t x, y, int_value;
-    std::cin >> x >> y >> int_value;
-
-    _player.playCard(_game);
-
-    return true;
+    std::cout << "Now place a card on any position on the board.\n";
+    return _player.playCard(_game);
 }
 
 bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
