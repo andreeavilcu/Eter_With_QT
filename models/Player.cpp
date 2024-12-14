@@ -228,7 +228,7 @@ bool Player::playIllusion(Game &_game) {
     std::cin >> y;
     std::cin >> int_value;
 
-    auto playedCard = this->playCardCheck(_game, x, y, int_value);
+    auto playedCard = this->playIllusionCheck(_game, x, y, int_value);
 
     if (!playedCard)
         return false;
@@ -247,7 +247,7 @@ std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, cons
     if (_game.getBoard().checkIllusion(_x, _y, Card::Color::Player1) || _game.getBoard().checkIllusion(_x, _y, Card::Color::Player2))
         return std::nullopt;
 
-    auto playedCard = this->useCard(static_cast<Card::Value>(_int_value));
+    auto playedCard = this->useIllusion(static_cast<Card::Value>(_int_value));
 
     return playedCard;
 }

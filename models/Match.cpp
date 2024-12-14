@@ -14,7 +14,7 @@ void Match::runMatch() {
 
             if (m_gameType == Game::GameType::WizardDuel || m_gameType == Game::GameType::WizardAndPowerDuel) {
                 do {
-                    wizardIndices.first = wizardDistribution(gen);
+                    wizardIndices.first = /*wizardDistribution(gen)*/ 3;
                 }
                 while (this->m_wizardsUsed[wizardIndices.first]);
 

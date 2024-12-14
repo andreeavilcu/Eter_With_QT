@@ -7,25 +7,38 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game, const bo
     Board &board = _game.m_board;
 
     std::cout << "Eliminate an opponent's card that covers your own.\n";
-    std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates (0-indexed): ";
     std::cin >> x >> y;
 
-    if (x >= board.m_board.size() || y >= board.m_board.size())
+    if (!board.checkIndexes(x, y)) {
+        std::cout << "Invalid coordinates!\n";
         return false;
+    }
 
-    if (board.m_board[y][x].size() < 2)
+    if (board.m_board[x][y].empty() || board.m_board[x][y].size() < 2) {
         return false;
+    }
 
-    if (board.m_board[x][y].back().getColor() == _player.getColor())
+    if (board.m_board[x][y].back().getColor() == _player.getColor()) {
         return false;
+    }
 
-    if (const size_t secondLastcardValue = board.m_board[x][y].size() - 2;
-        board.m_board[x][y][secondLastcardValue].getColor() != _player.getColor())
+    size_t secondLastCardIndex = board.m_board[x][y].size() - 2;
+    if (board.m_board[x][y][secondLastCardIndex].getColor() != _player.getColor()) {
         return false;
+    }
 
-    auto eliminatedCard = std::move(board.m_board[x][y].back());
+    Card eliminatedCard = std::move(board.m_board[x][y].back());
     board.m_board[x][y].pop_back();
 
+    if (!board.checkBoardIntegrity()) {
+        board.m_board[x][y].push_back(std::move(eliminatedCard));
+        return false;
+    }
+
+    _game.m_eliminatedCards.push_back(std::move(eliminatedCard));
+
+    std::cout << "Card successfully eliminated!\n";
     return true;
 }
 
@@ -33,6 +46,7 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
     size_t index;
     char choice;
     Board &board = _game.m_board;
+    const size_t boardSize = board.m_board.size();
 
     std::cout << "Eliminate an entire row or column of stacks.\n";
     std::cout << "Enter 'r' for row or 'c' for column: ";
@@ -45,10 +59,9 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
     std::cout << "Enter the index (0-indexed): ";
     std::cin >> index;
 
-    if (index >= board.m_board.size())
+    if (index >= boardSize)
         return false;
 
-    const size_t boardSize = board.m_board.size();
     size_t ownVisibleCards = 0;
     size_t nonEmptyStacks = 0;
 
@@ -86,14 +99,20 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
     if (tolower(choice) == 'r') {
         savedSection = board.m_board[index];
         for (std::vector<Card> &stack: board.m_board[index])
-            stack.clear();
+            while (!stack.empty()) {
+                _game.m_eliminatedCards.push_back(std::move(stack.back()));
+                stack.pop_back();
+            }
     }
 
     else {
         savedSection.resize(boardSize);
         for (size_t i = 0; i < boardSize; ++i) {
             savedSection[i] = std::move(board.m_board[i][index]);
-            board.m_board[i][index].clear();
+            while (!board.m_board[i][index].empty()) {
+                _game.m_eliminatedCards.push_back(std::move(board.m_board[i][index].back()));
+                board.m_board[i][index].pop_back();
+            }
         }
     }
 
@@ -105,6 +124,8 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
                 board.m_board[i][index] = std::move(savedSection[i]);
             }
         }
+        _game.m_eliminatedCards.erase(_game.m_eliminatedCards.end() - nonEmptyStacks,
+                                   _game.m_eliminatedCards.end());
         return false;
     }
 
@@ -128,6 +149,11 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _
     }
 
     const Card &target = targetStack.back();
+
+    if (_game.m_illusionsAllowed && target.isIllusion()) {
+        return false;
+    }
+
     if (target.getColor() == _player.getColor())
         return false;
 
@@ -135,12 +161,8 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _
         return false;
 
     auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
-    if (selectedCard == std::nullopt)
+    if (!selectedCard)
         return false;
-
-    if (selectedCard->getColor() != _player.getColor()) {
-        return false;
-    }
 
     if (selectedCard->getValue() >= target.getValue()) {
         _player.returnCard(*selectedCard);
@@ -148,7 +170,12 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _
     }
 
     targetStack.push_back(std::move(*selectedCard));
-
+    if (!board.checkBoardIntegrity()) {
+        Card returnedCard = std::move(targetStack.back());
+        targetStack.pop_back();
+        _player.returnCard(returnedCard);
+        return false;
+    }
     return true;
 }
 
@@ -169,7 +196,17 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game, const bool _c
     if (board.checkHole(y, x))
         return false;
 
+    // bool wasHole = Wizard::getInstance().getHole() == std::make_pair(x, y);
+    // auto oldHole = Wizard::getInstance().getHole();
+
     Wizard::getInstance().setHole(std::make_pair(y, x));
+
+    // if (!board.checkBoardIntegrity()) {
+        // if (wasHole) {
+            // Wizard::getInstance().setHole(oldHole);
+        // }
+        // return false;
+    // }
 
     return true;
 }
