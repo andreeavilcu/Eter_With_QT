@@ -737,7 +737,6 @@ bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _che
 
 bool Power::PowerAction::tsunami(Player& _player, Game& _game, const bool _check) {
     
-    //dupa ce player 1 a ales coloana restrictionata pentru player2 player 2 nu mai poate pune  carti niciunde
     char line;
     Board& board = _game.m_board;
     std::cout << "Tsunami!";
@@ -827,7 +826,12 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
         return false;
     }
 
-    std::cout << "Choose the direction of the cascade (l for left, r for right, u for up, d for down)\n";
+    if (choice == 'r') {
+        std::cout << "Choose the direction of the cascade (l for left, r for right)\n";
+    }
+    else{
+        std::cout << "Choose the direction of the cascade (u for up, d for down)\n";
+    }
     std::cin >> direction;
 
     if ((choice == 'r' && direction != 'l' && direction != 'r') ||
@@ -905,6 +909,7 @@ bool Power::PowerAction::support(Player& _player, Game& _game, const bool _check
     size_t x, y;
     Board& board = _game.m_board;
 
+
     std::cout << "Support!";
     std::cout << " Choose a card of value 1, 2 or 3 to increase its value by 1.\n";
     std::cout << "Enter the coordinates of the card:\n";
@@ -918,7 +923,7 @@ bool Power::PowerAction::support(Player& _player, Game& _game, const bool _check
         return false;
     }
 
-    if (board.m_board[x][y].back().isIllusion()) {
+    if (_game.m_illusionsAllowed && board.m_board[x][y].back().isIllusion()) {
         return false;
     }
 
@@ -982,7 +987,7 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game, const bool _check
         return false;
     }
 
-    if (board.m_board[x][y].back().isIllusion()) {
+    if (_game.m_illusionsAllowed && board.m_board[x][y].back().isIllusion()) {
         return false;
     }
 
@@ -1083,6 +1088,8 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game, const bool _che
     std::cout << "Eneter the coordinates for the second stack/.\n";
     std::cin >> x2 >> y2;
 
+    if (!board.isAPile(x1, y1) || !board.isAPile(x2, y2))
+        return false;
   
     if (!board.checkIndexes(x1, y1) && !board.checkIndexes(x2, y2))
         return false;
@@ -1127,10 +1134,14 @@ bool Power::PowerAction::avalanche(Player& _player, Game& _game, const bool _che
 }
 
 bool Power::PowerAction::rock(Player& _player, Game& _game, const bool _check) {
-    //TO DO: putere disponibila doar daca se joaca jocul cu iluzii
     size_t x, y;
     Board& board = _game.m_board;
     
+    if (!_game.m_illusionsAllowed) {
+        std::cout << "Illusions are not allowed in this game mode.\n";
+        return false;
+    }
+
     std::cout << "Rock.\n";
     std::cout << "Cover any illusion with a card (from your hand) without flipping the illusion face up.";
     std::cout << "Enter the coordinates for the illusion to cover:\n";
