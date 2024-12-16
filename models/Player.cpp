@@ -210,7 +210,7 @@ bool Player::playCard(Game &_game) {
 }
 
 std::optional<Card> Player::playCardCheck(Game &_game, const size_t _x, const size_t _y, const size_t _int_value) {
-    if (!_game.getBoard().checkPartial(_x, _y, _int_value))
+    if (_game.getBoard().checkPartial(_x, _y, _int_value))
         return std::nullopt;
 
     if (_game.getBoard().checkIllusion(_x, _y, this->m_color))
@@ -241,7 +241,7 @@ bool Player::playIllusion(Game &_game) {
 }
 
 std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, const size_t _y, const size_t _int_value) {
-    if (!_game.getBoard().checkPartial(_x, _y, _int_value))
+    if (_game.getBoard().checkPartial(_x, _y, _int_value))
         return std::nullopt;
 
     if (_game.getBoard().checkIllusion(_x, _y, Card::Color::Player1) || _game.getBoard().checkIllusion(_x, _y, Card::Color::Player2))
