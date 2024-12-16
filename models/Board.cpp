@@ -104,6 +104,19 @@ bool Board::checkNeighbours(const size_t _row, const size_t _col) const {
     if (!m_board[_row][_col].empty())
         return true;
 
+    bool boardIsEmpty = true;
+    for (const auto& row : m_board) {
+        for (const auto& cell : row) {
+            if (!cell.empty()) {
+                boardIsEmpty = false;
+                break;
+            }
+        }
+        if (!boardIsEmpty) break;
+    }
+
+    if (boardIsEmpty) return true;
+
     const std::array<std::pair<int, int>, 8> directions = { {
         {-1, 0}, {1, 0}, {0, -1}, {0, 1},
         {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
@@ -116,7 +129,7 @@ bool Board::checkNeighbours(const size_t _row, const size_t _col) const {
         return newRow >= 0 && newRow < this->m_board.size() &&
             newCol >= 0 && newCol < this->m_board.size() &&
             !m_board[newRow][newCol].empty();
-        });
+    });
 }
 
 bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _value, const bool _illusion) const {
@@ -366,7 +379,7 @@ bool Board::checkBoardIntegrity() const {
 }
 
 bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_value) const {
-    if (this->checkIndexes(_x, _y) || this->checkHole(_x, _y))
+    if (!this->checkIndexes(_x, _y) || this->checkHole(_x, _y))
         return false;
 
     if (_int_value > static_cast<size_t>(Card::Value::Four))
@@ -374,19 +387,18 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
 
     const auto value = static_cast<Card::Value>(_int_value);
 
-    if (this->checkValue(_x, _y, value))
+    if (!this->checkValue(_x, _y, value))
         return false;
 
-    if (this->checkNeighbours(_x, _y))
-        if (this->checkBoardIntegrity())
-            return false;
-
+    if (!this->checkNeighbours(_x, _y))
+        return false;
 
     const auto& power = Power::getInstance();
 
     if (_x == power.getRestrictedRow() || _y == power.getRestrictedCol()) {
         return false;
     }
+
     return true;
 }
 
