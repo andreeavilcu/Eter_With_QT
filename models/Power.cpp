@@ -503,15 +503,15 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Replace your own placed illusion with another illusion.\n";
-    std::cout << "Enter (x, y) coordinates for illusion (0-indexed)\n";
-    std::cin >> x >> y;
-    
-    ///to do: m_IlusionsAllowed?
+    std::cout << "\nMirage\nReplace your own placed illusion with another illusion.\n";
+
     if (!_player.wasIllusionPlayed()) {
         std::cout << "No illusion has been played yet!\n";
         return false;
     }
+
+    std::cout << "Enter (x, y) coordinates for illusion\n";
+    std::cin >> x >> y;
 
     if (!board.checkIndexes(x, y))
         return false;
@@ -521,16 +521,25 @@ bool Power::PowerAction::mirage(Player& _player, Game& _game, const bool _check)
         return false;
     }
 
-    auto topCard = std::move(board.m_board[x][y].back());
+    auto topCard = board.m_board[x][y].back();
     if (topCard.isIllusion() && topCard.getColor() == _player.getColor()) {
+       
         topCard.resetIllusion();
         
-        _game.m_returnedCards.push_back(topCard);
+        _game.m_returnedCards.push_back(std::move(topCard));
+        
+        board.m_board[x][y].pop_back();
 
-        _player.playIllusion(_game);
+        std::cout << "\nValid coordinates. Please confirm them, and select card to play\n";
+
+        if (!_player.playIllusion(_game)) {
+            std::cout << "Failed to play a new illusion!\n";
+            return false;
+        }
 
         return true;
     }
+
     std::cout << " Could not replace the ilusion!" << std::endl;
     return false;
 }
