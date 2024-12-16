@@ -1,6 +1,6 @@
 #include "Board.h"
 
-#include <bits/ranges_algo.h>
+///#include <bits/ranges_algo.h>
 
 #include "Wizard.h"
 

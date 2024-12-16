@@ -4,7 +4,7 @@ int main() {
     Match::getInstance(
         Match::MatchType::Normal,
         false,
-        Game::GameType::WizardDuel,
+        Game::GameType::PowerDuel,
         true,
         false).runMatch();
 }

@@ -589,31 +589,36 @@ bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "\n Mist \n Play an extra illusion.\n"; 
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)\n";
-    std::cin >> x >> y;
+    std::cout << "\n Mist \nPlay an extra illusion.\n"; 
 
     if (_player.wasIllusionPlayed()) {
         std::cout << "You have already played an illusion. You cannot have two illusions at the same time!\n";
         return false;
     }
 
+    std::cout << "Enter (x, y) coordinates for the new ilusion\n";
+    std::cin >> x >> y;
+
     if (!board.checkIndexes(x, y))
         return false;
 
-    if (board.m_board[x][y].back().isIllusion()) {
-        std::cout << "There is a illusion in this position!\n";
-        return false;
-    }
-
-    for (const auto& card : board.m_board[x][y]) {
-        if (card.isIllusion() && card.getColor() == _player.getColor()) {
-            std::cout << "You cannot have two illusions on the board at the same time!" << std::endl;
-            return false; 
+    if (!board.m_board[x][y].empty()) {
+        if (board.m_board[x][y].back().isIllusion()) {
+            std::cout << "There is a illusion in this position!\n";
+            return false;
         }
     }
 
-    _player.playIllusion(_game);
+    if (board.checkIllusion(x, y, _player.getColor())) {
+        std::cout << "You cannot have two illusions on the board at the same time!\n";
+        return false;
+    }
+    std::cout << "\nValid coordinates. Please confirm them, and select card to play\n";
+    if (!_player.playIllusion(_game)) {
+        std::cout << "Failed to play an illusion\n";
+        return false;
+    }
+
     return true;
 }
 
