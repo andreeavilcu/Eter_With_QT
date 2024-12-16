@@ -1,4 +1,4 @@
-#include "Wizard.h"
+﻿#include "Wizard.h"
 #include "Board.h"
 #include "Game.h"
 
@@ -254,10 +254,10 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game, const bool _
     Board &board = _game.m_board;
 
     std::cout << "You received an extra Eter card.Place now!\n";
-    std::cout << "Enter (x, y) coordinates for wizard action (0-indexed)\n";
+    std::cout << "Enter (x, y) coordinates for extra Eter:\n";
     std::cin >> x >> y;
 
-    if (board.checkIndexes(x,y))
+    if (!board.checkIndexes(x,y))
         return false;
 
     if (!board.m_board[x][y].empty())
@@ -313,7 +313,15 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
     char choice;
     std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
     std::cin >> choice;
+    if (choice != 'w' && choice != 'a' && choice != 's' && choice != 'd') {
+        std::cerr << "Invalid direction. Please choose w, a, s, or d.\n";
+        return false;
+    }
 
+    if (board.m_board.empty()) {
+        std::cerr << "Board is empty. Cannot move edges.\n";
+        return false;
+    }
     std::vector<std::vector<Card>> movedLine;
 
     switch (choice) {
@@ -327,10 +335,12 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
      
         for (auto& row : board.m_board) {
             movedLine.emplace_back(std::move(row[0]));
+            row.erase(row.begin());
         }
         board.circularShiftLeft();
         for (size_t i = 0; i < board.m_board.size(); ++i) {
             board.m_board[i][board.m_board[i].size() - 1] = std::move(movedLine[i]);
+            /// board.m_board[i].push_back(std::move(movedLine[i])); 
         }
         break;
     }
@@ -343,10 +353,13 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
     case 'd': {
         for (auto& row : board.m_board) {
             movedLine.emplace_back(std::move(row[row.size() - 1]));
+            row.pop_back();
         }
         board.circularShiftRight();
         for (size_t i = 0; i < board.m_board.size(); ++i) {
             board.m_board[i][0] = std::move(movedLine[i]);
+            ///board.m_board[i].insert(board.m_board[i].begin(), std::move(movedLine[i])); // Adaugă la început
+
         }
         break;
     }
