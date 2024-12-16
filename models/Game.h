@@ -54,8 +54,6 @@ public:
     size_t run();
 
     [[nodiscard]] bool checkEmptyDeck() const;
-    [[nodiscard]] bool checkCardAfterReturn(Card::Color _color, Card::Value _value) const;
-
     [[nodiscard]] bool checkEndOfGame(Card::Color _color);
 
 };

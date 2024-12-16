@@ -125,20 +125,6 @@ bool Game::checkEmptyDeck() const {
     return !m_player1.getCardCount() || !m_player2.getCardCount();
 }
 
-bool Game::checkCardAfterReturn(const Card::Color _color, const Card::Value _value) const {
-    const auto iter = std::ranges::find_if(m_returnedCards, [_value](const Card& _card) {
-        return _card.getValue() == _value;
-    });
-
-    if (iter == m_returnedCards.end())
-        return true;
-
-    if (_color == Card::Color::Player1)
-        return m_player1.getCardCount(_value) > 1;
-
-    return m_player2.getCardCount(_value) > 1;
-}
-
 bool Game::checkEndOfGame(const Card::Color _color) {
     this->m_winner = this->m_board.checkWin();
 

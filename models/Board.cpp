@@ -1,8 +1,6 @@
 #include "Board.h"
 
-///#include <bits/ranges_algo.h>
-
-#include "Wizard.h"
+// #include <bits/ranges_algo.h>
 
 Board::Board(size_t _size) {
     this->m_board.resize(_size);
@@ -103,19 +101,6 @@ bool Board::checkIndexes(const size_t _row, const size_t _col) const {
 bool Board::checkNeighbours(const size_t _row, const size_t _col) const {
     if (!m_board[_row][_col].empty())
         return true;
-
-    bool boardIsEmpty = true;
-    for (const auto& row : m_board) {
-        for (const auto& cell : row) {
-            if (!cell.empty()) {
-                boardIsEmpty = false;
-                break;
-            }
-        }
-        if (!boardIsEmpty) break;
-    }
-
-    if (boardIsEmpty) return true;
 
     const std::array<std::pair<int, int>, 8> directions = { {
         {-1, 0}, {1, 0}, {0, -1}, {0, 1},
@@ -391,7 +376,9 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
         return false;
 
     if (!this->checkNeighbours(_x, _y))
-        return false;
+        if (!this->checkBoardIntegrity())
+            return false;
+
 
     const auto& power = Power::getInstance();
 
@@ -402,6 +389,14 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
     return true;
 }
 
-void Board::placeCard(const size_t _row, const size_t _col, const Card&& _card) {
+std::optional<Card> Board::placeCard(const size_t _row, const size_t _col, const Card&& _card) {
     m_board[_row][_col].push_back(_card);
+    std::optional<Card> card = std::nullopt;
+
+    if (!this->checkBoardIntegrity()) {
+        card = std::move(m_board[_row][_col].back());
+        m_board[_row][_col].pop_back();
+    }
+
+    return card;
 }

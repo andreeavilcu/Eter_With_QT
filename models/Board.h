@@ -1,14 +1,16 @@
 #pragma once
 
-#include <vector>
+#include <unordered_map>
 #include <iostream>
-#include <array>
+#include <vector>
 #include <ranges>
 #include <stack>
+#include <array>
+
 #include "Card.h"
-#include <unordered_map>
 #include "Explosion.h"
 #include "Power.h"
+#include "Wizard.h"
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
@@ -50,5 +52,5 @@ public:
 
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
 
-    void placeCard(size_t _row, size_t _col, const Card&& _card);
+    std::optional<Card> placeCard(size_t _row, size_t _col, const Card&& _card);
 };
