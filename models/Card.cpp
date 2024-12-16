@@ -1,5 +1,9 @@
 #include "Card.h"
 
+bool Card::operator<(const Card &rhs) const {
+	return this->m_value < rhs.m_value;
+}
+
 Card::Card(const Value _value, const Color _color)
 	: m_value{ _value },
 	m_color{ _color } {

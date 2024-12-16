@@ -21,6 +21,8 @@ public:
         Player2 = -1
     };
 
+    bool operator<(const Card& rhs) const;
+
     explicit Card(Value _value, Color _color = Color::Undefined);
     ~Card() = default;
     Card(const Card& other) = default;
@@ -44,6 +46,7 @@ public:
     [[nodiscard]] bool isJustReturned() const;
     void setJustReturned();
     void resetJustReturned();
+
 private:
     Value m_value;
     Color m_color;

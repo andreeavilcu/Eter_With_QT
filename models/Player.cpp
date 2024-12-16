@@ -24,6 +24,8 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
 
 void Player::returnCard(Card&& _card) {
     this->m_cards.push_back(_card);
+
+    std::sort(this->m_cards.begin(), this->m_cards.end());
 }
 
 void Player::returnCard(Card &_card) {
