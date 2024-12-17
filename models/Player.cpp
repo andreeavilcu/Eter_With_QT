@@ -199,12 +199,7 @@ bool Player::playCard(Game &_game) {
         return false;
 
     if (!_game.getBoard().checkIllusion(x, y, Card::Color::Undefined) && _game.getBoard().checkIllusionValue(x, y, int_value)) {
-
-        if (std::optional<Card> usedCard = _game.getBoard().placeCard(x, y, std::move(*playedCard))) {
-            this->returnCard(std::move(*usedCard));
-            return false;
-        }
-
+        _game.getBoard().placeCard(x, y, std::move(*playedCard));
         this->placeCard(x, y);
     }
 
@@ -213,6 +208,7 @@ bool Player::playCard(Game &_game) {
         _game.m_eliminatedCards.push_back(std::move(*playedCard));
     }
 
+    _game.getBoard().setFirstCardPlayed();
     return true;
 }
 
@@ -240,14 +236,10 @@ bool Player::playIllusion(Game &_game) {
     if (!playedCard)
         return false;
 
-    if (std::optional<Card> usedCard = _game.getBoard().placeCard(x, y, std::move(*playedCard))) {
-        this->returnCard(std::move(*usedCard));
-        this->setPlayedIllusion(false);
-        return false;
-    }
-
+    _game.getBoard().placeCard(x, y, std::move(*playedCard));
     this->placeCard(x, y);
 
+    _game.getBoard().setFirstCardPlayed();
     return true;
 }
 

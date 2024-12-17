@@ -268,7 +268,7 @@ bool Board::checkTwoRows() const {
             ++colCount;
     }
 
-    return (rowCount >= 2 || colCount >= 2);
+    return rowCount >= 2 || colCount >= 2;
 }
 
 void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
@@ -375,10 +375,8 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
     if (!this->checkValue(_x, _y, value))
         return false;
 
-    if (!this->checkNeighbours(_x, _y))
-        if (!this->checkBoardIntegrity())
-            return false;
-
+    if (this->m_firstCardPlayed && !this->checkNeighbours(_x, _y))
+        return false;
 
     const auto& power = Power::getInstance();
 

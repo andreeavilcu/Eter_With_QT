@@ -14,11 +14,15 @@
 
 class Board {
     std::vector<std::vector<std::vector<Card>>> m_board{};
+    bool m_firstCardPlayed = false;
+
 public:
 
     friend class Game;
     friend class Wizard;
     friend class Power;
+
+    void setFirstCardPlayed() { m_firstCardPlayed = true; }
 
     explicit Board(size_t _size);
     [[nodiscard]] size_t getSize() const;
