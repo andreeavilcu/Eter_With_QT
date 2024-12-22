@@ -12,13 +12,13 @@
 #include "Power.h"
 #include "Wizard.h"
 
-
+template<typename T>
 class IBoard {
 public:
     virtual ~IBoard() = default;
 
     virtual size_t getSize() const = 0;
-    virtual std::vector<std::vector<std::vector<Card>>>& getBoard() = 0;
+    virtual std::vector<std::vector<std::vector<T>>>& getBoard() = 0;
 
     virtual void circularShiftUp() = 0;
     virtual void circularShiftDown() = 0;
@@ -28,11 +28,11 @@ public:
     virtual void printBoard() const = 0;
 
 
-    virtual Card::Color checkWin() const = 0;
-    virtual Card::Color calculateWinner() const = 0;
+    virtual T::Color checkWin() const = 0;
+    virtual T::Color calculateWinner() const = 0;
 
-    virtual void useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) = 0;
+    virtual void useExplosion(std::vector<T>& returnedCards, std::vector<T>& eliminatedCards) = 0;
 
-    virtual std::optional<Card> placeCard(size_t row, size_t col, const Card&& card) = 0;
+    virtual std::optional<T> placeCard(size_t row, size_t col, const T&& card) = 0;
 
 };

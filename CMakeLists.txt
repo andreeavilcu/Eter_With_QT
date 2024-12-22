@@ -21,4 +21,6 @@ add_executable(Eter main.cpp
         models/Game.cpp
         models/Match.h
         models/Match.cpp
+        models/Piece.h
+        models/Piece.cpp
 )
