@@ -3,6 +3,7 @@
 #include <vector>
 #include <stack>
 
+#include "IGame.h"
 #include "Player.h"
 #include "Board.h"
 #include "Explosion.h"
@@ -10,7 +11,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-class Game {
+class Game : public IGame{
 public:
     enum class GameType : size_t {
         Training = 0,
