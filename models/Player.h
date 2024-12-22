@@ -9,10 +9,11 @@
 #include "Card.h"
 #include "Wizard.h"
 #include "Power.h"
+#include "IPlayer.h"
 
 class Game;
 
-class Player {
+class Player : public IPlayer{
 protected: 
     Card::Color m_color{};
 

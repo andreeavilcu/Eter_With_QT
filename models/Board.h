@@ -11,8 +11,9 @@
 #include "Explosion.h"
 #include "Power.h"
 #include "Wizard.h"
+#include "IBoard.h"
 
-class Board {
+class Board : public IBoard{
     std::vector<std::vector<std::vector<Card>>> m_board{};
     bool m_firstCardPlayed = false;
 
