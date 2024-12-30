@@ -18,6 +18,7 @@ add_executable(Eter main.cpp
         models/Player/Player.h
         models/Player/Player.cpp
         models/GameMechanics/GameEndInfo.h
+        models/GameMechanics/Matrix.h
         models/GameMechanics/Board.h
         models/GameMechanics/Board.cpp
         models/GameMechanics/Game.h
