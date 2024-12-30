@@ -1,3 +1,4 @@
+/*
 #include "Board.h"
 
 // #include <bits/ranges_algo.h>
@@ -421,3 +422,4 @@ std::optional<Card> Board::placeCard(const size_t _row, const size_t _col, const
 
     return card;
 }
+*/
