@@ -3,15 +3,15 @@
 #include <vector>
 #include <stack>
 
-#include "IGame.h"
-#include "Player.h"
+#include "../Player/Player.h"
 #include "Board.h"
-#include "Explosion.h"
+#include "../Actions/Explosion.h"
+#include "GameEndInfo.h"
 
 #ifndef GAME_H
 #define GAME_H
 
-class Game : public IGame{
+class Game {
 public:
     enum class GameType : size_t {
         Training = 0,
@@ -52,10 +52,10 @@ public:
     Player& getPlayer1() { return m_player1; }
     Player& getPlayer2() { return m_player2; }
 
-    size_t run();
+    GameEndInfo run();
 
     [[nodiscard]] bool checkEmptyDeck() const;
-    [[nodiscard]] bool checkEndOfGame(Card::Color _color);
+    [[nodiscard]] std::pair<bool, bool> checkEndOfGame(Card::Color _color);
 
 };
 

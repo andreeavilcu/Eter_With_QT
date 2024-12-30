@@ -68,15 +68,22 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
 }
 
 
-size_t Game::run() {
+GameEndInfo Game::run() {
     bool player1Turn = true;
+    bool endedByCount = false;
 
     if (this->m_explosionAllowed) {
         Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
         Explosion::getInstance().printExplosion();
     }
 
-    while (checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2)) {
+    while (true) {
+        auto gameEndInfo = checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2);
+        endedByCount = gameEndInfo.second;
+
+        if (gameEndInfo.first)
+            break;
+
         std::cout << "Player " << static_cast<int>(!player1Turn) + 1 << "'s turn!" << std::endl;
 
         this->m_board.printBoard();
@@ -110,37 +117,79 @@ size_t Game::run() {
 
     this->m_board.printBoard();
 
-    if (m_winner == Card::Color::Undefined) {
-        std::cout << "Draw\n" << std::endl;
-        return 0;
+    if (this->m_board.checkIfCanShift()) {
+        char choice;
+        bool stop = false;
+
+        while (!stop) {
+            std::cout << "Enter direction (wasd) or (x) for exit.\n";
+            std::cin >> choice;
+
+            switch (tolower(choice)) {
+                case 'w':
+                    this->getBoard().circularShiftUp();
+                    break;
+                case 'a':
+                    this->getBoard().circularShiftLeft();
+                    break;
+                case 's':
+                    this->getBoard().circularShiftDown();
+                    break;
+                case 'd':
+                    this->getBoard().circularShiftRight();
+                    break;
+                case 'x':
+                    stop = true;
+                default:
+                    break;
+            }
+        }
     }
 
-    bool player1Win = m_winner == Card::Color::Player1;
+    size_t x = -1, y = -1;
 
-    std::cout << "Winner: " << (player1Win ? "Player 1\n" : "Player 2\n") << std::endl;
-    return player1Win ? 1 : 2;
+    if (m_winner == Card::Color::Undefined)
+        std::cout << "Draw\n" << std::endl;
+
+    else {
+        bool player1Win = this->m_winner == Card::Color::Player1;
+
+        std::cout << "Winner: " << (player1Win ? "Player 1\n" : "Player 2\n") << std::endl;
+
+        if (!endedByCount) {
+            auto [fst, snd] = this->getBoard().findCardIndexes(player1Win ? m_player1.getLastPlacedCard() : m_player2.getLastPlacedCard());
+
+            x = fst;
+            y = snd;
+        }
+    }
+
+    return {m_winner, x, y};
 }
 
 bool Game::checkEmptyDeck() const {
     return !m_player1.getCardCount() || !m_player2.getCardCount();
 }
 
-bool Game::checkEndOfGame(const Card::Color _color) {
+std::pair<bool, bool> Game::checkEndOfGame(const Card::Color _color) {
     this->m_winner = this->m_board.checkWin();
 
     if (this->m_winner != Card::Color::Undefined)
-        return false;
+        return {true, false};
 
     if (checkEmptyDeck() || this->m_board.checkFullBoard()) {
-        std::cout << "Player " << (_color == Card::Color::Player1 ? 1 : 2) << "'s turn!" << std::endl;
+        bool player1Turn = _color == Card::Color::Player2;
+
+        std::cout << "Player " << (player1Turn ? 1 : 2) << "'s turn!" << std::endl;
         this->m_board.printBoard();
 
-        m_player1.playerTurn(*this);
+        if (player1Turn) m_player1.playerTurn(*this);
+        else m_player2.playerTurn(*this);
 
         this->m_winner = this->m_board.calculateWinner();
 
-        return false;
+        return {true, true};
     }
 
-    return true;
+    return {false, false};
 }

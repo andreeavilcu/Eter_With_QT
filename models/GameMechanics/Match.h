@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Game.h"
+#include "../Actions/Piece.h"
 
 class Match {
 public:
@@ -12,6 +13,8 @@ public:
         Normal = 0,
         Tournament,
     };
+
+    static constexpr auto arenaWinLength = 3;
 
     Match(const Match&) = delete;
     Match& operator=(const Match&) = delete;
@@ -35,6 +38,8 @@ private:
     Match() = default;
     ~Match() = default;
 
+    Matrix<Piece> m_arena{};
+
     MatchType m_matchType{};
     Game::GameType m_gameType{};
 
@@ -51,6 +56,11 @@ private:
         stream << std::fixed << std::setprecision(1) << score;
         return stream.str();
     }
+
+    void printArena() const;
+    size_t runArenaLogic(GameEndInfo& _information);
+    size_t checkArenaWin();
+    void calculateArenaWinner();
 
 public:
     void runMatch();

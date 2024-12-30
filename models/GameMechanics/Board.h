@@ -7,21 +7,22 @@
 #include <stack>
 #include <array>
 
-#include "Card.h"
-#include "Explosion.h"
-#include "Power.h"
-#include "Wizard.h"
-#include "IBoard.h"
+#include "Matrix.h"
+#include "../Actions/Card.h"
+#include "../Actions/Explosion.h"
+#include "../Actions/Power.h"
+#include "../Actions/Wizard.h"
 
-class Board : public IBoard{
-    std::vector<std::vector<std::vector<Card>>> m_board{};
+class Board {
+    Matrix<Card> m_board{};
     bool m_firstCardPlayed = false;
 
 public:
-
     friend class Game;
     friend class Wizard;
     friend class Power;
+
+    std::pair<size_t, size_t> findCardIndexes(const Card* _card) const;
 
     void setFirstCardPlayed() { m_firstCardPlayed = true; }
 
@@ -29,10 +30,12 @@ public:
     [[nodiscard]] size_t getSize() const;
     [[nodiscard]] std::vector<std::vector<std::vector<Card>>>& getBoard();
 
-    void circularShiftUp();
-    void circularShiftDown();
-    void circularShiftLeft();
-    void circularShiftRight();
+    bool circularShiftUp();
+    bool circularShiftDown();
+    bool circularShiftLeft();
+    bool circularShiftRight();
+
+    bool checkIfCanShift();
 
     void printBoard() const;
 

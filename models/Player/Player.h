@@ -6,14 +6,13 @@
 #include <random>
 #include<unordered_map>
 
-#include "Card.h"
-#include "Wizard.h"
-#include "Power.h"
-#include "IPlayer.h"
+#include "../Actions/Card.h"
+#include "../Actions/Wizard.h"
+#include "../Actions/Power.h"
 
 class Game;
 
-class Player : public IPlayer{
+class Player {
 protected: 
     Card::Color m_color{};
 
@@ -24,7 +23,7 @@ protected:
 
     bool m_playedIllusion{false};
 
-    std::pair<size_t, size_t> m_last_placed_card;
+    Card* m_last_placed_card{};
     
 public:
     friend class Wizard;
@@ -38,7 +37,6 @@ public:
     void returnCard(Card& _card);
 
     void printCards();
-    void placeCard(size_t row, size_t col);
 
     [[nodiscard]] Card::Color getColor() const;
     void setColor(Card::Color _color);
@@ -48,8 +46,8 @@ public:
 
     void resetCards();
 
-    [[nodiscard]] std::pair<size_t, size_t> getLastPlacedCard() const;
-    void setLastPlacedCard(std::pair<size_t, size_t> _cardPosition);
+    const Card* getLastPlacedCard() const;
+    void setLastPlacedCard(Card& _card);
 
     [[nodiscard]] int getWizardIndex() const;
     void setWizardIndex(size_t _index);

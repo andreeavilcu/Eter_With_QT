@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-class Card {
+class Card : public std::enable_shared_from_this<Card> {
 public:
     enum class Value : short {
         Border = -1,

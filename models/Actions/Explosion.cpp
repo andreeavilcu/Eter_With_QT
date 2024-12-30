@@ -75,6 +75,8 @@ void Explosion::rotateMatrixRight() {
 }
 
 void Explosion::printExplosion() const {
+    std::cout << "Explosion:\n\n";
+
     for (size_t i = 0; i < m_explosionEffects.size(); ++i) {
         for (size_t j = 0; j < m_explosionEffects.size(); ++j) {
             switch (m_explosionEffects[i][j]) {

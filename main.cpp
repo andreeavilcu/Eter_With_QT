@@ -1,10 +1,10 @@
-#include "models/Match.h"
+#include "models/GameMechanics/Match.h"
 
 int main() {
     Match::getInstance(
-        Match::MatchType::Normal,
+        Match::MatchType::Tournament,
         false,
-        Game::GameType::WizardDuel,
-        true,
+        Game::GameType::Training,
+        false,
         false).runMatch();
 }

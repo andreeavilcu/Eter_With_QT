@@ -1,6 +1,6 @@
 ﻿#include "Power.h"
-#include "Board.h"
-#include "Game.h"
+#include "../GameMechanics/Board.h"
+#include "../GameMechanics/Game.h"
 
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const bool _check) {
@@ -43,7 +43,7 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _c
 
     auto& opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
 
-    auto [lastRow, lastCol] = opponent.getLastPlacedCard();
+    auto [lastRow, lastCol] = board.findCardIndexes(opponent.getLastPlacedCard());
 
     if (lastRow == -1 || lastCol == -1) {
         return false;
@@ -175,7 +175,7 @@ bool Power::PowerAction::ash(Player& _player, Game& _game, const bool _check) {
     }
 
     board.placeCard(x, y, std::move(chosenCard));
-    _player.placeCard(x, y);
+    _player.setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
     return true;
 }
 
@@ -231,7 +231,7 @@ bool Power::PowerAction::spark(Player& _player, Game& _game, const bool _check) 
     }
 
     board.placeCard(newRow, newCol, std::move(chosenCard));
-    _player.placeCard(newRow, newCol);
+    _player.setLastPlacedCard(_game.getBoard().getBoard()[newRow][newCol].back());
 
     return true;
 }

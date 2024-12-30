@@ -1,6 +1,6 @@
 #include "Player.h"
 
-#include "Game.h"
+#include "../GameMechanics/Game.h"
 
 const std::vector<Card>& Player::getCards() const
 {
@@ -39,10 +39,6 @@ void Player::printCards() {
     std::cout << std::endl;
 }
 
-void Player::placeCard(size_t row, size_t col) {
-    m_last_placed_card = {row, col};
-}
-
 Card::Color Player::getColor() const {
     return this->m_color;
 }
@@ -71,14 +67,14 @@ void Player::resetCards() {
         card.resetJustReturned();
 }
 
-std::pair<size_t, size_t> Player::getLastPlacedCard() const {
-    return m_last_placed_card;
+const Card* Player::getLastPlacedCard() const {
+    return this->m_last_placed_card;
 }
 
-void Player::setLastPlacedCard(std::pair<size_t, size_t> _cardPosition)
-{
-    this->m_last_placed_card = _cardPosition;
+void Player::setLastPlacedCard(Card &_card) {
+    this->m_last_placed_card = &_card;
 }
+
 
 int Player::getWizardIndex() const {
     return static_cast<int>(this->m_wizard_index);
@@ -165,22 +161,22 @@ std::optional<Card> Player::useIllusion(const Card::Value _value) {
 void Player::shiftBoard(Game& _game) {
     char choice;
 
-    std::cout << "enter direction (wasd)";
+    std::cout << "Enter direction (wasd).\n";
     std::cin >> choice;
 
-    switch (choice) {
+    switch (tolower(choice)) {
         case 'w':
             _game.getBoard().circularShiftUp();
-        break;
+            break;
         case 'a':
             _game.getBoard().circularShiftLeft();
-        break;
+            break;
         case 's':
             _game.getBoard().circularShiftDown();
-        break;
+            break;
         case 'd':
             _game.getBoard().circularShiftRight();
-        break;
+            break;
         default:
             break;
     }
@@ -200,7 +196,7 @@ bool Player::playCard(Game &_game) {
 
     if (!_game.getBoard().checkIllusion(x, y, Card::Color::Undefined) && _game.getBoard().checkIllusionValue(x, y, int_value)) {
         _game.getBoard().placeCard(x, y, std::move(*playedCard));
-        this->placeCard(x, y);
+        this->setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
     }
 
     else {
@@ -237,7 +233,7 @@ bool Player::playIllusion(Game &_game) {
         return false;
 
     _game.getBoard().placeCard(x, y, std::move(*playedCard));
-    this->placeCard(x, y);
+    this->setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
 
     _game.getBoard().setFirstCardPlayed();
     return true;

@@ -1,6 +1,6 @@
-﻿#include "Wizard.h"
-#include "Board.h"
-#include "Game.h"
+﻿#include "../Actions/Wizard.h"
+#include "../GameMechanics/Board.h"
+#include "../GameMechanics/Game.h"
 
 bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game, const bool _check) {
     size_t x, y;
