@@ -16,8 +16,13 @@ std::pair<size_t, size_t> Board::findCardIndexes(const Card* _card) const {
 Board::Board(size_t _size) {
     this->m_board.resize(_size);
 
-    for (auto& row : this->m_board)
+    for (auto& row : this->m_board) {
         row.resize(_size);
+
+        for (auto& position : row)
+            position.reserve(MAX_HEIGHT);
+    }
+
 }
 
 size_t Board::getSize() const {
