@@ -52,7 +52,7 @@ public:
     Player& getPlayer1() { return m_player1; }
     Player& getPlayer2() { return m_player2; }
 
-    GameEndInfo run(bool _player1Turn);
+    GameEndInfo run(bool _player1Turn, bool _timed, int _duration);
 
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] std::pair<bool, bool> checkEndOfGame(Card::Color _color);

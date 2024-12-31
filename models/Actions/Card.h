@@ -17,8 +17,8 @@ public:
 
     enum class Color: short {
         Undefined = 0,
-        Player1 = 1,
-        Player2 = -1
+        Red = 1,
+        Blue = -1
     };
 
     bool operator<(const Card& rhs) const;

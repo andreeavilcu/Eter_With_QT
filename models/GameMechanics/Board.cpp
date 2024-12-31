@@ -219,8 +219,8 @@ Card::Color Board::checkWin() const {
     }
 
     for (int sum : sums) {
-        if (sum == n) return Card::Color::Player1;
-        if (sum == -n) return Card::Color::Player2;
+        if (sum == n) return Card::Color::Red;
+        if (sum == -n) return Card::Color::Blue;
     }
 
     return Card::Color::Undefined;
@@ -253,7 +253,7 @@ Card::Color Board::calculateWinner() const {
                 if (Power::getInstance().getMinus() == std::pair{ row,col })
                     cardValue--;
 
-                if (topCard.getColor() == Card::Color::Player1) {
+                if (topCard.getColor() == Card::Color::Red) {
                     winner.first += cardValue;
                 }
                 else {
@@ -264,10 +264,10 @@ Card::Color Board::calculateWinner() const {
     }
 
     if (winner.first > winner.second)
-        return Card::Color::Player1;
+        return Card::Color::Red;
 
     if (winner.first < winner.second)
-        return Card::Color::Player2;
+        return Card::Color::Blue;
 
     return Card::Color::Undefined;
 }

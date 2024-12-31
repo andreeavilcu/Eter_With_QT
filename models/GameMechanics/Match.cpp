@@ -8,7 +8,7 @@ void Match::printArena() const {
             std::pair<size_t, size_t> pieceCounts{0, 0};
 
             for (const auto& piece : position) {
-                if (piece.getColor() == Card::Color::Player1)
+                if (piece.getColor() == Card::Color::Red)
                     pieceCounts.first++;
 
                 else pieceCounts.second++;
@@ -31,7 +31,7 @@ size_t Match::runArenaLogic(GameEndInfo& _information) {
         } while (_information.x >= this->m_arena.size() || _information.y >= this->m_arena.size());
 
     auto& pieces = this->m_arena[_information.x][_information.y];
-    auto enemyColor = _information.winner == Card::Color::Player1 ? Card::Color::Player2 : Card::Color::Player1;
+    auto enemyColor = _information.winner == Card::Color::Red ? Card::Color::Blue : Card::Color::Red;
 
     auto it = std::ranges::find_if(pieces, [enemyColor](const Piece& piece) {
         return piece.getColor() == enemyColor;
@@ -54,13 +54,13 @@ size_t Match::checkArenaWin() {
             bool v1 = false, v2 = false;
 
             for (const auto& piece : this->m_arena[i][j]) {
-                if (piece.getColor() == Card::Color::Player1) {
+                if (piece.getColor() == Card::Color::Red) {
                     if (!v1) {
                         v1 = true;
                         p1++;
                     }
                 }
-                else if (piece.getColor() == Card::Color::Player2) {
+                else if (piece.getColor() == Card::Color::Blue) {
                     if (!v2) {
                         v2 = true;
                         p2++;
@@ -79,13 +79,13 @@ size_t Match::checkArenaWin() {
             bool v1 = false, v2 = false;
 
             for (const auto& piece : this->m_arena[j][i]) {
-                if (piece.getColor() == Card::Color::Player1) {
+                if (piece.getColor() == Card::Color::Red) {
                     if (!v1) {
                         v1 = true;
                         p1++;
                     }
                 }
-                else if (piece.getColor() == Card::Color::Player2) {
+                else if (piece.getColor() == Card::Color::Blue) {
                     if (!v2) {
                         v2 = true;
                         p2++;
@@ -102,13 +102,13 @@ size_t Match::checkArenaWin() {
     for (size_t i = 0; i < n; ++i) {
         bool v1 = false, v2 = false;
         for (const auto& piece : this->m_arena[i][i]) {
-            if (piece.getColor() == Card::Color::Player1) {
+            if (piece.getColor() == Card::Color::Red) {
                 if (!v1) {
                     v1 = true;
                     p1++;
                 }
             }
-            else if (piece.getColor() == Card::Color::Player2) {
+            else if (piece.getColor() == Card::Color::Blue) {
                 if (!v2) {
                     v2 = true;
                     p2++;
@@ -124,13 +124,13 @@ size_t Match::checkArenaWin() {
     for (size_t i = 0; i < n; ++i) {
         bool v1 = false, v2 = false;
         for (const auto& piece : this->m_arena[i][n - i - 1]) {
-            if (piece.getColor() == Card::Color::Player1) {
+            if (piece.getColor() == Card::Color::Red) {
                 if (!v1) {
                     v1 = true;
                     p1++;
                 }
             }
-            else if (piece.getColor() == Card::Color::Player2) {
+            else if (piece.getColor() == Card::Color::Blue) {
                 if (!v2) {
                     v2 = true;
                     p2++;
@@ -149,8 +149,8 @@ void Match::calculateArenaWinner() {
     for (const auto& row : this->m_arena)
         for (const auto& position : row)
             for (const auto& piece : position)
-                if (piece.getColor() == Card::Color::Player1) ++this->m_scores.first;
-                else if (piece.getColor() == Card::Color::Player2) ++this->m_scores.second;
+                if (piece.getColor() == Card::Color::Red) ++this->m_scores.first;
+                else if (piece.getColor() == Card::Color::Blue) ++this->m_scores.second;
 }
 
 void Match::runMatch() {
@@ -160,8 +160,8 @@ void Match::runMatch() {
     std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
 
     size_t winner = 0;
-    bool startPlayer = startPlayerDistribution(gen);
-    std::cout << startPlayer << std::endl;
+    const bool startPlayer = startPlayerDistribution(gen);
+    const bool timed = this->m_timer_duration != TimerDuration::Untimed;
 
     size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
     size_t winsNeeded = matchesPlayed / 2 + 1;
@@ -205,7 +205,7 @@ void Match::runMatch() {
         }
 
         Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion};
-        GameEndInfo information = game.run(index % 2 == startPlayer);
+        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
 
         if (this->m_matchType == MatchType::Tournament) {
             if (information.winner == Card::Color::Undefined)
@@ -218,10 +218,10 @@ void Match::runMatch() {
 
         else {
             switch (information.winner) {
-                case Card::Color::Player1:
+                case Card::Color::Red:
                     this->m_scores.first++;
                 break;
-                case Card::Color::Player2:
+                case Card::Color::Blue:
                     this->m_scores.second++;
                 break;
                 case Card::Color::Undefined:

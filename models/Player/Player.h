@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 #include <random>
-#include<unordered_map>
+#include <unordered_map>
 
 #include "../Actions/Card.h"
 #include "../Actions/Wizard.h"
@@ -32,6 +32,8 @@ protected:
 
     Card* m_last_placed_card{};
 
+    double m_time_left{};
+
 public:
     friend class Wizard;
     friend class Board;
@@ -39,11 +41,17 @@ public:
     [[nodiscard]] const std::vector<Card>& getCards() const;
     void setCards(const std::vector<Card>& _cards);
 
-    explicit Player(Card::Color _color, const std::vector<Card>& _cards, size_t _wizardIndex, size_t _powerIndexFirst, size_t _powerIndexSecond);
+    void setTimer(int _duration);
+
+    explicit Player(Card::Color _color, const std::vector<Card> &_cards, size_t _wizardIndex, size_t _powerIndexFirst,
+                    size_t _powerIndexSecond);
     void returnCard(Card&& _card);
     void returnCard(Card& _card);
 
     void printCards();
+
+    bool subtractTime(double _time);
+    double getTimeLeft() const;
 
     [[nodiscard]] Card::Color getColor() const;
     void setColor(Card::Color _color);

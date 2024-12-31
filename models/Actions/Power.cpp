@@ -24,7 +24,7 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const
 
     board.useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
 
-    auto &opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
+    auto &opponent = _player.getColor() == Card::Color::Red ? _game.m_player2 : _game.m_player1;
 
     for (auto& card : _game.m_returnedCards)
         if (card.getColor() == _player.getColor())
@@ -41,7 +41,7 @@ bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const
 bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
-    auto& opponent = _player.getColor() == Card::Color::Player1 ? _game.m_player2 : _game.m_player1;
+    auto& opponent = _player.getColor() == Card::Color::Red ? _game.m_player2 : _game.m_player1;
 
     auto [lastRow, lastCol] = board.findCardIndexes(opponent.getLastPlacedCard());
 
@@ -79,7 +79,7 @@ bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) 
 
     for (size_t row = 0; row < board.getSize(); ++row) {
         for (size_t col = 0; col < board.getSize(); ++col) {
-            if (board.checkIllusion(row, col, _player.getColor() == Card::Color::Player1 ? Card::Color::Player2 : Card::Color::Player1)) {
+            if (board.checkIllusion(row, col, _player.getColor() == Card::Color::Red ? Card::Color::Blue : Card::Color::Red)) {
                 illusionRow = row;
                 illusionCol = col;
                 illusionFound = true;
@@ -280,7 +280,7 @@ bool Power::PowerAction::squall(Player& _player, Game& _game, const bool _check)
 
     board.m_board[selectedRow][selectedCol].pop_back();
 
-    auto& opponent = (_player.getColor() == Card::Color::Player1)
+    auto& opponent = (_player.getColor() == Card::Color::Red)
                      ? _game.m_player2
                      : _game.m_player1;
     opponent.returnCard(selectedCard);

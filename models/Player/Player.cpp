@@ -12,6 +12,10 @@ void Player::setCards(const std::vector<Card>& _cards)
     this->m_cards = _cards;
 }
 
+void Player::setTimer(int _duration) {
+    this->m_time_left = _duration;
+}
+
 Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond) :
     m_color{ _color },
     m_cards{ _cards },
@@ -37,6 +41,16 @@ void Player::printCards() {
         std::cout << m_card;
 
     std::cout << std::endl;
+}
+
+bool Player::subtractTime(const double _time) {
+    this->m_time_left -= _time;
+
+    return this->m_time_left <= 0;
+}
+
+double Player::getTimeLeft() const {
+    return this->m_time_left;
 }
 
 Card::Color Player::getColor() const {
@@ -246,7 +260,7 @@ std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, cons
     if (_int_value == static_cast<size_t>(Card::Value::Eter))
         return std::nullopt;
 
-    if (_game.getBoard().checkIllusion(_x, _y, Card::Color::Player1) || _game.getBoard().checkIllusion(_x, _y, Card::Color::Player2))
+    if (_game.getBoard().checkIllusion(_x, _y, Card::Color::Red) || _game.getBoard().checkIllusion(_x, _y, Card::Color::Blue))
         return std::nullopt;
 
     auto playedCard = this->useIllusion(static_cast<Card::Value>(_int_value));
@@ -300,11 +314,16 @@ void Player::playExplosion(Game& _game) {
     _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
 }
 
+Card::Color timer (const Player& _player, int seconds);
+
 bool Player::playerTurn(Game &_game) {
     char choice;
     bool legal = false;
 
     this->resetCards();
+
+    std::cout << (this->getColor() == Card::Color::Red ? "Red" : "Blue") << " player's turn!\n";
+    std::cout << "Seconds left: " << this->m_time_left <<"\n\n";
 
     std::cout << "Play a card   (c) ";
     this->printCards();
@@ -353,6 +372,8 @@ bool Player::playerTurn(Game &_game) {
              return false;
          }},
     };
+
+    std::cout <<std::endl;
 
     if (actions.find(choice) != actions.end()) {
         legal = actions[choice](_game);

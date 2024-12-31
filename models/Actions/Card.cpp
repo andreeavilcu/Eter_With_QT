@@ -89,7 +89,7 @@ std::ostream& operator<<(std::ostream& os, const Card& _card) {
 	if (_card.isJustReturned())
 		os << "X ";
 
-	else os << (_card.getColor() == Card::Color::Player1 ? "R " : "B ");
+	else os << (_card.getColor() == Card::Color::Red ? "R " : "B ");
 
 	return os;
 }

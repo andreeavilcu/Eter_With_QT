@@ -25,7 +25,7 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
 
    
     m_player1 = Player{
-     Card::Color::Player1,
+     Card::Color::Red,
      (_gameType == GameType::Training
          ? std::vector<Card>{
              Card{Card::Value::One}, Card{Card::Value::One},
@@ -46,7 +46,7 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
     };
 
     m_player2 = Player{
-        Card::Color::Player2,
+        Card::Color::Blue,
         (_gameType == GameType::Training
             ? std::vector<Card>{
                 Card{Card::Value::One}, Card{Card::Value::One},
@@ -67,10 +67,12 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
     };
 }
 
-
-GameEndInfo Game::run(const bool _player1Turn) {
+GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
     bool player1Turn = _player1Turn;
     bool endedByCount = false;
+
+    this->m_player1.setTimer(_duration);
+    this->m_player2.setTimer(_duration);
 
     if (this->m_explosionAllowed) {
         Explosion::getInstance().generateExplosion(m_gameType == GameType::Training ? 3 : 4);
@@ -78,17 +80,29 @@ GameEndInfo Game::run(const bool _player1Turn) {
     }
 
     while (true) {
-        auto gameEndInfo = checkEndOfGame(!player1Turn ? Card::Color::Player1 : Card::Color::Player2);
+        auto gameEndInfo = checkEndOfGame(!player1Turn ? Card::Color::Red : Card::Color::Blue);
         endedByCount = gameEndInfo.second;
 
         if (gameEndInfo.first)
             break;
 
-        std::cout << (static_cast<int>(!player1Turn) ? "Blue" : "Red") << " player's turn!" << std::endl;
-
         this->m_board.printBoard();
 
+        auto start_time = std::chrono::high_resolution_clock::now();
         if (auto& player = player1Turn ? m_player1 : m_player2; player.playerTurn(*this)) {
+            if (_timed) {
+                auto end_time = std::chrono::high_resolution_clock::now();
+                auto delta_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+                double delta_seconds = delta_time.count() / 1000.0f;
+                delta_seconds = std::round(delta_seconds * 100) / 100;
+
+                if (player.subtractTime(delta_seconds)) {
+                    this->m_winner = player.getColor() != Card::Color::Red ? Card::Color::Red : Card::Color::Blue;
+                    break;
+                }
+            }
+
             player1Turn = !player1Turn;
 
             if (Power::getInstance().getJustBlocked())
@@ -98,20 +112,20 @@ GameEndInfo Game::run(const bool _player1Turn) {
                 Power::getInstance().setRestrictedCol(-1);
                 Power::getInstance().setRestrictedRow(-1);
             }
-        }
 
-        if (!m_returnedCards.empty()) {
-            for (auto& card : m_returnedCards) {
-                card.setJustReturned();
+            if (!m_returnedCards.empty()) {
+                for (auto& card : m_returnedCards) {
+                    card.setJustReturned();
 
-                if (card.getColor() == Card::Color::Player1)
-                    m_player1.returnCard(std::move(card));
+                    if (card.getColor() == Card::Color::Red)
+                        m_player1.returnCard(std::move(card));
 
-                else
-                    m_player2.returnCard(std::move(card));
+                    else
+                        m_player2.returnCard(std::move(card));
+                }
+
+                m_returnedCards.clear();
             }
-
-            m_returnedCards.clear();
         }
     }
 
@@ -154,9 +168,9 @@ GameEndInfo Game::run(const bool _player1Turn) {
         std::cout << "Draw\n" << std::endl;
 
     else {
-        bool player1Win = this->m_winner == Card::Color::Player1;
+        bool player1Win = this->m_winner == Card::Color::Red;
 
-        std::cout << "Winner: " << (player1Win ? "Red" : "Blue2") << " player\n" << std::endl;
+        std::cout << "Winner: " << (player1Win ? "Red" : "Blue") << " player\n" << std::endl;
 
         if (!endedByCount) {
             auto [fst, snd] = this->getBoard().findCardIndexes(player1Win ? m_player1.getLastPlacedCard() : m_player2.getLastPlacedCard());
@@ -180,7 +194,7 @@ std::pair<bool, bool> Game::checkEndOfGame(const Card::Color _color) {
         return {true, false};
 
     if (checkEmptyDeck() || this->m_board.checkFullBoard()) {
-        bool player1Turn = _color == Card::Color::Player2;
+        bool player1Turn = _color == Card::Color::Blue;
 
         std::cout << (player1Turn ? "Red" : "Blue") << " player's turn!" << std::endl;
         this->m_board.printBoard();
