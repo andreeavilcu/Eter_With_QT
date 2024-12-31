@@ -23,8 +23,15 @@ protected:
 
     bool m_playedIllusion{false};
 
+    /*
+     * std::reference_wrapper does not work here, as initially there is no "last placed card"
+     * std::shared_ptr does not work as the matrix does not use pointers,
+     * and there were some issues regarding addresses and also maybe memory padding?
+     * std::shared_ptr<Card> m_last_placed_card_ptr{};
+     */
+
     Card* m_last_placed_card{};
-    
+
 public:
     friend class Wizard;
     friend class Board;
@@ -46,7 +53,7 @@ public:
 
     void resetCards();
 
-    const Card* getLastPlacedCard() const;
+    [[nodiscard]] const Card* getLastPlacedCard() const;
     void setLastPlacedCard(Card& _card);
 
     [[nodiscard]] int getWizardIndex() const;

@@ -154,7 +154,14 @@ void Match::calculateArenaWinner() {
 }
 
 void Match::runMatch() {
+    std::random_device rd;
+    std::mt19937 gen{ rd() };
+    std::bernoulli_distribution startPlayerDistribution{ 0.5 };
+    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
+
     size_t winner = 0;
+    bool startPlayer = startPlayerDistribution(gen);
+    std::cout << startPlayer << std::endl;
 
     size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
     size_t winsNeeded = matchesPlayed / 2 + 1;
@@ -169,10 +176,6 @@ void Match::runMatch() {
     }
 
     for (size_t index = 0; index < matchesPlayed; index++) {
-        std::random_device rd;
-        std::mt19937 gen{ rd() };
-        std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
-
         std::pair<size_t, size_t> wizardIndices = {-1, -1};
 
         if (m_gameType == Game::GameType::WizardDuel || m_gameType == Game::GameType::WizardAndPowerDuel) {
@@ -202,7 +205,7 @@ void Match::runMatch() {
         }
 
         Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion};
-        GameEndInfo information = game.run();
+        GameEndInfo information = game.run(index % 2 == startPlayer);
 
         if (this->m_matchType == MatchType::Tournament) {
             if (information.winner == Card::Color::Undefined)
@@ -234,7 +237,7 @@ void Match::runMatch() {
     }
 
     if (winner) {
-        std::cout << "Match winner: Player " << (winner == 1? "1" : "2") << std::endl;
+        std::cout << "Match winner: " << (winner == 1? "Red" : "Blue") << " player\n";
         return;
     }
 
@@ -249,5 +252,5 @@ void Match::runMatch() {
 
     winner = this->m_scores.first > this->m_scores.second ? 1 : 2;
 
-    std::cout << "Match winner: Player " << (winner == 1? "1" : "2") << std::endl;
+    std::cout << "Match winner: " << (winner == 1? "Red" : "Blue") << " player\n";
 }

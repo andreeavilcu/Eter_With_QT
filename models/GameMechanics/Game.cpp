@@ -68,8 +68,8 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
 }
 
 
-GameEndInfo Game::run() {
-    bool player1Turn = true;
+GameEndInfo Game::run(const bool _player1Turn) {
+    bool player1Turn = _player1Turn;
     bool endedByCount = false;
 
     if (this->m_explosionAllowed) {
@@ -84,7 +84,7 @@ GameEndInfo Game::run() {
         if (gameEndInfo.first)
             break;
 
-        std::cout << "Player " << static_cast<int>(!player1Turn) + 1 << "'s turn!" << std::endl;
+        std::cout << (static_cast<int>(!player1Turn) ? "Blue" : "Red") << " player's turn!" << std::endl;
 
         this->m_board.printBoard();
 
@@ -143,6 +143,8 @@ GameEndInfo Game::run() {
                 default:
                     break;
             }
+
+            this->m_board.printBoard();
         }
     }
 
@@ -154,7 +156,7 @@ GameEndInfo Game::run() {
     else {
         bool player1Win = this->m_winner == Card::Color::Player1;
 
-        std::cout << "Winner: " << (player1Win ? "Player 1\n" : "Player 2\n") << std::endl;
+        std::cout << "Winner: " << (player1Win ? "Red" : "Blue2") << " player\n" << std::endl;
 
         if (!endedByCount) {
             auto [fst, snd] = this->getBoard().findCardIndexes(player1Win ? m_player1.getLastPlacedCard() : m_player2.getLastPlacedCard());
@@ -180,7 +182,7 @@ std::pair<bool, bool> Game::checkEndOfGame(const Card::Color _color) {
     if (checkEmptyDeck() || this->m_board.checkFullBoard()) {
         bool player1Turn = _color == Card::Color::Player2;
 
-        std::cout << "Player " << (player1Turn ? 1 : 2) << "'s turn!" << std::endl;
+        std::cout << (player1Turn ? "Red" : "Blue") << " player's turn!" << std::endl;
         this->m_board.printBoard();
 
         if (player1Turn) m_player1.playerTurn(*this);

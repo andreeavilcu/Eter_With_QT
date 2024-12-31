@@ -30,10 +30,10 @@ public:
     [[nodiscard]] size_t getSize() const;
     [[nodiscard]] std::vector<std::vector<std::vector<Card>>>& getBoard();
 
-    bool circularShiftUp();
-    bool circularShiftDown();
-    bool circularShiftLeft();
-    bool circularShiftRight();
+    bool circularShiftUp(bool _check = false);
+    bool circularShiftDown(bool _check = false);
+    bool circularShiftLeft(bool _check = false);
+    bool circularShiftRight(bool _check = false);
 
     bool checkIfCanShift();
 

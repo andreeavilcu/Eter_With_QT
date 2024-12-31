@@ -5,10 +5,9 @@
 std::pair<size_t, size_t> Board::findCardIndexes(const Card* _card) const {
     for (size_t i = 0; i < this->m_board.size(); i++)
         for (size_t j = 0; j < this->m_board[i].size(); j++)
-            for (const auto& card : this->m_board[i][j]) {
-                std::cout << &card << ", " << _card << std::endl;
-                if (&card == _card) return {i, j};
-            }
+            for (const auto& card : this->m_board[i][j])
+                if (&card == _card)
+                    return {i, j};
 
     return {-1, -1};
 }
@@ -33,10 +32,12 @@ std::vector<std::vector<std::vector<Card>>>& Board::getBoard() {
     return m_board;
 }
 
-bool Board::circularShiftUp() {
+bool Board::circularShiftUp(const bool _check) {
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
         if (!m_board[0][col].empty())
             return false;
+
+    if (_check) return true;
 
     auto temp = std::move(this->m_board[0]);
 
@@ -51,10 +52,12 @@ bool Board::circularShiftUp() {
     return true;
 }
 
-bool Board::circularShiftDown() {
+bool Board::circularShiftDown(const bool _check) {
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
         if (!m_board[this->m_board.size() - 1][col].empty())
             return false;
+
+    if (_check) return true;
 
     auto temp = std::move(this->m_board[this->m_board.size() - 1]);
 
@@ -69,10 +72,12 @@ bool Board::circularShiftDown() {
     return true;
 }
 
-bool Board::circularShiftLeft() {
+bool Board::circularShiftLeft(const bool _check) {
     for (std::size_t row = 0; row < this->m_board.size(); ++row)
         if (!m_board[row][0].empty())
             return false;
+
+    if (_check) return true;
 
     for (std::size_t col = 0; col < this->m_board.size() - 1; ++col)
         for (std::size_t row = 0; row < this->m_board.size(); ++row)
@@ -84,10 +89,12 @@ bool Board::circularShiftLeft() {
     return true;
 }
 
-bool Board::circularShiftRight() {
+bool Board::circularShiftRight(const bool _check) {
     for (std::size_t row = 0; row < this->m_board.size(); ++row)
         if (!m_board[row][this->m_board.size() - 1].empty())
             return false;
+
+    if (_check) return true;
 
     for (std::size_t col = this->m_board.size() - 1; col > 0; --col)
         for (std::size_t row = 0; row < this->m_board.size(); ++row)
@@ -100,7 +107,7 @@ bool Board::circularShiftRight() {
 }
 
 bool Board::checkIfCanShift() {
-    return this->circularShiftDown() || this->circularShiftUp() || this->circularShiftLeft() || this->circularShiftRight();
+    return this->circularShiftUp(true) || this->circularShiftDown(true) || this->circularShiftLeft(true) || this->circularShiftRight(true);
 }
 
 void Board::printBoard() const {
