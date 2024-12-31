@@ -246,7 +246,7 @@ void Match::runMatch() {
     }
 
     if (this->m_scores.first == this->m_scores.second) {
-        std::cout << "Draw." << std::endl;
+        std::cout << "Match ended in a draw." << std::endl;
         return;
     }
 
