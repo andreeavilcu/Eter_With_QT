@@ -173,7 +173,7 @@ GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
         std::cout << "Winner: " << (player1Win ? "Red" : "Blue") << " player\n" << std::endl;
 
         if (!endedByCount) {
-            auto [fst, snd] = this->getBoard().findCardIndexes(player1Win ? m_player1.getLastPlacedCard() : m_player2.getLastPlacedCard());
+            auto [fst, snd, _] = this->getBoard().findCardIndexes(player1Win ? m_player1.getLastPlacedCard() : m_player2.getLastPlacedCard());
 
             x = fst;
             y = snd;

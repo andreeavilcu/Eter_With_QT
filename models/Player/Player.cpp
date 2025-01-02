@@ -410,20 +410,10 @@ nlohmann::json Player::toJson(Game &_game) const {
     json["playedIllusion"] = m_playedIllusion;
     json["time_left"] = m_timeLeft;
 
-    auto [x, y] = _game.getBoard().findCardIndexes(this->m_lastPlacedCard);
+    auto [x, y, z] = _game.getBoard().findCardIndexes(this->m_lastPlacedCard);
     json["last_placed_card_x"] = x;
     json["last_placed_card_y"] = y;
-
-    if (x == -1 || y == -1) {
-        json["last_placed_card_z"] = -1;
-        return json;
-    }
-
-    for (size_t z = _game.getBoard().getBoard().size() - 1; z < _game.getBoard().getBoard().size(); z--)
-        if (&_game.getBoard().getBoard()[x][y][z] == this->m_lastPlacedCard) {
-            json["last_placed_card_z"] = z;
-            break;
-        }
+    json["last_placed_card_z"] = z;
 
     return json;
 }

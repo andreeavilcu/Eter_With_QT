@@ -2,14 +2,14 @@
 
 // #include <bits/ranges_algo.h>
 
-std::pair<size_t, size_t> Board::findCardIndexes(const Card* _card) const {
-    for (size_t i = 0; i < this->m_board.size(); i++)
-        for (size_t j = 0; j < this->m_board[i].size(); j++)
-            for (const auto& card : this->m_board[i][j])
-                if (&card == _card)
-                    return {i, j};
+cardPosition Board::findCardIndexes(const Card* _card) const {
+    for (short i = 0; i < this->m_board.size(); i++)
+        for (short j = 0; j < this->m_board[i].size(); j++)
+            for (short height = 0; height < this->m_board[i][j].size(); height++)
+                if (&this->m_board[i][j][height] == _card)
+                    return {i, j, height};
 
-    return {-1, -1};
+    return {-1, -1, -1};
 }
 
 Board::Board(size_t _size) {

@@ -5,6 +5,10 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+struct cardPosition {
+    short x, y, z;
+};
+
 class Card {
 public:
     enum class Value : short {

@@ -22,7 +22,7 @@ public:
     friend class Wizard;
     friend class Power;
 
-    std::pair<size_t, size_t> findCardIndexes(const Card* _card) const;
+    cardPosition findCardIndexes(const Card* _card) const;
 
     void setFirstCardPlayed() { m_firstCardPlayed = true; }
 

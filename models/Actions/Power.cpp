@@ -43,22 +43,14 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _c
 
     auto& opponent = _player.getColor() == Card::Color::Red ? _game.m_player2 : _game.m_player1;
 
-    auto [lastRow, lastCol] = board.findCardIndexes(opponent.getLastPlacedCard());
-
-    if (lastRow == -1 || lastCol == -1) {
-        return false;
-    }
-
-    if (!board.checkIndexes(lastRow, lastCol) || board.m_board[lastRow][lastCol].empty()) {
-        return false;
-    }
+    auto [lastRow, lastCol, cardHeight] = board.findCardIndexes(opponent.getLastPlacedCard());
 
     auto& stack = board.m_board[lastRow][lastCol];
-    Card affectedCard = std::move(stack.back()); // TODO fix logic regarding finding last played card, not necessarily back
-    stack.pop_back();
+    Card affectedCard = std::move(stack[cardHeight]);
+    stack.erase(stack.begin() + cardHeight);
 
     if (!board.checkBoardIntegrity()) {
-        stack.push_back(std::move(affectedCard));
+        stack.insert(stack.begin() + cardHeight, std::move(affectedCard));
         return false;
     }
 
