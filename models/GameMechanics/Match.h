@@ -71,5 +71,4 @@ private:
 
 public:
     void runMatch();
-
 };

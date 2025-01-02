@@ -54,7 +54,7 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _c
     }
 
     auto& stack = board.m_board[lastRow][lastCol];
-    Card affectedCard = std::move(stack.back());
+    Card affectedCard = std::move(stack.back()); // TODO fix logic regarding finding last played card, not necessarily back
     stack.pop_back();
 
     if (!board.checkBoardIntegrity()) {

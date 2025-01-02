@@ -70,6 +70,22 @@ void Card::resetJustReturned() {
 	this->m_justReturned--;
 }
 
+nlohmann::json Card::toJson() const {
+	nlohmann::json json;
+	json["value"] = static_cast<int>(m_value);
+	json["color"] = static_cast<int>(m_color);
+	json["illusion"] = m_illusion;
+	json["justReturned"] = m_justReturned;
+	return json;
+}
+
+Card::Card(const nlohmann::json &_json) :
+	Card{ static_cast<Value>(_json.at("value").get<int>()), static_cast<Color>(_json.at("color").get<int>())} {
+
+	this->m_illusion = _json.at("illusion").get<bool>();
+	this->m_justReturned = _json.at("justReturned").get<size_t>();
+}
+
 void Card::setIllusion() {
 	this->m_illusion = true;
 }

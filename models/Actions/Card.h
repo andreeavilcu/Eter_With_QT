@@ -3,8 +3,9 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <nlohmann/json.hpp>
 
-class Card : public std::enable_shared_from_this<Card> {
+class Card {
 public:
     enum class Value : short {
         Border = -1,
@@ -46,6 +47,9 @@ public:
     [[nodiscard]] bool isJustReturned() const;
     void setJustReturned();
     void resetJustReturned();
+
+    [[nodiscard]] nlohmann::json toJson() const;
+    Card(const nlohmann::json& _json);
 
 private:
     Value m_value;

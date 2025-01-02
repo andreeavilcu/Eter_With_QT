@@ -13,14 +13,14 @@ void Player::setCards(const std::vector<Card>& _cards)
 }
 
 void Player::setTimer(int _duration) {
-    this->m_time_left = _duration;
+    this->m_timeLeft = _duration;
 }
 
 Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond) :
     m_color{ _color },
     m_cards{ _cards },
-    m_wizard_index{ _wizardIndex},
-    m_powers_index{_powerIndexFirst, _powerIndexSecond} {
+    m_wizardIndex{ _wizardIndex},
+    m_powerIndexes{_powerIndexFirst, _powerIndexSecond} {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
@@ -46,13 +46,13 @@ void Player::printCards() {
 }
 
 bool Player::subtractTime(const double _time) {
-    this->m_time_left -= _time;
+    this->m_timeLeft -= _time;
 
-    return this->m_time_left <= 0;
+    return this->m_timeLeft <= 0;
 }
 
 double Player::getTimeLeft() const {
-    return this->m_time_left;
+    return this->m_timeLeft;
 }
 
 Card::Color Player::getColor() const {
@@ -84,30 +84,30 @@ void Player::resetCards() {
 }
 
 const Card* Player::getLastPlacedCard() const {
-    return this->m_last_placed_card;
+    return this->m_lastPlacedCard;
 }
 
 void Player::setLastPlacedCard(Card &_card) {
-    this->m_last_placed_card = &_card;
+    this->m_lastPlacedCard = &_card;
 }
 
 
 int Player::getWizardIndex() const {
-    return static_cast<int>(this->m_wizard_index);
+    return static_cast<int>(this->m_wizardIndex);
 }
 
 void Player::setWizardIndex(size_t _index)
 {
-    this->m_wizard_index = _index;
+    this->m_wizardIndex = _index;
 }
 
 std::pair<int, int> Player::getPowersIndex() const {
-    return this->m_powers_index;
+    return this->m_powerIndexes;
 }
 
 void Player::setPowersIndex(std::pair<size_t, size_t> _index)
 {
-    this->m_powers_index = _index;
+    this->m_powerIndexes = _index;
 }
 
 bool Player::getPlayedIllusion() const
@@ -125,25 +125,25 @@ bool Player::wasIllusionPlayed() const {
 }
 
 bool Player::useWizard(Game& _game, const bool _check) {
-    if (m_wizard_index == -1)
+    if (m_wizardIndex == -1)
         return false;
 
-    const bool legal = Wizard::getInstance().play(m_wizard_index, *this, _game, _check);
+    const bool legal = Wizard::getInstance().play(m_wizardIndex, *this, _game, _check);
 
     if (legal)
-        m_wizard_index = -1;
+        m_wizardIndex = -1;
 
     return legal;
 }
 
 bool Player::usePower(Game& _game, const bool _first, const bool _check) {
-    if (_first ? m_powers_index.first == -1 : m_powers_index.second == -1)
+    if (_first ? m_powerIndexes.first == -1 : m_powerIndexes.second == -1)
         return false;
 
-    const bool legal = Power::getInstance().play(_first ? m_powers_index.first : m_powers_index.second, *this, _game, _check);
+    const bool legal = Power::getInstance().play(_first ? m_powerIndexes.first : m_powerIndexes.second, *this, _game, _check);
 
     if (legal)
-        _first ? m_powers_index.first = -1 : m_powers_index.second = -1;
+        _first ? m_powerIndexes.first = -1 : m_powerIndexes.second = -1;
 
     return legal;
 }
@@ -325,28 +325,31 @@ bool Player::playerTurn(Game &_game) {
     this->resetCards();
 
     std::cout << (this->getColor() == Card::Color::Red ? "Red" : "Blue") << " player's turn!\n";
-    std::cout << "Seconds left: " << this->m_time_left <<"\n\n";
+    std::cout << "Seconds left: " << this->m_timeLeft <<"\n\n";
 
-    std::cout << "Play a card   (c) ";
+    std::cout << "Play a card         (c) ";
     this->printCards();
 
-    std::cout << "Shift board   (s)\n";
+    std::cout << "Shift board         (s)\n";
 
     if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
-        std::cout << "Play wizard   (w) " << this->getWizardIndex() << "\n";
+        std::cout << "Play wizard         (w) " << this->getWizardIndex() << "\n";
     }
 
     if (_game.getGameType() == Game::GameType::PowerDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
-        std::cout << "Play power    (p) " <<
+        std::cout << "Play power          (p) " <<
         std::to_string(this->getPowersIndex().first) + " " + std::to_string(this->getPowersIndex().second)
          << "\n";
     }
 
     if (_game.m_illusionsAllowed) {
-        std::cout << "Play illusion (i) " << (
+        std::cout << "Play illusion       (i) " << (
              this->wasIllusionPlayed() ? "(already played)" : ""
         ) << "\n";
     }
+
+    std::cout << "Save and exit       (s)\n";
+    std::cout << "Exit without saving (x)\n";
 
     std::cin >> choice;
 
@@ -373,6 +376,10 @@ bool Player::playerTurn(Game &_game) {
                  return this->playPower(game);
              return false;
          }},
+        {'x', [this, &_game](Game& game) {
+
+            return false;
+        }},
     };
 
     std::cout <<std::endl;
@@ -388,4 +395,51 @@ bool Player::playerTurn(Game &_game) {
         this->playExplosion(_game);
 
     return true;
+}
+
+nlohmann::json Player::toJson(Game &_game) const {
+    nlohmann::json json;
+
+    json["cards"] = nlohmann::json::array();
+    for (const auto& card : m_cards) {
+        json["cards"].push_back(card.toJson());
+    }
+    json["wizard_index"] = m_wizardIndex;
+    json["power_index_1"] = m_powerIndexes.first;
+    json["power_index_2"] = m_powerIndexes.second;
+    json["playedIllusion"] = m_playedIllusion;
+    json["time_left"] = m_timeLeft;
+
+    auto [x, y] = _game.getBoard().findCardIndexes(this->m_lastPlacedCard);
+    json["last_placed_card_x"] = x;
+    json["last_placed_card_y"] = y;
+
+    if (x == -1 || y == -1) {
+        json["last_placed_card_z"] = -1;
+        return json;
+    }
+
+    for (size_t z = _game.getBoard().getBoard().size() - 1; z < _game.getBoard().getBoard().size(); z--)
+        if (&_game.getBoard().getBoard()[x][y][z] == this->m_lastPlacedCard) {
+            json["last_placed_card_z"] = z;
+            break;
+        }
+
+    return json;
+}
+
+Player::Player(const nlohmann::json &_json, Game& _game) {
+    for (const auto& card : _json["cards"]) {
+        this->m_cards.emplace_back(card);
+    }
+
+    this->m_color = this->m_cards[0].getColor();
+
+    this->m_wizardIndex = _json["wizard_index"];
+    this->m_powerIndexes = { _json["power_index_1"], _json["power_index_2"] };
+
+    this->m_playedIllusion = _json["playedIllusion"];
+    this->m_timeLeft = _json["time_left"];
+
+    this->m_lastPlacedCard = &_game.getBoard().getBoard()[_json["last_placed_card_x"]][_json["last_placed_card_y"]][_json["last_placed_card_z"]];
 }

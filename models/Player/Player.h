@@ -5,6 +5,7 @@
 #include <vector>
 #include <random>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 
 #include "../Actions/Card.h"
 #include "../Actions/Wizard.h"
@@ -18,8 +19,8 @@ protected:
 
     std::vector<Card> m_cards{};
 
-    size_t m_wizard_index{};
-    std::pair<size_t, size_t> m_powers_index{};
+    size_t m_wizardIndex{};
+    std::pair<size_t, size_t> m_powerIndexes{};
 
     bool m_playedIllusion{false};
 
@@ -30,9 +31,9 @@ protected:
      * std::shared_ptr<Card> m_last_placed_card_ptr{};
      */
 
-    Card* m_last_placed_card{};
+    Card* m_lastPlacedCard{};
 
-    double m_time_left{};
+    double m_timeLeft{};
 
 public:
     friend class Wizard;
@@ -51,7 +52,7 @@ public:
     void printCards();
 
     bool subtractTime(double _time);
-    double getTimeLeft() const;
+    [[nodiscard]] double getTimeLeft() const;
 
     [[nodiscard]] Card::Color getColor() const;
     void setColor(Card::Color _color);
@@ -75,24 +76,28 @@ public:
 
     [[nodiscard]] bool wasIllusionPlayed() const;
 
-    bool useWizard(Game& _game, bool _check);
-    bool usePower(Game& _game, bool _first, bool _check);
+    void shiftBoard(Game& _game);
+
+    bool playCard(Game& _game);
+    bool playIllusion(Game& _game);
 
     std::optional<Card> useCard(Card::Value _value);
     std::optional<Card> useIllusion(Card::Value _value);
 
-    void shiftBoard(Game& _game);
+    void playExplosion(Game& _game);
 
-    bool playCard(Game& _game);
+    bool playerTurn(Game& _game);
+
+    [[nodiscard]] nlohmann::json toJson(Game& _game) const;
+    Player(const nlohmann::json& _json, Game& _game);
+
+private:
     std::optional<Card> playCardCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
-
-    bool playIllusion(Game& _game);
     std::optional<Card> playIllusionCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
 
     [[nodiscard]] bool playWizard(Game& _game, bool _check);
     [[nodiscard]] bool playPower(Game& _game, bool _check);
 
-    void playExplosion(Game& _game);
-
-    bool playerTurn(Game& _game);
+    bool useWizard(Game& _game, bool _check);
+    bool usePower(Game& _game, bool _first, bool _check);
 };
