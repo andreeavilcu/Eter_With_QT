@@ -2,6 +2,9 @@
 
 // #include <bits/ranges_algo.h>
 
+#include "../Actions/Power.h"
+#include "../Actions/Wizard.h"
+
 cardPosition Board::findCardIndexes(const Card* _card) const {
     for (short i = 0; i < this->m_board.size(); i++)
         for (short j = 0; j < this->m_board[i].size(); j++)
@@ -247,10 +250,10 @@ Card::Color Board::calculateWinner() const {
                 if (cardValue == static_cast<size_t>(Card::Value::Eter))
                     cardValue = 1;
 
-                if (Power::getInstance().getPlus() == std::pair{ row,col })
+                if (Power::getInstance().getPlus(*this).x == row && Power::getInstance().getPlus(*this).y == col)
                     cardValue++;
 
-                if (Power::getInstance().getMinus() == std::pair{ row,col })
+                if (Power::getInstance().getMinus(*this).x == row && Power::getInstance().getMinus(*this).y == col)
                     cardValue--;
 
                 if (topCard.getColor() == Card::Color::Red) {
@@ -432,5 +435,27 @@ std::optional<Card> Board::placeCard(const size_t _row, const size_t _col, const
     }
 
     return card;
+}
+
+nlohmann::json Board::toJson() const {
+    nlohmann::json json;
+    nlohmann::json jsonArray = nlohmann::json::array();
+
+    for (const auto& layer1 : this->m_board) {
+        nlohmann::json layer1Array = nlohmann::json::array();
+        for (const auto& layer2 : layer1) {
+            nlohmann::json layer2Array = nlohmann::json::array();
+            for (const auto& card : layer2) {
+                layer2Array.push_back(card.toJson());
+            }
+            layer1Array.push_back(layer2Array);
+        }
+        jsonArray.push_back(layer1Array);
+    }
+
+    json["board"] = jsonArray;
+    json["started"] = this->m_firstCardPlayed;
+
+    return json;
 }
 

@@ -67,6 +67,10 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
     };
 }
 
+// Game::Game(const nlohmann::json &_json) {
+//
+// }
+
 GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
     bool player1Turn = _player1Turn;
     bool endedByCount = false;
@@ -79,7 +83,7 @@ GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
         Explosion::getInstance().printExplosion();
     }
 
-    while (true) {
+    while (running) {
         auto gameEndInfo = checkEndOfGame(!player1Turn ? Card::Color::Red : Card::Color::Blue);
         endedByCount = gameEndInfo.second;
 
@@ -129,13 +133,55 @@ GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
         }
     }
 
+    if (!running) {
+        if (saving) {
+            m_json["player1"] = m_player1.toJson(*this);
+            m_json["player2"] = m_player2.toJson(*this);
+
+            nlohmann::json jsonArray = nlohmann::json::array();
+
+            for (const auto& layer1 : this->m_board.m_board) {
+                nlohmann::json layer1Array = nlohmann::json::array();
+                for (const auto& layer2 : layer1) {
+                    nlohmann::json layer2Array = nlohmann::json::array();
+                    for (const auto& card : layer2) {
+                        layer2Array.push_back(card.toJson());
+                    }
+                    layer1Array.push_back(layer2Array);
+                }
+                jsonArray.push_back(layer1Array);
+            }
+
+            m_json["board"] = this->m_board.toJson();
+
+            jsonArray = nlohmann::json::array();
+            for (const auto& card : m_returnedCards)
+                jsonArray.push_back(card.toJson());
+
+            m_json["returnedCards"] = jsonArray;
+
+            jsonArray = nlohmann::json::array();
+            for (const auto& card : m_eliminatedCards)
+                jsonArray.push_back(card.toJson());
+
+            m_json["eliminatedCards"] = jsonArray;
+
+            m_json["winner"] = this->m_winner;
+
+            m_json["explosion"] = Explosion::getInstance().serialize();
+            m_json["wizard"] = Wizard::getInstance().serialize();
+            m_json["power"] = Power::getInstance().serialize(*this);
+        }
+
+        return {m_winner, static_cast<size_t>(-1), static_cast<size_t>(-1)};
+    }
+
     this->m_board.printBoard();
 
     if (this->m_board.checkIfCanShift()) {
         char choice;
-        bool stop = false;
 
-        while (!stop) {
+        while (running) {
             std::cout << "Enter direction (wasd) or (x) for exit.\n";
             std::cin >> choice;
 
@@ -153,7 +199,8 @@ GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
                     this->getBoard().circularShiftRight();
                     break;
                 case 'x':
-                    stop = true;
+                    running = false;
+                    break;
                 default:
                     break;
             }

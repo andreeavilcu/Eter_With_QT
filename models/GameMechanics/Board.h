@@ -6,12 +6,12 @@
 #include <ranges>
 #include <stack>
 #include <array>
+#include <nlohmann/json.hpp>
+
 
 #include "Matrix.h"
 #include "../Actions/Card.h"
 #include "../Actions/Explosion.h"
-#include "../Actions/Power.h"
-#include "../Actions/Wizard.h"
 
 class Board {
     Matrix<Card> m_board{};
@@ -61,4 +61,6 @@ public:
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
 
     std::optional<Card> placeCard(size_t _row, size_t _col, const Card&& _card);
+
+    nlohmann::json toJson() const;
 };

@@ -1,7 +1,42 @@
-﻿#include "Power.h"
+﻿#include "../Actions/Power.h"
 #include "../GameMechanics/Board.h"
 #include "../GameMechanics/Game.h"
 
+cardPosition Power::getMinus(const Board& _board) const {
+    return _board.findCardIndexes(m_minus);
+}
+
+void Power::setMinus(const cardPosition _position, Game& _game) {
+    m_minus = &_game.getBoard().getBoard()[_position.x][_position.y][_position.z];
+}
+
+cardPosition Power::getPlus(const Board& _board) const {
+    return _board.findCardIndexes(m_plus);
+}
+
+void Power::setPlus(const cardPosition _position, Game& _game) {
+    this->m_plus = &_game.getBoard().getBoard()[_position.x][_position.y][_position.z];
+}
+
+nlohmann::json Power::serialize(Game &_game) {
+
+    nlohmann::json json;
+
+    json["minusX"] = _game.getBoard().findCardIndexes(m_minus).x;
+    json["minusY"] = _game.getBoard().findCardIndexes(m_minus).y;
+    json["minusZ"] = _game.getBoard().findCardIndexes(m_minus).z;
+
+    json["plusX"] = _game.getBoard().findCardIndexes(m_plus).x;
+    json["plusY"] = _game.getBoard().findCardIndexes(m_plus).y;
+    json["plusZ"] = _game.getBoard().findCardIndexes(m_plus).z;
+
+    json["restrictedRow"] = this->m_restrictedRow;
+    json["restrictedCol"] = this->m_restrictedCol;
+
+    json["justBlocked"] = this->m_justBlocked;
+
+    return json;
+}
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const bool _check) {
     if (!_game.m_explosionAllowed) {
@@ -976,7 +1011,7 @@ bool Power::PowerAction::support(Player& _player, Game& _game, const bool _check
     }
 
     Power& power = Power::getInstance(); 
-    power.setPlus(x, y);
+    power.setPlus({static_cast<short>(x), static_cast<short>(y), static_cast<short>(_game.getBoard().getBoard()[x][y].size() - 1)}, _game);
     std::cout << "The value of the selected card has been increased by 1.\n";
 
     return true;
@@ -1042,7 +1077,7 @@ bool Power::PowerAction::crumble(Player& _player, Game& _game, const bool _check
     }
 
     Power& power = Power::getInstance();
-    power.setMinus(x, y);
+    power.setMinus({static_cast<short>(x), static_cast<short>(y), static_cast<short>(_game.getBoard().getBoard()[x][y].size() - 1)}, _game);
     std::cout << "The value of the selected card has been decreased by 1.\n";
 
     return true;

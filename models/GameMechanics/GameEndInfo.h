@@ -4,6 +4,5 @@
 
 struct GameEndInfo {
     Card::Color winner;
-    size_t x;
-    size_t y;
+    size_t x, y;
 };

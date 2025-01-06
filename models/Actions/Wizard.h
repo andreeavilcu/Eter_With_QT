@@ -3,9 +3,9 @@
 #include <iostream>
 #include <functional>
 #include <array>
+#include <nlohmann/json.hpp>
 
 #include "Card.h"
-#include "../GameMechanics/Board.h"
 
 class Game;
 class Player;
@@ -64,6 +64,14 @@ public:
 
     void setHole(const std::pair<size_t, size_t> &_hole) {
         this->m_hole = _hole;
+    }
+
+    nlohmann::json serialize() {
+        nlohmann::json json;
+
+        json["hole"] = this->m_hole;
+
+        return json;
     }
 
 private:

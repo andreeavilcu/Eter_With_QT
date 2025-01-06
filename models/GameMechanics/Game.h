@@ -1,15 +1,16 @@
 #pragma once
 
-#include <vector>
 #include <stack>
+#include <vector>
+#include <nlohmann/json.hpp>
 
-#include "../Player/Player.h"
 #include "Board.h"
-#include "../Actions/Explosion.h"
+#include "../Player/Player.h"
 #include "GameEndInfo.h"
+#include "../Actions/Explosion.h"
 
-#ifndef GAME_H
-#define GAME_H
+inline bool running = true;
+inline bool saving;
 
 class Game {
 public:
@@ -29,11 +30,13 @@ protected:
     friend class Wizard;
     friend class Power;
 
-    Board m_board; 
+    Board m_board;
     GameType m_gameType;
 
     Player m_player1, m_player2;
     Card::Color m_winner{ Card::Color::Undefined };
+
+    nlohmann::json m_json;
 
 public:
     std::vector<Card> m_returnedCards{};
@@ -45,6 +48,7 @@ public:
     bool m_playedExplosion{ false };
 
     explicit Game(GameType _gameType, const std::pair<size_t, size_t>& _wizardIndices, bool _illusions, bool _explosion);
+    // explicit Game(const nlohmann::json& _json);
 
     Board& getBoard() { return m_board; }
     [[nodiscard]] GameType getGameType() const { return m_gameType; }
@@ -57,6 +61,7 @@ public:
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] std::pair<bool, bool> checkEndOfGame(Card::Color _color);
 
+    nlohmann::json getJson() const { return m_json; }
+
 };
 
-#endif 

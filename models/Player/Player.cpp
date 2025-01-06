@@ -330,7 +330,11 @@ bool Player::playerTurn(Game &_game) {
     std::cout << "Play a card         (c) ";
     this->printCards();
 
-    std::cout << "Shift board         (s)\n";
+    if (_game.m_illusionsAllowed) {
+        std::cout << "Play illusion       (i) " << (
+             this->wasIllusionPlayed() ? "(already played)" : ""
+        ) << "\n";
+    }
 
     if (_game.getGameType() == Game::GameType::WizardDuel || _game.getGameType() == Game::GameType::WizardAndPowerDuel) {
         std::cout << "Play wizard         (w) " << this->getWizardIndex() << "\n";
@@ -342,11 +346,7 @@ bool Player::playerTurn(Game &_game) {
          << "\n";
     }
 
-    if (_game.m_illusionsAllowed) {
-        std::cout << "Play illusion       (i) " << (
-             this->wasIllusionPlayed() ? "(already played)" : ""
-        ) << "\n";
-    }
+    std::cout << "Shift board         (m)\n";
 
     std::cout << "Save and exit       (s)\n";
     std::cout << "Exit without saving (x)\n";
@@ -355,7 +355,7 @@ bool Player::playerTurn(Game &_game) {
 
     std::unordered_map<char, std::function<bool(Game&)>> actions{
          {'c', [this](Game& game) { return this->playCard(game); }},
-         {'s', [this](Game& game) {
+         {'m', [this](Game& game) {
             this->shiftBoard(game); 
             return false; 
         }},
@@ -377,7 +377,13 @@ bool Player::playerTurn(Game &_game) {
              return false;
          }},
         {'x', [this, &_game](Game& game) {
-
+            running = false;
+            saving = false;
+            return false;
+        }},
+        {'s', [this, &_game](Game& game) {
+            running = false;
+            saving = true;
             return false;
         }},
     };

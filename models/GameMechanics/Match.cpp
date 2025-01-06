@@ -1,5 +1,29 @@
 #include "Match.h"
 
+std::pair<size_t, size_t> Match::generateWizardIndices(std::mt19937& _gen) {
+    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
+
+    std::pair<size_t, size_t> wizardIndices = {-1, -1};
+
+    if (m_gameType == Game::GameType::WizardDuel || m_gameType == Game::GameType::WizardAndPowerDuel) {
+        do {
+            wizardIndices.first = wizardDistribution(_gen);
+        }
+        while (this->m_wizardsUsed[wizardIndices.first]);
+
+        this->m_wizardsUsed[wizardIndices.first] = true;
+
+        do {
+            wizardIndices.second = wizardDistribution(_gen);
+        }
+        while (this->m_wizardsUsed[wizardIndices.second]);
+
+        this->m_wizardsUsed[wizardIndices.second] = true;
+    }
+
+    return wizardIndices;
+}
+
 void Match::printArena() const {
     std::cout << "Arena:\n\n";
 
@@ -153,91 +177,53 @@ void Match::calculateArenaWinner() {
                 else if (piece.getColor() == Card::Color::Blue) ++this->m_scores.second;
 }
 
-void Match::runMatch() {
-    std::random_device rd;
-    std::mt19937 gen{ rd() };
-    std::bernoulli_distribution startPlayerDistribution{ 0.5 };
-    std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
+void Match::runPrintLogic(size_t _index, size_t _matchesPlayed) {
+    if (this->m_matchType == MatchType::Tournament) this->printArena();
 
-    size_t winner = 0;
-    const bool startPlayer = startPlayerDistribution(gen);
-    const bool timed = this->m_timer_duration != TimerDuration::Untimed;
+    else {
+        std::cout << "Match Score: Player1 - Player2\n";
+        std::cout << "Game " + std::to_string(_index) + "/" + std::to_string(_matchesPlayed) +
+            "        " + formatScore(this->m_scores.first) +
+            "  -  " + formatScore(this->m_scores.second);
+        std::cout << std::endl << std::endl;
+    }
+}
 
-    size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
-    size_t winsNeeded = matchesPlayed / 2 + 1;
-
+int Match::runScoreLogic(GameEndInfo &_information, size_t &_matchesPlayed, size_t &_winner, size_t &_winsNeeded) {
     if (this->m_matchType == MatchType::Tournament) {
-        size_t arenaSize = m_gameType == Game::GameType::Training ? 3 : 4;
+        if (_information.winner == Card::Color::Undefined)
+            return 2;
 
-        this->m_arena.resize(arenaSize);
+        _winner = this->runArenaLogic(_information);
 
-        for (auto& row : this->m_arena)
-            row.resize(arenaSize);
+        if (_winner) return 1;
     }
 
-    for (size_t index = 0; index < matchesPlayed; index++) {
-        std::pair<size_t, size_t> wizardIndices = {-1, -1};
+    else {
+        switch (_information.winner) {
+            case Card::Color::Red:
+                this->m_scores.first++;
+            break;
+            case Card::Color::Blue:
+                this->m_scores.second++;
+            break;
+            case Card::Color::Undefined:
+                this->m_scores.first += 0.5f;
+            this->m_scores.second += 0.5f;
 
-        if (m_gameType == Game::GameType::WizardDuel || m_gameType == Game::GameType::WizardAndPowerDuel) {
-            do {
-                wizardIndices.first = wizardDistribution(gen);
-            }
-            while (this->m_wizardsUsed[wizardIndices.first]);
-
-            this->m_wizardsUsed[wizardIndices.first] = true;
-
-            do {
-                wizardIndices.second = wizardDistribution(gen);
-            }
-            while (this->m_wizardsUsed[wizardIndices.second]);
-
-            this->m_wizardsUsed[wizardIndices.second] = true;
+            _matchesPlayed++;
         }
 
-        if (this->m_matchType == MatchType::Tournament) this->printArena();
-
-        else {
-            std::cout << "Match Score: Player1 - Player2\n";
-            std::cout << "Game " + std::to_string(index) + "/" + std::to_string(matchesPlayed) +
-                "        " + formatScore(this->m_scores.first) +
-                "  -  " + formatScore(this->m_scores.second);
-            std::cout << std::endl << std::endl;
-        }
-
-        Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion};
-        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
-
-        if (this->m_matchType == MatchType::Tournament) {
-            if (information.winner == Card::Color::Undefined)
-                continue;
-
-            winner = this->runArenaLogic(information);
-
-            if (winner) break;
-        }
-
-        else {
-            switch (information.winner) {
-                case Card::Color::Red:
-                    this->m_scores.first++;
-                break;
-                case Card::Color::Blue:
-                    this->m_scores.second++;
-                break;
-                case Card::Color::Undefined:
-                    this->m_scores.first += 0.5f;
-                this->m_scores.second += 0.5f;
-
-                matchesPlayed++;
-            }
-
-            if (this->m_scores.first >= static_cast<float>(winsNeeded) || this->m_scores.second >= static_cast<float>(winsNeeded))
-                break;
-        }
+        if (this->m_scores.first >= static_cast<float>(_winsNeeded) || this->m_scores.second >= static_cast<float>(_winsNeeded))
+            return 1;
     }
 
-    if (winner) {
-        std::cout << "Match winner: " << (winner == 1? "Red" : "Blue") << " player\n";
+    return 0;
+}
+
+void Match::runWinnerLogic(size_t _winner) {
+    if (_winner) {
+        std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
         return;
     }
 
@@ -250,7 +236,127 @@ void Match::runMatch() {
         return;
     }
 
-    winner = this->m_scores.first > this->m_scores.second ? 1 : 2;
+    _winner = this->m_scores.first > this->m_scores.second ? 1 : 2;
 
-    std::cout << "Match winner: " << (winner == 1? "Red" : "Blue") << " player\n";
+    std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
+}
+
+void Match::runMatch() {
+    std::random_device rd;
+    std::mt19937 gen{ rd() };
+    std::bernoulli_distribution startPlayerDistribution{ 0.5 };
+
+    size_t winner = 0;
+    const bool startPlayer = startPlayerDistribution(gen);
+    const bool timed = this->m_timer_duration != TimerDuration::Untimed;
+
+    size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
+    size_t winsNeeded = matchesPlayed / 2 + 1;
+
+    for (size_t index = 0; index < matchesPlayed; index++) {
+        std::pair<size_t, size_t> wizardIndices = generateWizardIndices(gen);
+
+        runPrintLogic(index, matchesPlayed);
+
+        Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion};
+        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
+
+        if (!running) {
+            if (saving) saveJson(startPlayer, index, matchesPlayed, game);
+            return;
+        }
+
+        auto id = runScoreLogic(information, matchesPlayed, winner, winsNeeded);
+
+        if (id == 2) continue;
+        if (id == 1) break;
+    }
+
+    runWinnerLogic(winner);
+}
+
+void Match::runMatch(const nlohmann::json &_json) {
+    size_t winner = 0;
+
+    bool timed = static_cast<bool>(_json["timerDuration"].get<float>());
+    bool startPlayer = _json["startPlayer"].get<bool>();
+
+    size_t matchesPlayed = _json["totalMatches"].get<int>();
+
+    size_t winsNeeded = matchesPlayed / 2 + 1;
+
+    for (size_t index = _json["matchIndex"].get<int>(); index < matchesPlayed; index++) {
+        runPrintLogic(index, matchesPlayed);
+
+        // Game game{ _json };
+        Game game{ m_gameType , {-1, -1}, this->m_illusions, this->m_explosion};
+        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
+
+        if (!running) {
+            if (saving) saveJson(startPlayer, index, matchesPlayed, game);
+            return;
+        }
+
+        auto id = runScoreLogic(information, matchesPlayed, winner, winsNeeded);
+
+        if (id == 2) continue;
+        if (id == 1) break;
+    }
+
+
+}
+
+void Match::saveJson(bool startPlayer, int index, int matchesPlayed, Game& game) {
+    nlohmann::json json;
+
+    json["startPlayer"] = startPlayer;
+
+    json["matchIndex"] = index;
+    json["totalMatches"] = matchesPlayed;
+
+    json["gameType"] = this->m_gameType;
+    json["matchType"] = this->m_matchType;
+    json["timerDuration"] = this->m_timer_duration;
+
+    json["illusions"] = this->m_illusions;
+    json["explosion"] = this->m_explosion;
+
+    json["p1score"] = this->m_scores.first;
+    json["p2score"] = this->m_scores.second;
+
+    json["game"] = game.getJson();
+    json["wizardsUsed"] = this->m_wizardsUsed;
+
+    nlohmann::json jsonArray = nlohmann::json::array();
+
+    for (const auto& layer1 : this->m_arena) {
+        nlohmann::json layer1Array = nlohmann::json::array();
+        for (const auto& layer2 : layer1) {
+            nlohmann::json layer2Array = nlohmann::json::array();
+            for (const auto& piece : layer2) {
+                layer2Array.push_back(piece.toJson());
+            }
+            layer1Array.push_back(layer2Array);
+        }
+        jsonArray.push_back(layer1Array);
+    }
+
+    json["arena"] = jsonArray;
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time = std::chrono::system_clock::to_time_t(now);
+
+    std::string dir = "SavedGames/";
+
+    std::filesystem::create_directories(dir);
+
+    std::ostringstream timestamp;
+    timestamp << std::put_time(std::localtime(&now_time), "%Y-%m-%d_%H-%M-%S");
+
+    std::string filename = dir + "backup_" + timestamp.str() + ".json";
+
+    std::ofstream file(filename);
+
+    file << json;
+    file.close();
 }

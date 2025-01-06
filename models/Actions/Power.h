@@ -1,15 +1,16 @@
 #pragma once
 
-#include <iostream>
-#include <functional>
+#include <map>
 #include <array>
-#include<map>
+#include <iostream>
 #include <algorithm>
+#include <functional>
+#include <nlohmann/json.hpp>
 
 #include "Card.h"
-#include "../GameMechanics/Board.h"
 
 class Game;
+class Board;
 class Player;
 
 class Power {
@@ -28,21 +29,13 @@ public:
 
     using FuncType = bool (*)(Player&, Game&, bool);
 
-    std::pair<size_t, size_t> getMinus() const {
-        return m_minus;
-    }
+    [[nodiscard]] cardPosition getMinus(const Board& _board) const;
 
-    void setMinus(size_t _row, size_t _col) {
-        this->m_minus = { _row, _col };
-    }
+    void setMinus(cardPosition _position, Game& _game);
 
-    std::pair<size_t, size_t> getPlus() const {
-        return m_plus;
-    }
+    [[nodiscard]] cardPosition getPlus(const Board& _board) const;
 
-    void setPlus(size_t _row, size_t _col) {
-        this->m_plus = { _row, _col };
-    }
+    void setPlus(cardPosition _position, Game& _game);
 
     size_t getRestrictedRow() const {
         return m_restrictedRow;
@@ -68,12 +61,14 @@ public:
         this->m_justBlocked = _blocked;
     }
 
+    nlohmann::json serialize(Game& _game);
+
 private:
     Power() = default;
     ~Power() = default;
 
-    std::pair<size_t, size_t> m_minus{ -1, -1 };
-    std::pair<size_t, size_t> m_plus{ -1, -1 };
+    Card* m_minus{};
+    Card* m_plus{};
 
     size_t m_restrictedRow = -1;
     size_t m_restrictedCol = -1;
