@@ -29,6 +29,7 @@ public:
     bool operator<(const Card& rhs) const;
 
     explicit Card(Value _value, Color _color = Color::Undefined);
+    explicit Card(const nlohmann::json& _json);
     ~Card() = default;
     Card(const Card& other) = default;
     Card& operator=(const Card& other) = default;
@@ -53,7 +54,6 @@ public:
     void resetJustReturned();
 
     [[nodiscard]] nlohmann::json toJson() const;
-    Card(const nlohmann::json& _json);
 
 private:
     Value m_value;

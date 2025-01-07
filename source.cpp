@@ -1,12 +1,18 @@
 #include "models/GameMechanics/Match.h"
 
+bool load = true;
+
 int main() {
-    // Match::run(
-    //     Match::MatchType::Tournament,
-    //     Match::TimerDuration::Short,
-    //     Game::GameType::WizardAndPowerDuel,
-    //     true,
-    //     true);
+    if (!load) {
+        Match::run(
+        Match::MatchType::Tournament,
+        Match::TimerDuration::Short,
+        Game::GameType::WizardAndPowerDuel,
+        true,
+        true);
+
+        return 0;
+    }
 
     std::ifstream configFile("SavedGames/test.json");
 
@@ -25,4 +31,6 @@ int main() {
     }
 
     Match::run(config);
+
+    return 0;
 }

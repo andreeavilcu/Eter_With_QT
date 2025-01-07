@@ -26,6 +26,20 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
         m_cards[i].setColor(_color);
 }
 
+Player::Player(const nlohmann::json &_json) {
+    for (const auto& card : _json["cards"]) {
+        this->m_cards.emplace_back(card);
+    }
+
+    this->m_color = this->m_cards[0].getColor();
+
+    this->m_wizardIndex = _json["wizard_index"];
+    this->m_powerIndexes = { _json["power_index_1"], _json["power_index_2"] };
+
+    this->m_playedIllusion = _json["playedIllusion"];
+    this->m_timeLeft = _json["time_left"];
+}
+
 void Player::returnCard(Card&& _card) {
     _card.resetIllusion();
     this->m_cards.push_back(_card);
@@ -422,20 +436,4 @@ nlohmann::json Player::toJson(Game &_game) const {
     json["last_placed_card_z"] = z;
 
     return json;
-}
-
-Player::Player(const nlohmann::json &_json, Game& _game) {
-    for (const auto& card : _json["cards"]) {
-        this->m_cards.emplace_back(card);
-    }
-
-    this->m_color = this->m_cards[0].getColor();
-
-    this->m_wizardIndex = _json["wizard_index"];
-    this->m_powerIndexes = { _json["power_index_1"], _json["power_index_2"] };
-
-    this->m_playedIllusion = _json["playedIllusion"];
-    this->m_timeLeft = _json["time_left"];
-
-    this->m_lastPlacedCard = &_game.getBoard().getBoard()[_json["last_placed_card_x"]][_json["last_placed_card_y"]][_json["last_placed_card_z"]];
 }

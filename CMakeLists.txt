@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
-add_executable(Eter main.cpp
+add_executable(Eter source.cpp
         models/Actions/Explosion.h
         models/Actions/Explosion.cpp
         models/Actions/Wizard.h

@@ -27,6 +27,23 @@ Board::Board(size_t _size) {
 
 }
 
+Board::Board(nlohmann::json _json) {
+    for (const auto& layer1Array : _json["board"]) {
+        std::vector<std::vector<Card>> layer1;
+        for (const auto& layer2Array : layer1Array) {
+            std::vector<Card> layer2;
+            for (const auto& card : layer2Array) {
+                layer2.emplace_back(card);
+            }
+            layer1.push_back(layer2);
+        }
+
+        m_board.push_back(layer1);
+    }
+
+    this->m_firstCardPlayed = _json["started"].get<bool>();
+}
+
 size_t Board::getSize() const {
     return this->m_board.size();
 }

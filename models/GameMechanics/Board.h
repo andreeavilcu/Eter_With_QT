@@ -27,6 +27,8 @@ public:
     void setFirstCardPlayed() { m_firstCardPlayed = true; }
 
     explicit Board(size_t _size);
+    explicit Board(nlohmann::json _json);
+
     [[nodiscard]] size_t getSize() const;
     [[nodiscard]] std::vector<std::vector<std::vector<Card>>>& getBoard();
 
@@ -62,5 +64,5 @@ public:
 
     std::optional<Card> placeCard(size_t _row, size_t _col, const Card&& _card);
 
-    nlohmann::json toJson() const;
+    [[nodiscard]] nlohmann::json toJson() const;
 };

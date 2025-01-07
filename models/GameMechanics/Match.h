@@ -35,7 +35,7 @@ public:
         instance.m_matchType = _matchType;
         instance.m_gameType = _gameType;
 
-        instance.m_timer_duration = _timer_duration;
+        instance.m_timerDuration = _timer_duration;
 
         instance.m_illusions = _illusions;
         instance.m_explosion = _explosion;
@@ -58,7 +58,7 @@ public:
         instance.m_matchType = _json["matchType"].get<MatchType>();
         instance.m_gameType = _json["gameType"].get<Game::GameType>();
 
-        instance.m_timer_duration = _json["timerDuration"].get<TimerDuration>();
+        instance.m_timerDuration = _json["timerDuration"].get<TimerDuration>();
 
         instance.m_illusions = _json["illusions"].get<bool>();
         instance.m_explosion = _json["explosion"].get<bool>();
@@ -95,7 +95,7 @@ private:
     MatchType m_matchType{};
     Game::GameType m_gameType{};
 
-    TimerDuration m_timer_duration{};
+    TimerDuration m_timerDuration{};
 
     bool m_illusions{};
     bool m_explosion{};
@@ -112,9 +112,9 @@ private:
     std::pair<size_t, size_t> generateWizardIndices(std::mt19937& _gen);
 
     void printArena() const;
-    size_t runArenaLogic(GameEndInfo& _information);
     size_t checkArenaWin();
     void calculateArenaWinner();
+    size_t runArenaLogic(GameEndInfo& _information);
 
     void runPrintLogic(size_t _index, size_t _matchesPlayed);
     int runScoreLogic(GameEndInfo& _information, size_t& _matchesPlayed, size_t& _winner, size_t& _winsNeeded);

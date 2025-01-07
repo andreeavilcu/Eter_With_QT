@@ -60,8 +60,22 @@ public:
         }
 
         json["explosion"] = jsonArray;
-        json["hole"] = this->m_hole;
+        json["hole_x"] = this->m_hole.first;
+        json["hole_y"] = this->m_hole.second;
 
         return json;
+    }
+
+    void setExplosion(const nlohmann::json& _json) {
+        for (const auto& layer1Array : _json["explosion"]) {
+            for (std::vector<ExplosionEffect> layer1; const auto& explosionEffect : layer1Array) {
+                layer1.push_back(explosionEffect.get<ExplosionEffect>());
+            }
+
+            this->m_explosionEffects.push_back(layer1Array);
+        }
+
+        this->m_hole.first = _json["hole_x"].get<size_t>();
+        this->m_hole.second = _json["hole_y"].get<size_t>();
     }
 };

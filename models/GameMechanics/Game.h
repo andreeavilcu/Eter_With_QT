@@ -33,6 +33,8 @@ protected:
     Board m_board;
     GameType m_gameType;
 
+    bool m_tournament;
+
     Player m_player1, m_player2;
     Card::Color m_winner{ Card::Color::Undefined };
 
@@ -47,8 +49,8 @@ public:
 
     bool m_playedExplosion{ false };
 
-    explicit Game(GameType _gameType, const std::pair<size_t, size_t>& _wizardIndices, bool _illusions, bool _explosion);
-    // explicit Game(const nlohmann::json& _json);
+    explicit Game(GameType _gameType, const std::pair<size_t, size_t>& _wizardIndices, bool _illusions, bool _explosion, bool _tournament);
+    explicit Game(GameType _gameType, const nlohmann::json& _json, bool _illusions, bool _explosion, bool _tournament);
 
     Board& getBoard() { return m_board; }
     [[nodiscard]] GameType getGameType() const { return m_gameType; }
@@ -57,11 +59,14 @@ public:
     Player& getPlayer2() { return m_player2; }
 
     GameEndInfo run(bool _player1Turn, bool _timed, int _duration);
+    GameEndInfo run(const nlohmann::json& _json, bool _timed, int _duration);
+
+    [[nodiscard]] GameEndInfo runEndGameLogic(bool _endedByCount);
+    void runMidRoundLogic();
 
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] std::pair<bool, bool> checkEndOfGame(Card::Color _color);
 
-    nlohmann::json getJson() const { return m_json; }
-
+    [[nodiscard]] nlohmann::json getJson() const { return m_json; }
+    void saveJson(bool _player1Turn);
 };
-

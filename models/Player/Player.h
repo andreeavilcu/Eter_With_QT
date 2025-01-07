@@ -46,6 +46,8 @@ public:
 
     explicit Player(Card::Color _color, const std::vector<Card> &_cards, size_t _wizardIndex, size_t _powerIndexFirst,
                     size_t _powerIndexSecond);
+    explicit Player(const nlohmann::json& _json);
+
     void returnCard(Card&& _card);
     void returnCard(Card& _card);
 
@@ -89,7 +91,6 @@ public:
     bool playerTurn(Game& _game);
 
     [[nodiscard]] nlohmann::json toJson(Game& _game) const;
-    Player(const nlohmann::json& _json, Game& _game);
 
 private:
     std::optional<Card> playCardCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);

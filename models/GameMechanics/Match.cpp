@@ -248,7 +248,7 @@ void Match::runMatch() {
 
     size_t winner = 0;
     const bool startPlayer = startPlayerDistribution(gen);
-    const bool timed = this->m_timer_duration != TimerDuration::Untimed;
+    const bool timed = this->m_timerDuration != TimerDuration::Untimed;
 
     size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
     size_t winsNeeded = matchesPlayed / 2 + 1;
@@ -258,8 +258,8 @@ void Match::runMatch() {
 
         runPrintLogic(index, matchesPlayed);
 
-        Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion};
-        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
+        Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion, this->m_matchType == MatchType::Tournament};
+        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
 
         if (!running) {
             if (saving) saveJson(startPlayer, index, matchesPlayed, game);
@@ -288,9 +288,10 @@ void Match::runMatch(const nlohmann::json &_json) {
     for (size_t index = _json["matchIndex"].get<int>(); index < matchesPlayed; index++) {
         runPrintLogic(index, matchesPlayed);
 
-        // Game game{ _json };
-        Game game{ m_gameType , {-1, -1}, this->m_illusions, this->m_explosion};
-        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timer_duration));
+        auto j = _json["game"];
+
+        Game game{ m_gameType, _json["game"] , this->m_illusions, this->m_explosion, this->m_matchType == MatchType::Tournament };
+        GameEndInfo information = game.run(_json["game"], timed, static_cast<int>(this->m_timerDuration));
 
         if (!running) {
             if (saving) saveJson(startPlayer, index, matchesPlayed, game);
@@ -316,7 +317,7 @@ void Match::saveJson(bool startPlayer, int index, int matchesPlayed, Game& game)
 
     json["gameType"] = this->m_gameType;
     json["matchType"] = this->m_matchType;
-    json["timerDuration"] = this->m_timer_duration;
+    json["timerDuration"] = this->m_timerDuration;
 
     json["illusions"] = this->m_illusions;
     json["explosion"] = this->m_explosion;
