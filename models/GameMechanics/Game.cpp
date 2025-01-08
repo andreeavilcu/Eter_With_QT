@@ -74,16 +74,16 @@ Game::Game(GameType _gameType, const nlohmann::json& _json, bool _illusions, boo
 
     cardPosition playerLastPlacedCard = {
         _json["player1"]["last_placed_card_x"].get<short>(),
-        _json["player1"]["last_placed_card_x"].get<short>(),
-        _json["player1"]["last_placed_card_x"].get<short>()
+        _json["player1"]["last_placed_card_y"].get<short>(),
+        _json["player1"]["last_placed_card_z"].get<short>()
     };
     this->m_player1.setLastPlacedCard(
         m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
 
     playerLastPlacedCard = {
         _json["player2"]["last_placed_card_x"].get<short>(),
-        _json["player2"]["last_placed_card_x"].get<short>(),
-        _json["player2"]["last_placed_card_x"].get<short>()
+        _json["player2"]["last_placed_card_y"].get<short>(),
+        _json["player2"]["last_placed_card_z"].get<short>()
     };
     this->m_player2.setLastPlacedCard(
         m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
