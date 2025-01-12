@@ -4,6 +4,9 @@
 #include "ui_Eter_UI.h"
 #include "qpushbutton.h"
 #include "qpointer.h"
+#include <QLabel>
+#include <QPixmap>
+#include <qdir.h>
 
 class Eter_UI : public QMainWindow
 {
