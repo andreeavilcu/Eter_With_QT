@@ -2,6 +2,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_Eter_UI.h"
+#include "qpushbutton.h"
+#include "qpointer.h"
 
 class Eter_UI : public QMainWindow
 {
@@ -13,4 +15,13 @@ public:
 
 private:
     Ui::Eter_UIClass ui;
+    QPointer<QPushButton> buttonTraning;
+    QPointer<QPushButton> buttonPowers;
+    QPointer<QPushButton> buttonWizard;
+    QPointer<QPushButton> buttonTurnament;
+    QPointer<QPushButton> buttonTimed;
+    ///slot= event handler;
+    ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
+private slots: 
+    void OnButtonClick();
 };
