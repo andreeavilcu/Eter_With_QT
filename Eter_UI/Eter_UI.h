@@ -25,8 +25,8 @@ private:
     QPointer<QPushButton> buttonTraning;
     QPointer<QPushButton> buttonPowers;
     QPointer<QPushButton> buttonWizard;
-    QPointer<QPushButton> buttonTurnament;
-    QPointer<QPushButton> buttonTimed;
+    QPointer<QPushButton> buttonTournament;
+    QPointer<QPushButton> buttonSpeed;
     bool isStartPage;
     ///slot= event handler;
     ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)

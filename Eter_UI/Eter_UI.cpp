@@ -16,36 +16,45 @@ Eter_UI::Eter_UI(QWidget* parent)
         QRect screenGeometry = screen->availableGeometry();
         this->setGeometry(screenGeometry);
     }
-    const int buttonWidth = 150;
-    const int buttonHeight = 75;
+    QFont buttonFont;
+    buttonFont.setPointSize(16); 
+    buttonFont.setBold(true);
+
+    const int buttonWidth = 200;
+    const int buttonHeight = 100;
     const int spacing = 10;
-    const int yOffset = 100;
+    const int yOffset = 60;
 
     // Configurare butoane
-    buttonTraning = new QPushButton("Traning mode", this);
+    buttonTraning = new QPushButton("Training mode", this);
+    buttonTraning->setFont(buttonFont); 
     buttonTraning->setGeometry((this->width() - buttonWidth) / 2,  (this->height() - buttonHeight) / 2 -yOffset, buttonWidth, buttonHeight);
     buttonTraning->show();
     connect(buttonTraning, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonWizard = new QPushButton("Wizards duel", this);
+    buttonWizard->setFont(buttonFont);
     buttonWizard->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing+buttonHeight) - yOffset, buttonWidth, buttonHeight);
     buttonWizard->show();
     connect(buttonWizard, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonPowers = new QPushButton("Powers duel", this);
+    buttonPowers->setFont(buttonFont);
     buttonPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*2 -yOffset, buttonWidth, buttonHeight);
     buttonPowers->show();
     connect(buttonPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
-    buttonTurnament = new QPushButton("Turnament", this);
-    buttonTurnament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*3 -yOffset, buttonWidth, buttonHeight);
-    buttonTurnament->show();
-    connect(buttonTurnament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+    buttonTournament = new QPushButton("Tournament game", this);
+    buttonTournament->setFont(buttonFont);
+    buttonTournament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*3 -yOffset, buttonWidth, buttonHeight);
+    buttonTournament->show();
+    connect(buttonTournament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
-    buttonTimed = new QPushButton("Timed duel", this);
-    buttonTimed->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*4 -yOffset, buttonWidth, buttonHeight);
-    buttonTimed->show();
-    connect(buttonTimed, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+    buttonSpeed = new QPushButton("Speed game", this);
+    buttonSpeed->setFont(buttonFont);
+    buttonSpeed->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*4 -yOffset, buttonWidth, buttonHeight);
+    buttonSpeed->show();
+    connect(buttonSpeed, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 }
 
 
@@ -69,7 +78,7 @@ void Eter_UI::paintEvent(QPaintEvent* event) {
     QPixmap logo(logoPath);
     if (!logo.isNull()) {
         if (isStartPage) {
-            QRect centerRect(width() / 2 - 150, height() / 4 - 75, 400, 200);
+            QRect centerRect(this->width() / 2 - logo.width()/2, this->height() / 4 - 150, logo.width(), logo.height());
             painter.drawPixmap(centerRect, logo);
         }
         else {
@@ -123,7 +132,7 @@ void Eter_UI::OnButtonClick() {
         blueCards = { "Bcard1", "Bcard2", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard3", "Bcard4", "BcardE" };
         redCards = { "Rcard1", "Rcard2", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard3", "Rcard4", "RcardE" };
     }
-    else if (clickedButton == buttonTurnament || clickedButton == buttonTimed) {
+    else if (clickedButton == buttonTournament || clickedButton == buttonSpeed) {
         // Nu implementam nimic inca
         return;
     }
