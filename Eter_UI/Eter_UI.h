@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QPixmap>
 #include <qdir.h>
+#include <QLayout>
+
 
 class Eter_UI : public QMainWindow
 {
@@ -15,9 +17,9 @@ class Eter_UI : public QMainWindow
 public:
     Eter_UI(QWidget *parent = nullptr);
     ~Eter_UI();
-
 protected:
     void paintEvent(QPaintEvent* event) override;
+
 private:
     Ui::Eter_UIClass ui;
     QPointer<QPushButton> buttonTraning;
@@ -25,6 +27,7 @@ private:
     QPointer<QPushButton> buttonWizard;
     QPointer<QPushButton> buttonTurnament;
     QPointer<QPushButton> buttonTimed;
+    bool isStartPage;
     ///slot= event handler;
     ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
 private slots: 
