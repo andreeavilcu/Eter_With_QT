@@ -16,6 +16,8 @@ public:
     Eter_UI(QWidget *parent = nullptr);
     ~Eter_UI();
 
+protected:
+    void paintEvent(QPaintEvent* event) override;
 private:
     Ui::Eter_UIClass ui;
     QPointer<QPushButton> buttonTraning;

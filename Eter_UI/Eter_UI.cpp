@@ -1,4 +1,6 @@
 ﻿#include "Eter_UI.h"
+#include <QPainter>
+#include <QLinearGradient>
 
 Eter_UI::Eter_UI(QWidget* parent)
     : QMainWindow(parent)
@@ -38,68 +40,91 @@ Eter_UI::Eter_UI(QWidget* parent)
 
 Eter_UI::~Eter_UI()
 {}
+void Eter_UI::paintEvent(QPaintEvent* event) {
+    QPainter painter(this);
 
-void Eter_UI::OnButtonClick() {
+    QLinearGradient gradient(0, height(), width(), 0);
+    gradient.setColorAt(0.0, QColor(128, 0, 0)); 
+    gradient.setColorAt(0.5, QColor(64, 0, 64));
+    gradient.setColorAt(1.0, QColor(0, 0, 64)); 
 
-    // stergem butoanele
-    for (QObject* child : this->children()) {
-        if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != buttonTraning && widget != buttonWizard && widget != buttonPowers && widget != buttonTurnament && widget != buttonTimed) {
-                delete widget;
-            }
-        }
+    painter.fillRect(rect(), gradient);
+
+    QDir appDir(QCoreApplication::applicationDirPath());
+    appDir.cdUp(); 
+    QString logoPath = appDir.absoluteFilePath("logo.png");
+
+
+    QPixmap logo(logoPath);
+    if (!logo.isNull()) {
+        QRect targetRect(width() / 2 - 150, height() / 3 - 75, 400, 200); 
+        painter.drawPixmap(targetRect, logo);
     }
-
-    // dimensiuni pt carti
-    const int cardWidth = 100;
-    const int cardHeight = 150;
-    const int cardSpacing = 10;
-
-    // pozzitii pt carti
-    int redX = 50;
-    int redY = 50;
-    int blueX = this->width() - cardWidth - 50;
-    int blueY = 50;
-
-    // cale foldor cards
-    QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
-
-    if (!QDir(cardsPath).exists()) {
-        qDebug() << "Folderul cards nu există la:" << cardsPath;
-        return;
-    }
-
-    // redCards
-    QStringList redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard4" };
-    for (const QString& cardName : redCards) {
-        QString imagePath = cardsPath + cardName + ".png";
-        QPixmap pixmap(imagePath);
-        if (pixmap.isNull()) {
-            qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
-            continue;
-        }
-        QLabel* label = new QLabel(this);
-        label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
-        label->setGeometry(redX, redY, cardWidth, cardHeight);
-        label->show();
-        redY += cardHeight + cardSpacing;
-    }
-
-    // blueCards
-    QStringList blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard4" };
-    for (const QString& cardName : blueCards) {
-        QString imagePath = cardsPath + cardName + ".png";
-        QPixmap pixmap(imagePath);
-        if (pixmap.isNull()) {
-            qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
-            continue;
-        }
-        QLabel* label = new QLabel(this);
-        label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
-        label->setGeometry(blueX, blueY, cardWidth, cardHeight);
-        label->show();
-        blueY += cardHeight + cardSpacing;
+    else {
+        qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << logoPath;
     }
 }
 
 
+void Eter_UI::OnButtonClick() {
+
+    //// stergem butoanele
+    //for (QObject* child : this->children()) {
+    //    if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+    //        if (widget != buttonTraning && widget != buttonWizard && widget != buttonPowers && widget != buttonTurnament && widget != buttonTimed) {
+    //            delete widget;
+    //        }
+    //    }
+    //}
+
+    //// dimensiuni pt carti
+    //const int cardWidth = 100;
+    //const int cardHeight = 150;
+    //const int cardSpacing = 10;
+
+    //// pozzitii pt carti
+    //int redX = 50;
+    //int redY = 50;
+    //int blueX = this->width() - cardWidth - 50;
+    //int blueY = 50;
+
+    //// cale foldor cards
+    //QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
+
+    //if (!QDir(cardsPath).exists()) {
+    //    qDebug() << "Folderul cards nu există la:" << cardsPath;
+    //    return;
+    //}
+
+    //// redCards
+    //QStringList redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard4" };
+    //for (const QString& cardName : redCards) {
+    //    QString imagePath = cardsPath + cardName + ".png";
+    //    QPixmap pixmap(imagePath);
+    //    if (pixmap.isNull()) {
+    //        qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
+    //        continue;
+    //    }
+    //    QLabel* label = new QLabel(this);
+    //    label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
+    //    label->setGeometry(redX, redY, cardWidth, cardHeight);
+    //    label->show();
+    //    redY += cardHeight + cardSpacing;
+    //}
+
+    //// blueCards
+    //QStringList blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard4" };
+    //for (const QString& cardName : blueCards) {
+    //    QString imagePath = cardsPath + cardName + ".png";
+    //    QPixmap pixmap(imagePath);
+    //    if (pixmap.isNull()) {
+    //        qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
+    //        continue;
+    //    }
+    //    QLabel* label = new QLabel(this);
+    //    label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
+    //    label->setGeometry(blueX, blueY, cardWidth, cardHeight);
+    //    label->show();
+    //    blueY += cardHeight + cardSpacing;
+    //}
+}
