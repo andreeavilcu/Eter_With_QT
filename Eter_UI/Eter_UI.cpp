@@ -1,41 +1,49 @@
 ﻿#include "Eter_UI.h"
 #include <QPainter>
 #include <QLinearGradient>
+#include <QScreen>
+
+
 
 Eter_UI::Eter_UI(QWidget* parent)
     : QMainWindow(parent), isStartPage(true) {
     ui.setupUi(this);
 
     // Maximizăm fereastra
-    this->showMaximized();
-
+   // this->showMaximized();
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        QRect screenGeometry = screen->availableGeometry();
+        this->setGeometry(screenGeometry);
+    }
     const int buttonWidth = 150;
     const int buttonHeight = 75;
     const int spacing = 10;
+    const int yOffset = 100;
 
     // Configurare butoane
     buttonTraning = new QPushButton("Traning mode", this);
-    buttonTraning->setGeometry(100, 300, buttonWidth, buttonHeight);
+    buttonTraning->setGeometry((this->width() - buttonWidth) / 2,  (this->height() - buttonHeight) / 2 -yOffset, buttonWidth, buttonHeight);
     buttonTraning->show();
     connect(buttonTraning, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonWizard = new QPushButton("Wizards duel", this);
-    buttonWizard->setGeometry(100, 300 + buttonHeight + spacing, buttonWidth, buttonHeight);
+    buttonWizard->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing+buttonHeight) - yOffset, buttonWidth, buttonHeight);
     buttonWizard->show();
     connect(buttonWizard, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonPowers = new QPushButton("Powers duel", this);
-    buttonPowers->setGeometry(100, 300 + 2 * (buttonHeight + spacing), buttonWidth, buttonHeight);
+    buttonPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*2 -yOffset, buttonWidth, buttonHeight);
     buttonPowers->show();
     connect(buttonPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonTurnament = new QPushButton("Turnament", this);
-    buttonTurnament->setGeometry(100, 300 + 3 * (buttonHeight + spacing), buttonWidth, buttonHeight);
+    buttonTurnament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*3 -yOffset, buttonWidth, buttonHeight);
     buttonTurnament->show();
     connect(buttonTurnament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
     buttonTimed = new QPushButton("Timed duel", this);
-    buttonTimed->setGeometry(100, 300 + 4 * (buttonHeight + spacing), buttonWidth, buttonHeight);
+    buttonTimed->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*4 -yOffset, buttonWidth, buttonHeight);
     buttonTimed->show();
     connect(buttonTimed, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 }
@@ -88,9 +96,10 @@ void Eter_UI::OnButtonClick() {
         }
     }
 
-    const int cardWidth = 100;
-    const int cardHeight = 150;
+    const int cardSize = 150;
     const int cardSpacing = 5;
+    const int ySpacing = 50;
+
     QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
 
     if (!QDir(cardsPath).exists()) {
@@ -119,8 +128,8 @@ void Eter_UI::OnButtonClick() {
         return;
     }
 
-    blueX = this->width() / 4 - cardWidth / 2;
-    blueY = 50;
+    blueX = this->width() / 4 - cardSize / 2;
+    blueY = ySpacing;
 
     for (const QString& cardName : blueCards) {
         QString imagePath = cardsPath + cardName + ".png";
@@ -131,14 +140,14 @@ void Eter_UI::OnButtonClick() {
         }
 
         QLabel* label = new QLabel(this);
-        label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
-        label->setGeometry(blueX, blueY, cardWidth, cardHeight);
+        label->setPixmap(pixmap.scaled(cardSize, cardSize, Qt::KeepAspectRatio));
+        label->setGeometry(blueX, blueY, cardSize, cardSize);
         label->show();
-        blueX += cardWidth + cardSpacing;
+        blueX += cardSize + cardSpacing;
     }
 
-    redX = this->width() / 4 - cardWidth / 2;
-    redY = this->height() - cardHeight - 50;
+    redX = this->width() / 4 - cardSize / 2;
+    redY = this->height() - cardSize - ySpacing;
 
     for (const QString& cardName : redCards) {
         QString imagePath = cardsPath + cardName + ".png";
@@ -149,10 +158,10 @@ void Eter_UI::OnButtonClick() {
         }
 
         QLabel* label = new QLabel(this);
-        label->setPixmap(pixmap.scaled(cardWidth, cardHeight, Qt::KeepAspectRatio));
-        label->setGeometry(redX, redY, cardWidth, cardHeight);
+        label->setPixmap(pixmap.scaled(cardSize, cardSize, Qt::KeepAspectRatio));
+        label->setGeometry(redX, redY, cardSize, cardSize);
         label->show();
-        redX += cardWidth + cardSpacing;
+        redX += cardSize + cardSpacing;
     }
 
     // Reîmprosptăm interfața
