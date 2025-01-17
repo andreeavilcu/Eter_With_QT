@@ -125,7 +125,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
 
     QStringList blueCards, redCards;
 
-    if (clickedButton == buttonTraning) {
+    if (clickedButton == buttonTraining) {
         blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard4" };
         redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard4" };
     }
@@ -259,7 +259,7 @@ void Eter_UI::OnButtonClick() {
         label->show();
         redX += cardSize + cardSpacing;
     }
-
+    */
     update();
 }
 
@@ -367,4 +367,5 @@ void Eter_UI::drawSpeedMenu()
     buttonTournament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 4 - yOffset, buttonWidth, buttonHeight);
     buttonTournament->show();
     connect(buttonTournament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-}
+  
+ }

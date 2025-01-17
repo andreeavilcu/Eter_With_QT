@@ -30,6 +30,11 @@ void CardLabel::mousePressEvent(QMouseEvent* event) {
         drag->setMimeData(mimeData);
         drag->setPixmap(cardPixmap);
 
+        // Setăm hot spot-ul la mijlocul cărții (dimensiunea cărții este 100x150)
+        drag->setHotSpot(QPoint(cardPixmap.width() / 2, cardPixmap.height() / 2));
+
         drag->exec(Qt::MoveAction);
     }
+
+
 }

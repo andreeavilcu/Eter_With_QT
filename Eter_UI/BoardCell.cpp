@@ -20,8 +20,8 @@ void BoardCell::dropEvent(QDropEvent* event) {
         pixmap.loadFromData(byteArray, "PNG");
 
         QLabel* card = new QLabel(this);
-        card->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
-        card->setGeometry(0, 0, 100, 150);
+        card->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio));
+        card->setGeometry(0, 0, 100, 100);
         card->show();
 
         event->acceptProposedAction();
