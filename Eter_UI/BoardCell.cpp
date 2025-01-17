@@ -1,14 +1,15 @@
 ﻿#include "BoardCell.h"
+#include <QDebug>
+#include <QMimeData>
+#include <QPixmap>
 
 BoardCell::BoardCell(QWidget* parent) : QLabel(parent) {
-    setFixedSize(100, 100);
-    setStyleSheet("border: 2px solid white; background-color: rgba(255, 255, 255, 0.1);");
-    setAlignment(Qt::AlignCenter);
     setAcceptDrops(true);
+    setStyleSheet("border: 2px solid black;"); 
 }
 
 void BoardCell::dragEnterEvent(QDragEnterEvent* event) {
-    if (event->mimeData()->hasFormat("application/x-card")) {  // Verificăm dacă formatul este corect
+    if (event->mimeData()->hasFormat("application/x-card")) {
         event->acceptProposedAction();
     }
 }
@@ -19,11 +20,7 @@ void BoardCell::dropEvent(QDropEvent* event) {
         QPixmap pixmap;
         pixmap.loadFromData(byteArray, "PNG");
 
-        QLabel* card = new QLabel(this);
-        card->setPixmap(pixmap.scaled(100, 100, Qt::KeepAspectRatio));
-        card->setGeometry(0, 0, 100, 100);
-        card->show();
-
+        setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
         event->acceptProposedAction();
     }
 }

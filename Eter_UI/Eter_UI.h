@@ -8,7 +8,9 @@
 #include <QPixmap>
 #include <qdir.h>
 #include <QLayout>
+#include<qvector.h>
 #include "../models/GameMechanics/Board.h"
+#include "CardLabel.h"
 
 class Eter_UI : public QMainWindow
 {
@@ -29,13 +31,14 @@ private:
     QPointer<QPushButton> buttonTournament;
     QPointer<QPushButton> buttonSpeed;
     QPointer<QPushButton> buttonWizardPowers;
+    QVector<CardLabel*> cards; 
     bool isStartPage;
 
-    Board* gameBoard;  // Obiect pentru logica tablei
-    QGridLayout* boardLayout; // Layout pentru tabla
-    QVector<QLabel*> boardCells; // Celulele tablei
+    Board* gameBoard;  
+    QGridLayout* boardLayout; 
+    QVector<QLabel*> boardCells; 
 
-    void createBoard();// Funcție pentru inițializarea tablei
+    void createBoard();
     void createCards(QPushButton* clickedButton);
     ///slot= event handler;
     ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
@@ -43,4 +46,5 @@ private slots:
     void OnButtonClick();
     void drawTournamentMenu();
     void drawSpeedMenu();
+    void removeCard(CardLabel* card);  
 };

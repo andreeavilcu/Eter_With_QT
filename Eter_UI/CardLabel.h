@@ -12,6 +12,8 @@ class CardLabel : public QLabel {
 public:
     explicit CardLabel(const QString& imagePath, QWidget* parent = nullptr);
 
+signals:
+    void cardMoved(CardLabel* card); 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
 };

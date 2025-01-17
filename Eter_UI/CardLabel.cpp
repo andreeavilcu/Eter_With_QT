@@ -24,17 +24,16 @@ void CardLabel::mousePressEvent(QMouseEvent* event) {
         buffer.open(QIODevice::WriteOnly);
         cardPixmap.save(&buffer, "PNG");
 
-        mimeData->setData("application/x-card", byteArray);  // Trimitem imaginea sub formă de date binare
+        mimeData->setData("application/x-card", byteArray);
 
         QDrag* drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->setPixmap(cardPixmap);
 
-        // Setăm hot spot-ul la mijlocul cărții (dimensiunea cărții este 100x150)
         drag->setHotSpot(QPoint(cardPixmap.width() / 2, cardPixmap.height() / 2));
 
-        drag->exec(Qt::MoveAction);
+        if (drag->exec(Qt::MoveAction) == Qt::MoveAction) {
+            emit cardMoved(this); 
+        }
     }
-
-
 }
