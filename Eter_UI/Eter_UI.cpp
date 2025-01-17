@@ -367,5 +367,4 @@ void Eter_UI::drawSpeedMenu()
     buttonTournament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 4 - yOffset, buttonWidth, buttonHeight);
     buttonTournament->show();
     connect(buttonTournament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-  
- }
+}
