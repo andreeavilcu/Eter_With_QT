@@ -57,6 +57,12 @@ Eter_UI::Eter_UI(QWidget* parent)
     buttonSpeed->show();
     connect(buttonSpeed, &QPushButton::clicked, this, &Eter_UI::drawSpeedMenu);
 
+
+    turnLabel = new QLabel(this);
+    turnLabel->setFont(QFont("Arial", 14, QFont::Bold));
+    turnLabel->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128); padding: 5px;");
+    turnLabel->setAlignment(Qt::AlignCenter);
+    turnLabel->hide();
 }
 Eter_UI::~Eter_UI() {}
 
@@ -153,13 +159,15 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
             continue;
         }
 
-        CardLabel* card = new CardLabel(imagePath, this);
+        CardLabel* card = new CardLabel(imagePath, charToCardValue(cardName[cardName.size()-1].unicode()), this);
         card->setGeometry(startXRed, startYRed, 100, 150);
         connect(card, &CardLabel::cardMoved, this, &Eter_UI::removeCard);
         cards.append(card);
         card->show();
         startXRed += 110;
     }
+
+
 
     for (const QString& cardName : blueCards) {
         QString imagePath = cardsPath + cardName + ".png";
@@ -168,7 +176,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
             continue;
         }
 
-        CardLabel* card = new CardLabel(imagePath, this);
+        CardLabel* card = new CardLabel(imagePath, charToCardValue(cardName[cardName.size() - 1].unicode()),this);
         card->setGeometry(startXBlue, startYBlue, 100, 150);
         connect(card, &CardLabel::cardMoved, this, &Eter_UI::removeCard);
         cards.append(card);
@@ -176,10 +184,23 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         startXBlue += 110;
     }
 }
-void Eter_UI::removeCard(CardLabel* card) {
-    cards.removeOne(card); 
-    card->deleteLater();   
+
+Card::Value Eter_UI::charToCardValue(char value) {
+
+    switch (value) {
+        case '1':
+            return Card::Value::One;
+        case '2':
+            return Card::Value::Two;
+        case '3':
+            return Card::Value::Three;
+        case '4':
+            return Card::Value::Four;
+        case 'E':
+            return Card::Value::Eter;
+    }
 }
+
 void Eter_UI::OnButtonClick() {
     QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
@@ -188,7 +209,7 @@ void Eter_UI::OnButtonClick() {
 
     for (QObject* child : this->children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this) {
+            if (widget != this && widget != turnLabel) { // Adăugăm excepție pentru turnLabel
                 widget->hide();
                 widget->deleteLater();
             }
@@ -198,7 +219,52 @@ void Eter_UI::OnButtonClick() {
     createBoard();
 
     createCards(clickedButton);
+
+    turnLabel->setGeometry(this->width() / 2 - 100, 50, 200, 40);
+    turnLabel->show();
+    updateTurnLabel();
     update();
+}
+
+void Eter_UI::updateTurnLabel() {
+    if (turnLabel) {
+        turnLabel->setText(isRedTurn ? "Red Player's Turn" : "Blue Player's Turn");
+        turnLabel->setStyleSheet(QString("color: white; background-color: %1; padding: 5px;")
+            .arg(isRedTurn ? "rgba(255, 0, 0, 128)" : "rgba(0, 0, 255, 128)"));
+        turnLabel->adjustSize();
+        turnLabel->move(this->width() - turnLabel->width() - 20, 20);
+    }
+}
+
+void Eter_UI::checkWinCondition() {
+    if (gameBoard) {
+        Card::Color winner = gameBoard->checkWin();
+        if (winner != Card::Color::Undefined) {
+            showWinMessage(winner);
+        }
+    }
+}
+
+void Eter_UI::removeCard(CardLabel* card) {
+    cards.removeOne(card);
+    card->deleteLater();
+
+    // Switch turns after card is placed
+    isRedTurn = !isRedTurn;
+    updateTurnLabel();
+
+    // Check for win condition
+    checkWinCondition();
+}
+
+
+void Eter_UI::showWinMessage(Card::Color winner) {
+    QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
+    QMessageBox msgBox(this);
+    msgBox.setWindowTitle("Game Over");
+    msgBox.setText(QString("%1 has won the game!").arg(winnerText));
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
 }
 
 void Eter_UI::drawTournamentMenu()

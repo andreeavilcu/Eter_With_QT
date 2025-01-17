@@ -11,6 +11,9 @@
 #include<qvector.h>
 #include "../models/GameMechanics/Board.h"
 #include "CardLabel.h"
+#include "../models/GameMechanics/Game.h"
+#include <QMessageBox>
+
 
 class Eter_UI : public QMainWindow
 {
@@ -33,18 +36,28 @@ private:
     QPointer<QPushButton> buttonWizardPowers;
     QVector<CardLabel*> cards; 
     bool isStartPage;
+    bool isRedTurn;
+    Game* m_game;
 
+    QLabel* turnLabel;
     Board* gameBoard;  
     QGridLayout* boardLayout; 
     QVector<QLabel*> boardCells; 
 
+    Card::Value charToCardValue(char value);
     void createBoard();
     void createCards(QPushButton* clickedButton);
+    void updateTurnLabel();
+    void checkWinCondition();
+    void showWinMessage(Card::Color winner);
+    
     ///slot= event handler;
     ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
+    
 private slots: 
     void OnButtonClick();
     void drawTournamentMenu();
     void drawSpeedMenu();
-    void removeCard(CardLabel* card);  
+    void removeCard(CardLabel* card); 
+    
 };

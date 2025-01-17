@@ -1,7 +1,7 @@
 ﻿#include "CardLabel.h"
 #include <QDebug>
 
-CardLabel::CardLabel(const QString& imagePath, QWidget* parent)
+CardLabel::CardLabel(const QString& imagePath, Card::Value cardValue,QWidget* parent)
     : QLabel(parent) {
     QPixmap pixmap(imagePath);
     if (pixmap.isNull()) {
@@ -9,6 +9,8 @@ CardLabel::CardLabel(const QString& imagePath, QWidget* parent)
         return;
     }
 
+    setProperty("cardValue", static_cast<int>(cardValue));
+    std::cout << static_cast<int>(cardValue);
     setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
     setFixedSize(100, 150);
     setStyleSheet("border: none;");

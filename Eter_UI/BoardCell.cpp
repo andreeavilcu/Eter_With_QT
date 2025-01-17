@@ -22,5 +22,8 @@ void BoardCell::dropEvent(QDropEvent* event) {
 
         setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
         event->acceptProposedAction();
+
+        emit cardPlaced(event, this);
+
     }
 }

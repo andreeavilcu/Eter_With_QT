@@ -5,13 +5,15 @@
 #include <QPixmap>
 #include <QMouseEvent>
 #include <QBuffer>
+#include <../models/Actions/Card.h>
 
 class CardLabel : public QLabel {
     Q_OBJECT
 
 public:
-    explicit CardLabel(const QString& imagePath, QWidget* parent = nullptr);
+    explicit CardLabel(const QString& imagePath, Card::Value cardValue, QWidget* parent = nullptr);
 
+    
 signals:
     void cardMoved(CardLabel* card); 
 protected:
