@@ -21,12 +21,14 @@ protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
+
     Ui::Eter_UIClass ui;
-    QPointer<QPushButton> buttonTraning;
+    QPointer<QPushButton> buttonTraining;
     QPointer<QPushButton> buttonPowers;
     QPointer<QPushButton> buttonWizard;
     QPointer<QPushButton> buttonTournament;
     QPointer<QPushButton> buttonSpeed;
+    QPointer<QPushButton> buttonWizardPowers;
     bool isStartPage;
 
     Board* gameBoard;  // Obiect pentru logica tablei
@@ -39,4 +41,6 @@ private:
     ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
 private slots: 
     void OnButtonClick();
+    void drawTournamentMenu();
+    void drawSpeedMenu();
 };
