@@ -1,6 +1,8 @@
 ﻿#include "Eter_UI.h"
 #include <QPainter>
 #include <QLinearGradient>
+#include "BoardCell.h"
+#include "CardLabel.h"
 #include <QScreen>
 
 
@@ -90,6 +92,93 @@ void Eter_UI::paintEvent(QPaintEvent* event) {
         qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << logoPath;
     }
 }
+
+void Eter_UI::createBoard() {
+    gameBoard = new Board(3);
+    QWidget* boardWidget = new QWidget(this);
+    boardLayout = new QGridLayout(boardWidget);
+    boardLayout->setSpacing(0);  // Fără spațiere între celule
+    boardLayout->setContentsMargins(0, 0, 0, 0);  // Eliminăm marginile
+
+    const int cellSize = 100;  // Dimensiunea celulelor pentru a fi pătrate
+
+    // Setăm dimensiunea celulelor pentru a fi pătrate
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            BoardCell* cell = new BoardCell(this);
+            cell->setAcceptDrops(true);
+            cell->setFixedSize(cellSize, cellSize);  // Celule pătrate
+            boardLayout->addWidget(cell, i, j);
+            boardCells.append(cell);
+        }
+    }
+
+    boardWidget->setLayout(boardLayout);
+    boardWidget->setGeometry(this->width() / 2 - 150, this->height() / 2 - 120, 300, 300);
+    boardWidget->show();
+}
+
+void Eter_UI::createCards(QPushButton* clickedButton) {
+    QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
+
+    if (!QDir(cardsPath).exists()) {
+        qDebug() << "Folderul 'cards' nu există la:" << cardsPath;
+        return;
+    }
+
+    QStringList blueCards, redCards;
+
+    if (clickedButton == buttonTraning) {
+        blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard4" };
+        redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard4" };
+    }
+    else if (clickedButton == buttonWizard) {
+        blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard3", "Bcard4", "BcardE" };
+        redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard3", "Rcard4", "RcardE" };
+    }
+    else if (clickedButton == buttonPowers) {
+        blueCards = { "Bcard1", "Bcard2", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard3", "Bcard4", "BcardE" };
+        redCards = { "Rcard1", "Rcard2", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard3", "Rcard4", "RcardE" };
+    }
+    else {
+        return;
+    }
+
+    int startXBlue = this->width() / 2 - ((blueCards.size() / 2) * 110);
+    int startYBlue = this->height() / 2 + 190;  // Sub tabla
+
+    int startXRed = this->width() / 2 - ((redCards.size() / 2) * 110);
+    int startYRed = this->height() / 2 - 300;  // Creștem distanța față de tabla de joc
+
+    // Afișarea cărților roșii
+    for (const QString& cardName : redCards) {
+        QString imagePath = cardsPath + cardName + ".png";
+        if (!QFile::exists(imagePath)) {
+            qDebug() << "Eroare: Nu s-a găsit imaginea:" << imagePath;
+            continue;
+        }
+
+        CardLabel* card = new CardLabel(imagePath, this);
+        card->setGeometry(startXRed, startYRed, 100, 150);
+        card->show();
+        startXRed += 110;  // Mărim distanța între cărți
+    }
+
+    // Afișarea cărților albastre
+    for (const QString& cardName : blueCards) {
+        QString imagePath = cardsPath + cardName + ".png";
+        if (!QFile::exists(imagePath)) {
+            qDebug() << "Eroare: Nu s-a găsit imaginea:" << imagePath;
+            continue;
+        }
+
+        CardLabel* card = new CardLabel(imagePath, this);
+        card->setGeometry(startXBlue, startYBlue, 100, 150);
+        card->show();
+        startXBlue += 110;  // Mărim distanța între cărți
+    }
+}
+
 void Eter_UI::OnButtonClick() {
     QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
@@ -105,7 +194,12 @@ void Eter_UI::OnButtonClick() {
         }
     }
 
-    const int cardSize = 150;
+    createBoard();
+
+    createCards(clickedButton);
+    /*
+    const int cardWidth = 100;
+    const int cardHeight = 150;
     const int cardSpacing = 5;
     const int ySpacing = 50;
 
@@ -172,7 +266,7 @@ void Eter_UI::OnButtonClick() {
         label->show();
         redX += cardSize + cardSpacing;
     }
-
+    */
     // Reîmprosptăm interfața
     update();
 }

@@ -98,6 +98,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoardCell.cpp" />
+    <ClCompile Include="CardLabel.cpp" />
     <QtRcc Include="Eter_UI.qrc" />
     <QtUic Include="Eter_UI.ui" />
     <QtMoc Include="Eter_UI.h" />
@@ -130,6 +132,8 @@
     <ClInclude Include="..\models\GameMechanics\Match.h" />
     <ClInclude Include="..\models\GameMechanics\Matrix.h" />
     <ClInclude Include="..\models\Player\Player.h" />
+    <QtMoc Include="BoardCell.h" />
+    <QtMoc Include="CardLabel.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
