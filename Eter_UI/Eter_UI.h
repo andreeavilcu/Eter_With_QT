@@ -13,6 +13,7 @@
 #include "CardLabel.h"
 #include "../models/GameMechanics/Game.h"
 #include <QMessageBox>
+#include "BoardCell.h"
 
 class Eter_UI : public QMainWindow
 {
@@ -43,6 +44,10 @@ private:
     QGridLayout* boardLayout;
     QVector<QLabel*> boardCells;
 
+    void createGame(Game::GameType gameType);
+    void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell);
+    void endGame(const GameEndInfo& info);
+
     void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
     void initializeButtons();
     Card::Value charToCardValue(char value);
@@ -58,4 +63,7 @@ private slots:
     void drawTournamentMenu();
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
+
+    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot for handling card placements
+
 };
