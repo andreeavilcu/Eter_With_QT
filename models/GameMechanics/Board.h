@@ -8,7 +8,6 @@
 #include <array>
 #include <nlohmann/json.hpp>
 
-
 #include "Matrix.h"
 #include "../Actions/Card.h"
 #include "../Actions/Explosion.h"

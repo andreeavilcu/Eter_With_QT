@@ -1,30 +1,26 @@
 #include "Board.h"
-
-// #include <bits/ranges_algo.h>
-
 #include "../Actions/Power.h"
 #include "../Actions/Wizard.h"
 
 cardPosition Board::findCardIndexes(const Card* _card) const {
-    for (short i = 0; i < this->m_board.size(); i++)
-        for (short j = 0; j < this->m_board[i].size(); j++)
-            for (short height = 0; height < this->m_board[i][j].size(); height++)
+    for (short i = 0; i < this->m_board.size(); i++) {
+        for (short j = 0; j < this->m_board[i].size(); j++) {
+            for (short height = 0; height < this->m_board[i][j].size(); height++) {
                 if (&this->m_board[i][j][height] == _card)
-                    return {i, j, height};
-
-    return {-1, -1, -1};
+                    return { i, j, height };
+            }
+        }
+    }
+    return { -1, -1, -1 };
 }
 
 Board::Board(size_t _size) {
     this->m_board.resize(_size);
-
     for (auto& row : this->m_board) {
         row.resize(_size);
-
         for (auto& position : row)
             position.reserve(MAX_HEIGHT);
     }
-
 }
 
 Board::Board(nlohmann::json _json) {
@@ -37,10 +33,8 @@ Board::Board(nlohmann::json _json) {
             }
             layer1.push_back(layer2);
         }
-
         m_board.push_back(layer1);
     }
-
     this->m_firstCardPlayed = _json["started"].get<bool>();
 }
 
@@ -53,17 +47,14 @@ std::vector<std::vector<std::vector<Card>>>& Board::getBoard() {
 }
 
 bool Board::circularShiftUp(const bool _check) {
-    for (std::size_t col = 0; col < this->m_board.size(); ++col)
-        if (!m_board[0][col].empty())
-            return false;
-
+    for (std::size_t col = 0; col < this->m_board.size(); ++col) {
+        if (!m_board[0][col].empty()) return false;
+    }
     if (_check) return true;
 
     auto temp = std::move(this->m_board[0]);
-
     for (std::size_t row = 0; row < this->m_board.size() - 1; ++row)
         m_board[row] = std::move(m_board[row + 1]);
-
     this->m_board[this->m_board.size() - 1] = std::move(temp);
 
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
@@ -73,17 +64,14 @@ bool Board::circularShiftUp(const bool _check) {
 }
 
 bool Board::circularShiftDown(const bool _check) {
-    for (std::size_t col = 0; col < this->m_board.size(); ++col)
-        if (!m_board[this->m_board.size() - 1][col].empty())
-            return false;
-
+    for (std::size_t col = 0; col < this->m_board.size(); ++col) {
+        if (!m_board[this->m_board.size() - 1][col].empty()) return false;
+    }
     if (_check) return true;
 
     auto temp = std::move(this->m_board[this->m_board.size() - 1]);
-
     for (std::size_t row = this->m_board.size() - 1; row > 0; --row)
         m_board[row] = std::move(m_board[row - 1]);
-
     this->m_board[0] = std::move(temp);
 
     for (std::size_t col = 0; col < this->m_board.size(); ++col)
@@ -93,15 +81,15 @@ bool Board::circularShiftDown(const bool _check) {
 }
 
 bool Board::circularShiftLeft(const bool _check) {
-    for (std::size_t row = 0; row < this->m_board.size(); ++row)
-        if (!m_board[row][0].empty())
-            return false;
-
+    for (std::size_t row = 0; row < this->m_board.size(); ++row) {
+        if (!m_board[row][0].empty()) return false;
+    }
     if (_check) return true;
 
-    for (std::size_t col = 0; col < this->m_board.size() - 1; ++col)
+    for (std::size_t col = 0; col < this->m_board.size() - 1; ++col) {
         for (std::size_t row = 0; row < this->m_board.size(); ++row)
             m_board[row][col] = std::move(m_board[row][col + 1]);
+    }
 
     for (std::size_t row = 0; row < this->m_board.size(); ++row)
         m_board[row][this->m_board.size() - 1].clear();
@@ -110,15 +98,15 @@ bool Board::circularShiftLeft(const bool _check) {
 }
 
 bool Board::circularShiftRight(const bool _check) {
-    for (std::size_t row = 0; row < this->m_board.size(); ++row)
-        if (!m_board[row][this->m_board.size() - 1].empty())
-            return false;
-
+    for (std::size_t row = 0; row < this->m_board.size(); ++row) {
+        if (!m_board[row][this->m_board.size() - 1].empty()) return false;
+    }
     if (_check) return true;
 
-    for (std::size_t col = this->m_board.size() - 1; col > 0; --col)
+    for (std::size_t col = this->m_board.size() - 1; col > 0; --col) {
         for (std::size_t row = 0; row < this->m_board.size(); ++row)
             m_board[row][col] = std::move(m_board[row][col - 1]);
+    }
 
     for (std::size_t row = 0; row < this->m_board.size(); ++row)
         m_board[row][0].clear();
@@ -132,16 +120,14 @@ bool Board::checkIfCanShift() {
 
 void Board::printBoard() const {
     for (size_t i = 0; i < this->m_board.size(); ++i) {
-        for (size_t j = 0; j < this->m_board.size(); ++j)
+        for (size_t j = 0; j < this->m_board.size(); ++j) {
             if (checkHole(i, j))
                 std::cout << "HH ";
-
             else if (!m_board[i][j].empty())
                 std::cout << m_board[i][j].back();
-
             else
                 std::cout << "xx ";
-
+        }
         std::cout << std::endl;
     }
 }
@@ -149,27 +135,22 @@ void Board::printBoard() const {
 bool Board::isAPile(const size_t _row, const size_t _col) const {
     return m_board[_row][_col].size() >= 2;
 }
+
 bool Board::checkIndexes(const size_t _row, const size_t _col) const {
     return !(_row >= this->m_board.size() || _col >= this->m_board.size());
 }
 
 bool Board::checkNeighbours(const size_t _row, const size_t _col) const {
-    if (!m_board[_row][_col].empty())
-        return true;
+    if (!m_board[_row][_col].empty()) return true;
 
-    const std::array<std::pair<int, int>, 8> directions = { {
-        {-1, 0}, {1, 0}, {0, -1}, {0, 1},
-        {-1, -1}, {-1, 1}, {1, -1}, {1, 1}
-    } };
-
+    const std::array<std::pair<int, int>, 8> directions = { {{-1, 0}, {1, 0}, {0, -1}, {0, 1}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}} };
     return std::ranges::any_of(directions, [&](const auto& direction) {
         const int newRow = static_cast<int>(_row) + direction.first;
         const int newCol = static_cast<int>(_col) + direction.second;
-
         return newRow >= 0 && newRow < this->m_board.size() &&
             newCol >= 0 && newCol < this->m_board.size() &&
             !m_board[newRow][newCol].empty();
-    });
+        });
 }
 
 bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _value, const bool _illusion) const {
@@ -190,6 +171,7 @@ bool Board::checkValue(const size_t _row, const size_t _col, const Card::Value _
 
     return false;
 }
+
 
 bool Board::checkHole(size_t _row, size_t _col) const {
     return Explosion::getInstance().getHole() == std::pair{ _row, _col } ||
