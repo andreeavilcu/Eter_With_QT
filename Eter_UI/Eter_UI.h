@@ -2,31 +2,30 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_Eter_UI.h"
-#include "qpushbutton.h"
-#include "qpointer.h"
+#include <QPushButton>
+#include <QPointer>
 #include <QLabel>
 #include <QPixmap>
-#include <qdir.h>
+#include <QDir>
 #include <QLayout>
-#include<qvector.h>
+#include <QVector>
 #include "../models/GameMechanics/Board.h"
 #include "CardLabel.h"
 #include "../models/GameMechanics/Game.h"
 #include <QMessageBox>
-
 
 class Eter_UI : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    Eter_UI(QWidget *parent = nullptr);
+    Eter_UI(QWidget* parent = nullptr);
     ~Eter_UI();
+
 protected:
     void paintEvent(QPaintEvent* event) override;
 
 private:
-
     Ui::Eter_UIClass ui;
     QPointer<QPushButton> buttonTraining;
     QPointer<QPushButton> buttonPowers;
@@ -34,30 +33,29 @@ private:
     QPointer<QPushButton> buttonTournament;
     QPointer<QPushButton> buttonSpeed;
     QPointer<QPushButton> buttonWizardPowers;
-    QVector<CardLabel*> cards; 
+    QVector<CardLabel*> cards;
     bool isStartPage;
     bool isRedTurn;
     Game* m_game;
 
     QLabel* turnLabel;
-    Board* gameBoard;  
-    QGridLayout* boardLayout; 
-    QVector<QLabel*> boardCells; 
+    Board* gameBoard;
+    QGridLayout* boardLayout;
+    QVector<QLabel*> boardCells;
 
+    void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
+    void initializeButtons();
     Card::Value charToCardValue(char value);
-    void createBoard();
+    void createBoard(QPushButton* clickedButton);
     void createCards(QPushButton* clickedButton);
     void updateTurnLabel();
     void checkWinCondition();
     void showWinMessage(Card::Color winner);
-    
-    ///slot= event handler;
-    ///teoretic iti spune ce se intampla cand faci o actieune pe un obiect (de ex apesi un buton)
-    
-private slots: 
+
+private slots:
     void OnButtonClick();
+    void onWizardPowersClicked();
     void drawTournamentMenu();
     void drawSpeedMenu();
-    void removeCard(CardLabel* card); 
-    
+    void removeCard(CardLabel* card);
 };

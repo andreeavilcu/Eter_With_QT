@@ -5,58 +5,48 @@
 #include "CardLabel.h"
 #include <QScreen>
 
+void Eter_UI::createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)()) {
+    button = new QPushButton(text, this);
+    button->setFont(font);
+    button->setGeometry(x, y, width, height);
+    button->show();
+    if (slot) {
+        connect(button, &QPushButton::clicked, this, slot);
+    }
+}
+
+void Eter_UI::initializeButtons() {
+    QFont buttonFont;
+    buttonFont.setPointSize(16);
+    buttonFont.setBold(true);
+
+    const int buttonWidth = 230;
+    const int buttonHeight = 90;
+    const int spacing = 10;
+    const int yOffset = 60;
+
+    int centerX = (this->width() - buttonWidth) / 2;
+    int centerY = (this->height() - buttonHeight) / 2;
+
+    createButton(buttonTraining, "Training mode", centerX, centerY - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonWizard, "Wizards duel", centerX, centerY + spacing + buttonHeight - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonPowers, "Powers duel", centerX, centerY + (spacing + buttonHeight) * 2 - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonTournament, "Tournament game", centerX, centerY + (spacing + buttonHeight) * 3 - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::drawTournamentMenu);
+    createButton(buttonSpeed, "Speed game", centerX, centerY + (spacing + buttonHeight) * 4 - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::drawSpeedMenu);
+    //createButton(buttonWizardPowers, "Wizards and Powers", centerX, centerY + (spacing + buttonHeight) * 5 - yOffset, buttonWidth, buttonHeight, buttonFont, &Eter_UI::onWizardPowersClicked);
+}
 
 Eter_UI::Eter_UI(QWidget* parent)
-    : QMainWindow(parent), isStartPage(true) {
+    : QMainWindow(parent), isStartPage(true), isRedTurn(false), m_game(nullptr), gameBoard(nullptr), boardLayout(nullptr) {
     ui.setupUi(this);
 
-    
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         QRect screenGeometry = screen->availableGeometry();
         this->setGeometry(screenGeometry);
     }
-    QFont buttonFont;
-    buttonFont.setPointSize(16);
-    buttonFont.setBold(true);
 
-    const int buttonWidth = 200;
-    const int buttonHeight = 100;
-    const int spacing = 10;
-    const int yOffset = 60;
-
-    ///drawButton((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 - yOffset, buttonWidth, buttonHeight, "Training mode");
-    //// Configurare butoane
-    buttonTraining = new QPushButton("Traning mode", this);
-    buttonTraining->setFont(buttonFont); 
-    buttonTraining->setGeometry((this->width() - buttonWidth) / 2,  (this->height() - buttonHeight) / 2 -yOffset, buttonWidth, buttonHeight);
-    buttonTraining->show();
-    connect(buttonTraining, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-
-    buttonWizard = new QPushButton("Wizards duel", this);
-    buttonWizard->setFont(buttonFont);
-    buttonWizard->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing+buttonHeight) - yOffset, buttonWidth, buttonHeight);
-    buttonWizard->show();
-    connect(buttonWizard, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-
-    buttonPowers = new QPushButton("Powers duel", this);
-    buttonPowers->setFont(buttonFont);
-    buttonPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*2 -yOffset, buttonWidth, buttonHeight);
-    buttonPowers->show();
-    connect(buttonPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-
-    buttonTournament = new QPushButton("Tournament game", this);
-    buttonTournament->setFont(buttonFont);
-    buttonTournament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*3 -yOffset, buttonWidth, buttonHeight);
-    buttonTournament->show();
-    connect(buttonTournament, &QPushButton::clicked, this, &Eter_UI::drawTournamentMenu);
-
-    buttonSpeed = new QPushButton("Speed game", this);
-    buttonSpeed->setFont(buttonFont);
-    buttonSpeed->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight)*4 -yOffset, buttonWidth, buttonHeight);
-    buttonSpeed->show();
-    connect(buttonSpeed, &QPushButton::clicked, this, &Eter_UI::drawSpeedMenu);
-
+    initializeButtons();
 
     turnLabel = new QLabel(this);
     turnLabel->setFont(QFont("Arial", 14, QFont::Bold));
@@ -64,7 +54,10 @@ Eter_UI::Eter_UI(QWidget* parent)
     turnLabel->setAlignment(Qt::AlignCenter);
     turnLabel->hide();
 }
-Eter_UI::~Eter_UI() {}
+
+Eter_UI::~Eter_UI() {
+    if (gameBoard) delete gameBoard;
+}
 
 void Eter_UI::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
@@ -82,41 +75,58 @@ void Eter_UI::paintEvent(QPaintEvent* event) {
 
     QPixmap logo(logoPath);
     if (!logo.isNull()) {
+        QRect logoRect;
         if (isStartPage) {
-            QRect centerRect(this->width() / 2 - logo.width()/2, this->height() / 4 - 150, logo.width(), logo.height());
-            painter.drawPixmap(centerRect, logo);
+            logoRect = QRect(width() / 2 - logo.width() / 2, height() / 4 - 150, logo.width(), logo.height());
         }
         else {
-            QRect topLeftRect(10, 10, 150, 75);
-            painter.drawPixmap(topLeftRect, logo);
+            logoRect = QRect(10, 10, 150, 75);
         }
+        painter.drawPixmap(logoRect, logo);
     }
     else {
-        qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << logoPath;
+        qDebug() << "Error: Failed to load image:" << logoPath;
     }
 }
 
-void Eter_UI::createBoard() {
-    gameBoard = new Board(3);
+void Eter_UI::createBoard(QPushButton* clickedButton) {
+    if (gameBoard) {
+        delete gameBoard;
+        gameBoard = nullptr;
+    }
+
+    int boardSize = 3;
+
+    if (clickedButton == buttonWizard || clickedButton == buttonPowers || clickedButton == buttonWizardPowers) {
+        boardSize = 4;
+    }
+
+    gameBoard = new Board(boardSize);
     QWidget* boardWidget = new QWidget(this);
+
+    if (boardLayout) {
+        delete boardLayout;
+        boardLayout = nullptr;
+    }
     boardLayout = new QGridLayout(boardWidget);
-    boardLayout->setSpacing(0);  
-    boardLayout->setContentsMargins(0, 0, 0, 0);  
+    boardLayout->setSpacing(0);
+    boardLayout->setContentsMargins(0, 0, 0, 0);
 
-    const int cellSize = 100;  
+    const int cellSize = 100;
 
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int i = 0; i < boardSize; ++i) {
+        for (int j = 0; j < boardSize; ++j) {
             BoardCell* cell = new BoardCell(this);
             cell->setAcceptDrops(true);
-            cell->setFixedSize(cellSize, cellSize);  
+            cell->setFixedSize(cellSize, cellSize);
             boardLayout->addWidget(cell, i, j);
             boardCells.append(cell);
         }
     }
 
+    int widgetSize = boardSize * cellSize;
     boardWidget->setLayout(boardLayout);
-    boardWidget->setGeometry(this->width() / 2 - 150, this->height() / 2 - 120, 300, 300);
+    boardWidget->setGeometry(width() / 2 - widgetSize / 2, height() / 2 - widgetSize / 2, widgetSize, widgetSize);
     boardWidget->show();
 }
 
@@ -124,7 +134,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
     QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
 
     if (!QDir(cardsPath).exists()) {
-        qDebug() << "Folderul 'cards' nu există la:" << cardsPath;
+        qDebug() << "Error: 'cards' folder does not exist at:" << cardsPath;
         return;
     }
 
@@ -138,7 +148,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         blueCards = { "Bcard1", "Bcard1", "Bcard2", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard3", "Bcard4", "BcardE" };
         redCards = { "Rcard1", "Rcard1", "Rcard2", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard3", "Rcard4", "RcardE" };
     }
-    else if (clickedButton == buttonPowers) {
+    else if (clickedButton == buttonPowers || clickedButton == buttonWizardPowers) {
         blueCards = { "Bcard1", "Bcard2", "Bcard2", "Bcard2", "Bcard3", "Bcard3", "Bcard3", "Bcard4", "BcardE" };
         redCards = { "Rcard1", "Rcard2", "Rcard2", "Rcard2", "Rcard3", "Rcard3", "Rcard3", "Rcard4", "RcardE" };
     }
@@ -146,58 +156,47 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         return;
     }
 
-    int startXBlue = this->width() / 2 - ((blueCards.size() / 2) * 110);
-    int startYBlue = this->height() / 2 + 190;
-
-    int startXRed = this->width() / 2 - ((redCards.size() / 2) * 110);
-    int startYRed = this->height() / 2 - 300;
-
-    for (const QString& cardName : redCards) {
+    auto createCard = [&](const QString& cardName, int& startX, int startY, const QColor& color) {
         QString imagePath = cardsPath + cardName + ".png";
         if (!QFile::exists(imagePath)) {
-            qDebug() << "Eroare: Nu s-a găsit imaginea:" << imagePath;
-            continue;
+            qDebug() << "Error: Image not found:" << imagePath;
+            return;
         }
 
-        CardLabel* card = new CardLabel(imagePath, charToCardValue(cardName[cardName.size()-1].unicode()), this);
-        card->setGeometry(startXRed, startYRed, 100, 150);
+        CardLabel* card = new CardLabel(imagePath, charToCardValue(cardName[cardName.size() - 1].unicode()), this);
+        card->setGeometry(startX, startY, 100, 150);
         connect(card, &CardLabel::cardMoved, this, &Eter_UI::removeCard);
         cards.append(card);
         card->show();
-        startXRed += 110;
+        startX += 110;
+        };
+
+    int startXBlue = width() / 2 - ((blueCards.size() / 2) * 110);
+    int startYBlue = height() / 2 + 230;
+    for (const QString& cardName : blueCards) {
+        createCard(cardName, startXBlue, startYBlue, Qt::blue);
     }
 
-
-
-    for (const QString& cardName : blueCards) {
-        QString imagePath = cardsPath + cardName + ".png";
-        if (!QFile::exists(imagePath)) {
-            qDebug() << "Eroare: Nu s-a găsit imaginea:" << imagePath;
-            continue;
-        }
-
-        CardLabel* card = new CardLabel(imagePath, charToCardValue(cardName[cardName.size() - 1].unicode()),this);
-        card->setGeometry(startXBlue, startYBlue, 100, 150);
-        connect(card, &CardLabel::cardMoved, this, &Eter_UI::removeCard);
-        cards.append(card);
-        card->show();
-        startXBlue += 110;
+    int startXRed = width() / 2 - ((redCards.size() / 2) * 110);
+    int startYRed = height() / 2 - 340;
+    for (const QString& cardName : redCards) {
+        createCard(cardName, startXRed, startYRed, Qt::red);
     }
 }
 
 Card::Value Eter_UI::charToCardValue(char value) {
-
     switch (value) {
-        case '1':
-            return Card::Value::One;
-        case '2':
-            return Card::Value::Two;
-        case '3':
-            return Card::Value::Three;
-        case '4':
-            return Card::Value::Four;
-        case 'E':
-            return Card::Value::Eter;
+    case '1':
+        return Card::Value::One;
+    case '2':
+        return Card::Value::Two;
+    case '3':
+        return Card::Value::Three;
+    case '4':
+        return Card::Value::Four;
+    case 'E':
+        return Card::Value::Eter;
+    ;
     }
 }
 
@@ -207,20 +206,19 @@ void Eter_UI::OnButtonClick() {
 
     isStartPage = false;
 
-    for (QObject* child : this->children()) {
+    for (QObject* child : children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this && widget != turnLabel) { // Adăugăm excepție pentru turnLabel
+            if (widget != this && widget != turnLabel) {
                 widget->hide();
                 widget->deleteLater();
             }
         }
     }
 
-    createBoard();
-
+    createBoard(clickedButton);
     createCards(clickedButton);
 
-    turnLabel->setGeometry(this->width() / 2 - 100, 50, 200, 40);
+    turnLabel->setGeometry(width() / 2 - 100, 50, 200, 40);
     turnLabel->show();
     updateTurnLabel();
     update();
@@ -232,8 +230,12 @@ void Eter_UI::updateTurnLabel() {
         turnLabel->setStyleSheet(QString("color: white; background-color: %1; padding: 5px;")
             .arg(isRedTurn ? "rgba(255, 0, 0, 128)" : "rgba(0, 0, 255, 128)"));
         turnLabel->adjustSize();
-        turnLabel->move(this->width() - turnLabel->width() - 20, 20);
+        turnLabel->move(width() - turnLabel->width() - 20, 20);
     }
+}
+
+void Eter_UI::onWizardPowersClicked() {
+    OnButtonClick();
 }
 
 void Eter_UI::checkWinCondition() {
@@ -249,14 +251,11 @@ void Eter_UI::removeCard(CardLabel* card) {
     cards.removeOne(card);
     card->deleteLater();
 
-    // Switch turns after card is placed
     isRedTurn = !isRedTurn;
     updateTurnLabel();
 
-    // Check for win condition
     checkWinCondition();
 }
-
 
 void Eter_UI::showWinMessage(Card::Color winner) {
     QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
@@ -267,65 +266,12 @@ void Eter_UI::showWinMessage(Card::Color winner) {
     msgBox.exec();
 }
 
-void Eter_UI::drawTournamentMenu()
-{
-    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
-    if (!clickedButton) return;
-
-    isStartPage = false;
-
-    for (QObject* child : this->children()) {
-        if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this) {
-                widget->hide();
-                widget->deleteLater();
-            }
-        }
-    }
-
-    QFont buttonFont;
-    buttonFont.setPointSize(16);
-    buttonFont.setBold(true);
-    const int buttonWidth = 200;
-    const int buttonHeight = 100;
-    const int spacing = 10;
-    const int yOffset = 60;
-
-    buttonTraining = new QPushButton("Training mode", this);
-    buttonTraining->setFont(buttonFont);
-    buttonTraining->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 - yOffset, buttonWidth, buttonHeight);
-    buttonTraining->show();
-    connect(buttonTraining, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-
-    buttonWizard = new QPushButton("Wizards duel", this);
-    buttonWizard->setFont(buttonFont);
-    buttonWizard->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) - yOffset, buttonWidth, buttonHeight);
-    buttonWizard->show();
-    connect(buttonWizard, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-
-    buttonPowers = new QPushButton("Powers duel", this);
-    buttonPowers->setFont(buttonFont);
-    buttonPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 2 - yOffset, buttonWidth, buttonHeight);
-    buttonPowers->show();
-    connect(buttonPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+void Eter_UI::drawTournamentMenu() {
    
-    ///to do: de declarat
-    buttonWizardPowers = new QPushButton("Wizards and powers", this);
-    buttonWizardPowers->setFont(buttonFont);
-    buttonWizardPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) *3 - yOffset, buttonWidth, buttonHeight);
-    buttonWizardPowers-> show();
-    connect(buttonWizardPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
-}
-void Eter_UI::drawSpeedMenu()
-{
-    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
-    if (!clickedButton) return;
-
-    isStartPage = false;
-
+    isStartPage = false; 
     for (QObject* child : this->children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this) {
+            if (widget != this && widget != turnLabel) {
                 widget->hide();
                 widget->deleteLater();
             }
@@ -335,40 +281,46 @@ void Eter_UI::drawSpeedMenu()
     QFont buttonFont;
     buttonFont.setPointSize(16);
     buttonFont.setBold(true);
+
     const int buttonWidth = 200;
     const int buttonHeight = 100;
     const int spacing = 10;
-    const int yOffset = 60;
 
-    buttonTraining = new QPushButton("Training mode", this);
-    buttonTraining->setFont(buttonFont);
-    buttonTraining->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 - yOffset, buttonWidth, buttonHeight);
-    buttonTraining->show();
-    connect(buttonTraining, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+    int centerX = (this->width() - buttonWidth) / 2;
+    int centerY = (this->height() - buttonHeight * 4 - spacing * 3) / 2;
 
-    buttonWizard = new QPushButton("Wizards duel", this);
-    buttonWizard->setFont(buttonFont);
-    buttonWizard->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) - yOffset, buttonWidth, buttonHeight);
-    buttonWizard->show();
-    connect(buttonWizard, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+    createButton(buttonTraining, "Training Mode", centerX, centerY, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonWizard, "Wizard Mode", centerX, centerY + buttonHeight + spacing, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonPowers, "Powers Mode", centerX, centerY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonWizardPowers, "Wizard and Powers", centerX, centerY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, buttonFont, &Eter_UI::onWizardPowersClicked);
+}
 
-    buttonPowers = new QPushButton("Powers duel", this);
-    buttonPowers->setFont(buttonFont);
-    buttonPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 2 - yOffset, buttonWidth, buttonHeight);
-    buttonPowers->show();
-    connect(buttonPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
 
-    ///to do: de declarat
-    buttonWizardPowers = new QPushButton("Wizards and powers", this);
-    buttonWizardPowers->setFont(buttonFont);
-    buttonWizardPowers->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 3 - yOffset, buttonWidth, buttonHeight);
-    buttonWizardPowers->show();
-    connect(buttonWizardPowers, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+void Eter_UI::drawSpeedMenu() {
+    isStartPage = false; 
+    for (QObject* child : this->children()) {
+        if (QWidget* widget = qobject_cast<QWidget*>(child)) {
+            if (widget != this && widget != turnLabel) {
+                widget->hide();
+                widget->deleteLater();
+            }
+        }
+    }
+    QFont buttonFont;
+    buttonFont.setPointSize(16);
+    buttonFont.setBold(true);
 
-    ///to do: de declarat
-    buttonTournament = new QPushButton("Tournament duel", this);
-    buttonTournament->setFont(buttonFont);
-    buttonTournament->setGeometry((this->width() - buttonWidth) / 2, (this->height() - buttonHeight) / 2 + (spacing + buttonHeight) * 4 - yOffset, buttonWidth, buttonHeight);
-    buttonTournament->show();
-    connect(buttonTournament, &QPushButton::clicked, this, &Eter_UI::OnButtonClick);
+    const int buttonWidth = 200;
+    const int buttonHeight = 100;
+    const int spacing = 10;
+
+    int centerX = (this->width() - buttonWidth) / 2;
+    int centerY = (this->height() - buttonHeight * 5 - spacing * 4) / 2;
+
+    createButton(buttonTraining, "Training Mode", centerX, centerY, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonWizard, "Wizard Mode", centerX, centerY + buttonHeight + spacing, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonPowers, "Powers Mode", centerX, centerY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight, buttonFont, &Eter_UI::OnButtonClick);
+    createButton(buttonWizardPowers, "Wizard and Powers", centerX, centerY + (buttonHeight + spacing) * 3, buttonWidth, buttonHeight, buttonFont, &Eter_UI::onWizardPowersClicked);
+
+      ///to do: + meniu de tunament
 }
