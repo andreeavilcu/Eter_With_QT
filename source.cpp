@@ -2,6 +2,8 @@
 
 constexpr auto load = false;
 
+//test
+
 auto matchType = Match::MatchType::Tournament;
 auto timerDuration = Match::TimerDuration::Short;
 auto gameType = Game::GameType::WizardAndPowerDuel;
