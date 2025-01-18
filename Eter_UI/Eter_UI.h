@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "ui_Eter_UI.h"
 #include <QPushButton>
 #include <QPointer>
 #include <QLabel>

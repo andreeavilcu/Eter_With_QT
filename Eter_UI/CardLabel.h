@@ -5,7 +5,7 @@
 #include <QPixmap>
 #include <QMouseEvent>
 #include <QBuffer>
-#include <../models/Actions/Card.h>
+#include "../models/Actions/Card.h"
 
 class CardLabel : public QLabel {
     Q_OBJECT

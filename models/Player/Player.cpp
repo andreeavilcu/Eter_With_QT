@@ -19,7 +19,7 @@ void Player::setTimer(int _duration) {
 Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const size_t _wizardIndex, const size_t _powerIndexFirst, const size_t _powerIndexSecond) :
     m_color{ _color },
     m_cards{ _cards },
-    m_wizardIndex{ _wizardIndex},
+    m_wizardIndex{ _wizardIndex },
     m_powerIndexes{_powerIndexFirst, _powerIndexSecond} {
 
     for (size_t i = 0; i < _cards.size(); ++i)
@@ -307,7 +307,6 @@ bool Player::playPower(Game &_game, const bool _check = false) {
 }
 
 void Player::playExplosion(Game& _game) {
-    std::cout << "Player 2's turn\n";
     std::cout << "---------------\n";
 
     _game.getBoard().printBoard();

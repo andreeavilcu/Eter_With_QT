@@ -150,32 +150,22 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _
 
     const Card &target = targetStack.back();
 
-    if (_game.m_illusionsAllowed && target.isIllusion()) {
+    if (target.isIllusion()) {
         return false;
     }
 
     if (target.getColor() == _player.getColor())
         return false;
 
-    if (cardValue >= _player.m_cards.size())
+    if (cardValue >= static_cast<int>(target.getValue()))
         return false;
 
     auto selectedCard = _player.useCard(static_cast<Card::Value>(cardValue));
     if (!selectedCard)
         return false;
 
-    if (selectedCard->getValue() >= target.getValue()) {
-        _player.returnCard(*selectedCard);
-        return false;
-    }
-
     targetStack.push_back(std::move(*selectedCard));
-    if (!board.checkBoardIntegrity()) {
-        Card returnedCard = std::move(targetStack.back());
-        targetStack.pop_back();
-        _player.returnCard(returnedCard);
-        return false;
-    }
+
     return true;
 }
 
@@ -196,17 +186,7 @@ bool Wizard::WizardActions::sinkHole(Player &_player, Game &_game, const bool _c
     if (board.checkHole(y, x))
         return false;
 
-    // bool wasHole = Wizard::getInstance().getHole() == std::make_pair(x, y);
-    // auto oldHole = Wizard::getInstance().getHole();
-
-    Wizard::getInstance().setHole(std::make_pair(y, x));
-
-    // if (!board.checkBoardIntegrity()) {
-        // if (wasHole) {
-            // Wizard::getInstance().setHole(oldHole);
-        // }
-        // return false;
-    // }
+    getInstance().setHole(std::make_pair(y, x));
 
     return true;
 }
@@ -253,7 +233,7 @@ bool Wizard::WizardActions::extraEter(Player &_player, Game &_game, const bool _
     size_t x, y;
     Board &board = _game.m_board;
 
-    std::cout << "You received an extra Eter card.Place now!\n";
+    std::cout << "You received an extra Eter card. Place now!\n";
     std::cout << "Enter (x, y) coordinates for extra Eter:\n";
     std::cin >> x >> y;
 
@@ -276,7 +256,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game, cons
     std::cout << "Enter coordinates of the stack:\n";
     std::cin >> startX >> startY;
 
-    if (board.checkIndexes(startX,startY))
+    if (!board.checkIndexes(startX,startY))
         return false;
 
     if (board.m_board[startX][startY].empty() || board.m_board[startX][startY].size() < 2)
@@ -288,7 +268,7 @@ bool Wizard::WizardActions::moveStackOpponent(Player &_player, Game &_game, cons
     std::cout << "Enter coordinates for the destination of the stack:\n";
     std::cin >> endX >> endY;
 
-    if (board.checkIndexes(endX,endY))
+    if (!board.checkIndexes(endX,endY))
         return false;
 
     if (!board.m_board[endX][endY].empty())
@@ -311,54 +291,77 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
     Board& board = _game.m_board; 
     std::cout << "Move edge of the playing field and move it to a different edge\n";
     char choice;
-    std::cout << "Choose direction (w: up, a: left, s: down, d: right): ";
+    std::cout << "Choose edge (w: up, a: left, s: down, d: right): ";
     std::cin >> choice;
-    if (choice != 'w' && choice != 'a' && choice != 's' && choice != 'd') {
-        std::cerr << "Invalid direction. Please choose w, a, s, or d.\n";
-        return false;
-    }
 
-    if (board.m_board.empty()) {
-        std::cerr << "Board is empty. Cannot move edges.\n";
+    if (choice != 'w' && choice != 'a' && choice != 's' && choice != 'd')
         return false;
-    }
+
+    if (board.m_board.empty())
+        return false;
+
+    auto countOccupiedInRow = [](const std::vector<std::vector<Card>>& row) -> int {
+        int count = 0;
+        for (const auto& card : row) {
+            if (!card.empty()) {
+                count++;
+            }
+        }
+        return count;
+    };
+
+    auto countOccupiedInColumn = [](const std::vector<std::vector<std::vector<Card>>>& board, size_t colIndex) -> int {
+        int count = 0;
+        for (const auto& row : board) {
+            if (!row[colIndex].empty()) {
+                count++;
+            }
+        }
+        return count;
+    };
+
     std::vector<std::vector<Card>> movedLine;
 
     switch (choice) {
     case 'w': {
+        if (countOccupiedInRow(board.m_board[0]) < 3) return false;
+
         movedLine = std::move(board.m_board[0]);
+        board.m_board[0].resize(board.getSize());
         board.circularShiftUp();
         board.m_board[board.m_board.size() - 1] = std::move(movedLine);
         break;
     }
     case 'a': {
-     
+        if (countOccupiedInColumn(board.m_board, 0) < 3) return false;
+
         for (auto& row : board.m_board) {
             movedLine.emplace_back(std::move(row[0]));
-            row.erase(row.begin());
         }
         board.circularShiftLeft();
         for (size_t i = 0; i < board.m_board.size(); ++i) {
             board.m_board[i][board.m_board[i].size() - 1] = std::move(movedLine[i]);
-            /// board.m_board[i].push_back(std::move(movedLine[i])); 
         }
         break;
     }
     case 's': {
+        if (countOccupiedInRow(board.m_board[board.m_board.size() - 1]) < 3) return false;
+
         movedLine = std::move(board.m_board[board.m_board.size() - 1]);
+        board.m_board[board.m_board.size() - 1].resize(board.getSize());
         board.circularShiftDown();
         board.m_board[0] = std::move(movedLine);
         break;
     }
     case 'd': {
+        if (countOccupiedInColumn(board.m_board, board.m_board.size() - 1) < 3) return false;
+
         for (auto& row : board.m_board) {
             movedLine.emplace_back(std::move(row[row.size() - 1]));
-            row.pop_back();
         }
         board.circularShiftRight();
         for (size_t i = 0; i < board.m_board.size(); ++i) {
             board.m_board[i][0] = std::move(movedLine[i]);
-            ///board.m_board[i].insert(board.m_board[i].begin(), std::move(movedLine[i])); // Adaugă la început
 
         }
         break;
@@ -367,5 +370,51 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
         return false;
     }
     }
-    return true;
+
+    if (board.checkBoardIntegrity()) return true;
+
+    movedLine.clear();
+
+    switch (choice) {
+        case 's': {
+            movedLine = std::move(board.m_board[0]);
+            board.m_board[0].resize(board.getSize());
+            board.circularShiftUp();
+            board.m_board[board.m_board.size() - 1] = std::move(movedLine);
+            break;
+        }
+        case 'd': {
+            for (auto& row : board.m_board) {
+                movedLine.emplace_back(std::move(row[0]));
+            }
+            board.circularShiftLeft();
+            for (size_t i = 0; i < board.m_board.size(); ++i) {
+                board.m_board[i][board.m_board[i].size() - 1] = std::move(movedLine[i]);
+            }
+            break;
+        }
+        case 'w': {
+            movedLine = std::move(board.m_board[board.m_board.size() - 1]);
+            board.m_board[board.m_board.size() - 1].resize(board.getSize());
+            board.circularShiftDown();
+            board.m_board[0] = std::move(movedLine);
+            break;
+        }
+        case 'a': {
+            for (auto& row : board.m_board) {
+                movedLine.emplace_back(std::move(row[row.size() - 1]));
+            }
+            board.circularShiftRight();
+            for (size_t i = 0; i < board.m_board.size(); ++i) {
+                board.m_board[i][0] = std::move(movedLine[i]);
+
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+
+    return false;
 }

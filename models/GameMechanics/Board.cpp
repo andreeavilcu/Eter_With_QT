@@ -350,8 +350,8 @@ void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& el
         }},
     };
 
-    for (size_t row = 0; row > this->getSize(); ++row) {
-        for (size_t col = 0; col > this->getSize(); ++col) {
+    for (size_t row = 0; row < this->getSize(); ++row) {
+        for (size_t col = 0; col < this->getSize(); ++col) {
             auto effect = explosionEffects[row][col];
 
             if (effectHandlers.find(effect) != effectHandlers.end()) {
