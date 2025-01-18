@@ -1,4 +1,4 @@
-#include "Card.h"
+﻿#include "Card.h"
 
 bool Card::operator<(const Card &rhs) const {
 	return this->m_value < rhs.m_value;
