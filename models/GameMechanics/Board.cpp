@@ -18,16 +18,16 @@ Board::Board(size_t _size) {
     this->m_board.resize(_size);
     for (auto& row : this->m_board) {
         row.resize(_size);
-        for (auto& position : row)
-            position.reserve(MAX_HEIGHT);
+        // for (auto& position : row)
+            // position.resize(MAX_HEIGHT);
     }
 }
 
 Board::Board(nlohmann::json _json) {
     for (const auto& layer1Array : _json["board"]) {
-        std::vector<std::vector<Card>> layer1;
+        std::vector<std::deque<Card>> layer1;
         for (const auto& layer2Array : layer1Array) {
-            std::vector<Card> layer2;
+            std::deque<Card> layer2;
             for (const auto& card : layer2Array) {
                 layer2.emplace_back(card);
             }
@@ -42,7 +42,7 @@ size_t Board::getSize() const {
     return this->m_board.size();
 }
 
-std::vector<std::vector<std::vector<Card>>>& Board::getBoard() {
+Matrix<Card>& Board::getBoard() {
     return m_board;
 }
 
@@ -309,6 +309,18 @@ bool Board::checkTwoRows() const {
 }
 
 void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards) {
+    bool quit = false;
+
+    do {
+        Explosion::getInstance().printExplosion();
+
+        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
+        std::cout << "Press 'x' to to quit using explosion.\n";
+    }
+    while (!quit && Explosion::getInstance().rotateExplosion(quit));
+
+    if (quit) return;
+
     auto explosionEffects = Explosion::getInstance().getExplosionEffect();
 
     std::unordered_map<Explosion::ExplosionEffect, std::function<void(size_t, size_t)>> effectHandlers{

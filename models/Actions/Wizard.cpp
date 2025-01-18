@@ -66,8 +66,8 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
     size_t nonEmptyStacks = 0;
 
     if (tolower(choice) == 'r') {
-        const std::vector<std::vector<Card> > &row = board.m_board[index];
-        for (const std::vector<Card> &stack: row) {
+        const auto &row = board.m_board[index];
+        for (const auto &stack: row) {
             if (!stack.empty()) {
                 nonEmptyStacks++;
                 const Card &topCard = stack.back();
@@ -79,7 +79,7 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
 
     else {
         for (size_t i = 0; i < boardSize; ++i) {
-            const std::vector<Card> &stack = board.m_board[i][index];
+            const auto &stack = board.m_board[i][index];
             if (!stack.empty()) {
                 nonEmptyStacks++;
                 const Card &topCard = stack.back();
@@ -95,10 +95,10 @@ bool Wizard::WizardActions::eliminateRow(Player &_player, Game &_game, const boo
     if (ownVisibleCards == 0)
         return false;
 
-    std::vector<std::vector<Card> > savedSection;
+    std::vector<std::deque<Card>> savedSection;
     if (tolower(choice) == 'r') {
         savedSection = board.m_board[index];
-        for (std::vector<Card> &stack: board.m_board[index])
+        for (auto &stack: board.m_board[index])
             while (!stack.empty()) {
                 _game.m_eliminatedCards.push_back(std::move(stack.back()));
                 stack.pop_back();
@@ -143,7 +143,7 @@ bool Wizard::WizardActions::coverCard(Player &_player, Game &_game, const bool _
     if (!board.checkIndexes(x, y))
         return false;
 
-    std::vector<Card> &targetStack = board.m_board[x][y];
+    auto &targetStack = board.m_board[x][y];
     if (targetStack.empty()) {
         return false;
     }
@@ -300,7 +300,7 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
     if (board.m_board.empty())
         return false;
 
-    auto countOccupiedInRow = [](const std::vector<std::vector<Card>>& row) -> int {
+    auto countOccupiedInRow = [](const std::vector<std::deque<Card>>& row) -> int {
         int count = 0;
         for (const auto& card : row) {
             if (!card.empty()) {
@@ -310,7 +310,7 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
         return count;
     };
 
-    auto countOccupiedInColumn = [](const std::vector<std::vector<std::vector<Card>>>& board, size_t colIndex) -> int {
+    auto countOccupiedInColumn = [](const std::vector<std::vector<std::deque<Card>>>& board, size_t colIndex) -> int {
         int count = 0;
         for (const auto& row : board) {
             if (!row[colIndex].empty()) {
@@ -320,7 +320,7 @@ bool Wizard::WizardActions::moveEdge(Player& _player, Game& _game, const bool _c
         return count;
     };
 
-    std::vector<std::vector<Card>> movedLine;
+    std::vector<std::deque<Card>> movedLine;
 
     switch (choice) {
     case 'w': {

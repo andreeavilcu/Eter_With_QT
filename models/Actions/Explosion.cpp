@@ -8,7 +8,7 @@ void Explosion::setHole(const std::pair<size_t, size_t> &_hole) {
     this->m_hole = _hole;
 }
 
-std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosion(const size_t _size) {
+void Explosion::generateExplosion(const size_t _size) {
     m_explosionEffects = std::vector(_size, std::vector<ExplosionEffect>(_size));
 
     std::random_device rd;
@@ -42,8 +42,6 @@ std::vector<std::vector<Explosion::ExplosionEffect>> Explosion::generateExplosio
                 ? ExplosionEffect::ReturnCard
                 : ExplosionEffect::RemoveCard;
     }
-
-    return m_explosionEffects;
 }
 
 bool Explosion::rotateExplosion(bool &_quit) {
@@ -65,13 +63,11 @@ bool Explosion::rotateExplosion(bool &_quit) {
 }
 
 void Explosion::rotateMatrixRight() {
-    const std::vector<std::vector<ExplosionEffect>> temp = m_explosionEffects;
+    const auto temp = m_explosionEffects;
 
-    for (int i = 0; i < m_explosionEffects.size(); ++i) {
-        for (int j = 0; j < m_explosionEffects.size(); ++j) {
+    for (int i = 0; i < m_explosionEffects.size(); ++i)
+        for (int j = 0; j < m_explosionEffects.size(); ++j)
             m_explosionEffects[j][m_explosionEffects.size() - 1 - i] = temp[i][j];
-        }
-    }
 }
 
 void Explosion::printExplosion() const {

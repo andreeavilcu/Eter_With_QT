@@ -86,8 +86,6 @@ public:
     std::optional<Card> useCard(Card::Value _value);
     std::optional<Card> useIllusion(Card::Value _value);
 
-    void playExplosion(Game& _game);
-
     bool playerTurn(Game& _game);
 
     [[nodiscard]] nlohmann::json toJson(Game& _game) const;

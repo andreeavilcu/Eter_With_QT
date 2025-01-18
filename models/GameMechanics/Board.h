@@ -29,7 +29,7 @@ public:
     explicit Board(nlohmann::json _json);
 
     [[nodiscard]] size_t getSize() const;
-    [[nodiscard]] std::vector<std::vector<std::vector<Card>>>& getBoard();
+    [[nodiscard]] Matrix<Card>& getBoard();
 
     bool circularShiftUp(bool _check = false);
     bool circularShiftDown(bool _check = false);

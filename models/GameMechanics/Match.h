@@ -89,9 +89,9 @@ public:
         instance.index = json["index"].get<size_t>();
 
         for (const auto& layer1Array : json["arena"]) {
-            std::vector<std::vector<Piece>> layer1;
+            std::vector<std::deque<Piece>> layer1;
             for (const auto& layer2Array : layer1Array) {
-                std::vector<Piece> layer2;
+                std::deque<Piece> layer2;
                 for (const auto& piece : layer2Array) {
                     layer2.emplace_back(piece);
                 }

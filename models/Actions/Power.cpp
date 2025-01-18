@@ -19,7 +19,6 @@ void Power::setPlus(const cardPosition _position, Game& _game) {
 }
 
 nlohmann::json Power::serialize(Game &_game) {
-
     nlohmann::json json;
 
     json["minusX"] = _game.getBoard().findCardIndexes(m_minus).x;
@@ -39,35 +38,11 @@ nlohmann::json Power::serialize(Game &_game) {
 }
 
 bool Power::PowerAction::controlledExplosion(Player& _player, Game& _game, const bool _check) {
-    if (!_game.m_explosionAllowed) {
-        return false;
-    }
+    if (!_game.m_explosionAllowed) return false;
 
     Board &board = _game.m_board;
 
-    auto explosionEffects = Explosion::getInstance().generateExplosion(board.getSize());
-
-    bool quit = false;
-
-    do {
-        Explosion::getInstance().printExplosion();
-
-        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
-        std::cout << "Press 'x' to to quit using explosion.\n";
-    }
-    while (!quit && Explosion::getInstance().rotateExplosion(quit));
-
     board.useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
-
-    auto &opponent = _player.getColor() == Card::Color::Red ? _game.m_player2 : _game.m_player1;
-
-    for (auto& card : _game.m_returnedCards)
-        if (card.getColor() == _player.getColor())
-            _player.returnCard(card);
-
-        else
-            opponent.returnCard(card);
-
     _game.m_playedExplosion = true;
 
     return true;
@@ -95,76 +70,62 @@ bool Power::PowerAction::destruction(Player& _player, Game& _game, const bool _c
 }
 
 bool Power::PowerAction::flame(Player& _player, Game& _game, const bool _check) {
-    if (!_game.m_illusionsAllowed) {
-        return false;
-    }
+    if (!_game.m_illusionsAllowed) return false;
 
     Board& board = _game.m_board;
 
-    size_t illusionRow = -1, illusionCol = -1;
     bool illusionFound = false;
 
     for (size_t row = 0; row < board.getSize(); ++row) {
         for (size_t col = 0; col < board.getSize(); ++col) {
             if (board.checkIllusion(row, col, _player.getColor() == Card::Color::Red ? Card::Color::Blue : Card::Color::Red)) {
-                illusionRow = row;
-                illusionCol = col;
+                board.m_board[row][col].back().resetIllusion();
                 illusionFound = true;
                 break;
             }
         }
+
         if (illusionFound) break;
     }
 
-    if (!illusionFound) {
-        return false;
-    }
-
-    board.m_board[illusionRow][illusionCol].back().resetIllusion();
+    if (!illusionFound) return false;
 
     board.printBoard();
 
     std::cout << "Now place a card on any position on the board.\n";
-    return _player.playCard(_game);
+    return _player.playCard(_game); // TODO: no checks maybe? check power desc
 }
 
 bool Power::PowerAction::lava(Player& _player, Game& _game, const bool _check) {
     size_t chosenValue;
+
+    std::cout << "Lava: Select a value with the condition that at least 2 cards of that value are visible.\n";
     std::cin >> chosenValue;
 
-    if (chosenValue > 4) {
-        return false;
-    }
+    if (chosenValue > 4) return false;
 
     auto targetValue = static_cast<Card::Value>(chosenValue);
 
     size_t count = 0;
     Board& board = _game.m_board;
-    for (size_t row = 0; row < board.getSize(); ++row) {
-        for (size_t col = 0; col < board.getSize(); ++col) {
+    for (size_t row = 0; row < board.getSize(); ++row)
+        for (size_t col = 0; col < board.getSize(); ++col)
             if (!board.m_board[row][col].empty() &&
                 board.m_board[row][col].back().getValue() == targetValue &&
-                !board.m_board[row][col].back().isIllusion()) {
-                ++count;
-                }
-        }
-    }
+                !board.m_board[row][col].back().isIllusion()) { ++count; }
 
-    if (count < 2) {
-        return false;
-    }
+    if (count < 2) return false;
 
-    for (size_t row = 0; row < board.getSize(); ++row) {
-        for (size_t col = 0; col < board.getSize(); ++col) {
+    for (size_t row = 0; row < board.getSize(); ++row)
+        for (size_t col = 0; col < board.getSize(); ++col)
             if (!board.m_board[row][col].empty()) {
-                Card topCard = std::move(board.m_board[row][col].back());
+                Card& topCard = board.m_board[row][col].back();
+
                 if (topCard.getValue() == targetValue && !topCard.isIllusion()) {
                     _game.m_returnedCards.push_back(std::move(topCard));
                     board.m_board[row][col].pop_back();
                 }
             }
-        }
-    }
 
     return true;
 }
@@ -914,7 +875,7 @@ bool Power::PowerAction::waterfall(Player& _player, Game& _game, const bool _che
         return false;
     }
 
-    std::vector<Card> mergedStack;
+    std::deque<Card> mergedStack;
 
     if (choice == 'r') {
         if (direction == 'l') {

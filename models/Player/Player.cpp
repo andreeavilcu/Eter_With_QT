@@ -20,7 +20,7 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     m_color{ _color },
     m_cards{ _cards },
     m_wizardIndex{ _wizardIndex },
-    m_powerIndexes{_powerIndexFirst, _powerIndexSecond} {
+    m_powerIndexes{ 2, 3 /*_powerIndexFirst, _powerIndexSecond*/ } {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
@@ -306,29 +306,6 @@ bool Player::playPower(Game &_game, const bool _check = false) {
     return this->usePower(_game, first, _check);
 }
 
-void Player::playExplosion(Game& _game) {
-    std::cout << "---------------\n";
-
-    _game.getBoard().printBoard();
-
-    bool quit = false;
-
-    do {
-        Explosion::getInstance().printExplosion();
-
-        std::cout << "Press 'r' to rotate explosion or 'c' to confirm.\n";
-        std::cout << "Press 'x' to to quit using explosion.\n";
-    }
-    while (!quit && Explosion::getInstance().rotateExplosion(quit));
-
-    _game.m_playedExplosion = true;
-
-    if (quit)
-        return;
-
-    _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
-}
-
 Card::Color timer (const Player& _player, int seconds);
 
 bool Player::playerTurn(Game &_game) {
@@ -410,8 +387,10 @@ bool Player::playerTurn(Game &_game) {
     if (!legal)
         return false;
 
-    if (_game.m_explosionAllowed && !_game.m_playedExplosion && _game.getBoard().checkTwoRows())
-        this->playExplosion(_game);
+    if (_game.m_explosionAllowed && !_game.m_playedExplosion && _game.getBoard().checkTwoRows()) {
+        _game.getBoard().printBoard();
+        _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
+    }
 
     return true;
 }

@@ -35,11 +35,9 @@ public:
     std::pair<size_t, size_t> getHole();
     void setHole(const std::pair<size_t, size_t>& _hole);
 
-    std::vector<std::vector<ExplosionEffect>> getExplosionEffect() {
-        return m_explosionEffects;
-    }
+    std::vector<std::vector<ExplosionEffect>> getExplosionEffect() { return m_explosionEffects; }
 
-    std::vector<std::vector<ExplosionEffect>> generateExplosion(size_t _size);
+    void generateExplosion(size_t _size);
     bool rotateExplosion(bool& _quit);
     void rotateMatrixRight();
     void printExplosion() const;
