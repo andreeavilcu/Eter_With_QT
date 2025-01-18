@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <QMimeData>
 #include <QPixmap>
-#include "CardLabel.h"
 
 BoardCell::BoardCell(QWidget* parent) : QLabel(parent) {
     setAcceptDrops(true);
@@ -10,22 +9,21 @@ BoardCell::BoardCell(QWidget* parent) : QLabel(parent) {
 }
 
 void BoardCell::dragEnterEvent(QDragEnterEvent* event) {
-    if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+    if (event->mimeData()->hasFormat("application/x-card")) {
         event->acceptProposedAction();
     }
-    else {
-        event->ignore();
-    }
 }
-void BoardCell::dragMoveEvent(QDragMoveEvent* event) {
-    event->accept();
-}
+
 void BoardCell::dropEvent(QDropEvent* event) {
-    if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+    if (event->mimeData()->hasFormat("application/x-card")) {
+        QByteArray byteArray = event->mimeData()->data("application/x-card");
+        QPixmap pixmap;
+        pixmap.loadFromData(byteArray, "PNG");
+
+        setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
         event->acceptProposedAction();
+
         emit cardPlaced(event, this);
-    }
-    else {
-        event->ignore();
+
     }
 }
