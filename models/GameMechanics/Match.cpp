@@ -48,7 +48,7 @@ void Match::printArena() const {
 }
 
 size_t Match::runArenaLogic(GameEndInfo& _information) {
-    if (_information.x == -1 || _information.y == -1)
+    if (_information.x == -1 || _information.y == -1 && (_information.winner != Card::Color::Blue))
         do {
             std::cout << "Enter piece coordinates: ";
             std::cin >> _information.x >> _information.y;
@@ -241,60 +241,61 @@ void Match::runWinnerLogic(size_t _winner) {
     std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
 }
 
-void Match::runMatch() {
-    std::random_device rd;
-    std::mt19937 gen{ rd() };
-    std::bernoulli_distribution startPlayerDistribution{ 0.5 };
-
-    size_t winner = 0;
-    const bool startPlayer = startPlayerDistribution(gen);
-    const bool timed = this->m_timerDuration != TimerDuration::Untimed;
-
-    size_t matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
-    size_t winsNeeded = matchesPlayed / 2 + 1;
-
-    for (size_t index = 0; index < matchesPlayed; index++) {
-        std::pair<size_t, size_t> wizardIndices = generateWizardIndices(gen);
-
-        runPrintLogic(index, matchesPlayed);
-
-        Game game{ m_gameType , wizardIndices, this->m_illusions, this->m_explosion, this->m_matchType == MatchType::Tournament};
-        GameEndInfo information = game.run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
-
-        if (!running) {
-            if (saving) saveJson(startPlayer, index, matchesPlayed, game);
-            return;
-        }
-
-        auto id = runScoreLogic(information, matchesPlayed, winner, winsNeeded);
-
-        if (id == 2) continue;
-        if (id == 1) break;
-    }
-
-    runWinnerLogic(winner);
-}
-
 void Match::runMatch(const nlohmann::json &_json) {
     size_t winner = 0;
+    std::pair<size_t, size_t> wizardIndices;
+    bool timed;
 
-    bool timed = static_cast<bool>(_json["timerDuration"].get<float>());
-    bool startPlayer = _json["startPlayer"].get<bool>();
+    if (_json.empty()) {
+        std::random_device rd;
+        std::mt19937 gen{ rd() };
+        std::bernoulli_distribution startPlayerDistribution{ 0.5 };
 
-    size_t matchesPlayed = _json["totalMatches"].get<int>();
+        startPlayer = startPlayerDistribution(gen);
+        timed = this->m_timerDuration != TimerDuration::Untimed;
+
+        matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
+
+        wizardIndices = generateWizardIndices(gen);
+    } else {
+        timed = static_cast<bool>(_json["timerDuration"].get<float>());
+        startPlayer = _json["startPlayer"].get<bool>();
+
+        matchesPlayed = _json["totalMatches"].get<int>();
+    }
 
     size_t winsNeeded = matchesPlayed / 2 + 1;
 
-    for (size_t index = _json["matchIndex"].get<int>(); index < matchesPlayed; index++) {
+    for (; index < matchesPlayed; index++) {
         runPrintLogic(index, matchesPlayed);
 
-        auto j = _json["game"];
+        std::unique_ptr<Game> game;
 
-        Game game{ m_gameType, _json["game"] , this->m_illusions, this->m_explosion, this->m_matchType == MatchType::Tournament };
-        GameEndInfo information = game.run(_json["game"], timed, static_cast<int>(this->m_timerDuration));
+        if (_json.empty()) {
+            game = std::make_unique<Game>(
+                m_gameType,
+                wizardIndices,
+                this->m_illusions,
+                this->m_explosion,
+                this->m_matchType == MatchType::Tournament
+            );
+        } else {
+            game = std::make_unique<Game>(
+                m_gameType,
+                _json["game"],
+                this->m_illusions,
+                this->m_explosion,
+                this->m_matchType == MatchType::Tournament
+            );
+        }
+
+        GameEndInfo information;
+
+        if (_json.empty()) information = game->run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
+        else information = game->run(_json["game"],timed, static_cast<int>(this->m_timerDuration));
 
         if (!running) {
-            if (saving) saveJson(startPlayer, index, matchesPlayed, game);
+            if (saving) saveJson(startPlayer, index, matchesPlayed, *game);
             return;
         }
 
@@ -303,52 +304,15 @@ void Match::runMatch(const nlohmann::json &_json) {
         if (id == 2) continue;
         if (id == 1) break;
     }
-
-
 }
 
 void Match::saveJson(bool startPlayer, int index, int matchesPlayed, Game& game) {
-    nlohmann::json json;
-
-    json["startPlayer"] = startPlayer;
-
-    json["matchIndex"] = index;
-    json["totalMatches"] = matchesPlayed;
-
-    json["gameType"] = this->m_gameType;
-    json["matchType"] = this->m_matchType;
-    json["timerDuration"] = this->m_timerDuration;
-
-    json["illusions"] = this->m_illusions;
-    json["explosion"] = this->m_explosion;
-
-    json["p1score"] = this->m_scores.first;
-    json["p2score"] = this->m_scores.second;
-
-    json["game"] = game.getJson();
-    json["wizardsUsed"] = this->m_wizardsUsed;
-
-    nlohmann::json jsonArray = nlohmann::json::array();
-
-    for (const auto& layer1 : this->m_arena) {
-        nlohmann::json layer1Array = nlohmann::json::array();
-        for (const auto& layer2 : layer1) {
-            nlohmann::json layer2Array = nlohmann::json::array();
-            for (const auto& piece : layer2) {
-                layer2Array.push_back(piece.toJson());
-            }
-            layer1Array.push_back(layer2Array);
-        }
-        jsonArray.push_back(layer1Array);
-    }
-
-    json["arena"] = jsonArray;
+    nlohmann::json json = toJson(startPlayer, index, matchesPlayed, game);
 
     auto now = std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
 
     std::string dir = "SavedGames/";
-
     std::filesystem::create_directories(dir);
 
     std::ostringstream timestamp;
@@ -356,7 +320,11 @@ void Match::saveJson(bool startPlayer, int index, int matchesPlayed, Game& game)
 
     std::string filename = dir + "backup_" + timestamp.str() + ".json";
 
-    std::ofstream file(filename);
+    if (std::filesystem::exists(m_path)) {
+        std::filesystem::remove(m_path);
+    }
+
+    std::ofstream file{ filename };
 
     file << json;
     file.close();

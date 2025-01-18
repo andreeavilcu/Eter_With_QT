@@ -52,23 +52,43 @@ public:
         instance.runMatch();
     }
 
-    static void run(const nlohmann::json& _json) {
+    static void run(const std::string& _path) {
         static Match instance;
 
-        instance.m_matchType = _json["matchType"].get<MatchType>();
-        instance.m_gameType = _json["gameType"].get<Game::GameType>();
+        instance.m_path = _path;
 
-        instance.m_timerDuration = _json["timerDuration"].get<TimerDuration>();
+        std::ifstream configFile(_path);
 
-        instance.m_illusions = _json["illusions"].get<bool>();
-        instance.m_explosion = _json["explosion"].get<bool>();
+        if (!configFile.is_open()) {
+            std::cerr << "Failed to open config file" << std::endl;
+            return;
+        }
 
-        instance.m_scores.first = _json["p1score"].get<float>();
-        instance.m_scores.second = _json["p2score"].get<float>();
+        nlohmann::json json;
 
-        instance.m_wizardsUsed = _json["wizardsUsed"].get<std::array<bool, 8>>();
+        try {
+            configFile >> json;
+        } catch (const nlohmann::json::parse_error& e) {
+            std::cerr << "Parse error: " << e.what() << std::endl;
+            return;
+        }
 
-        for (const auto& layer1Array : _json["arena"]) {
+        instance.m_matchType = json["matchType"].get<MatchType>();
+        instance.m_gameType = json["gameType"].get<Game::GameType>();
+
+        instance.m_timerDuration = json["timerDuration"].get<TimerDuration>();
+
+        instance.m_illusions = json["illusions"].get<bool>();
+        instance.m_explosion = json["explosion"].get<bool>();
+
+        instance.m_scores.first = json["p1score"].get<float>();
+        instance.m_scores.second = json["p2score"].get<float>();
+
+        instance.m_wizardsUsed = json["wizardsUsed"].get<std::array<bool, 8>>();
+
+        instance.index = json["index"].get<size_t>();
+
+        for (const auto& layer1Array : json["arena"]) {
             std::vector<std::vector<Piece>> layer1;
             for (const auto& layer2Array : layer1Array) {
                 std::vector<Piece> layer2;
@@ -81,10 +101,11 @@ public:
             instance.m_arena.push_back(layer1);
         }
 
-        instance.runMatch(_json);
-
+        instance.runMatch(json);
     }
 
+    bool startPlayer{};
+    size_t index{ 0 }, matchesPlayed{};
 
 private:
     Match() = default;
@@ -99,6 +120,8 @@ private:
 
     bool m_illusions{};
     bool m_explosion{};
+
+    std::string m_path{};
 
     std::pair<float, float> m_scores = {0, 0};
     std::array<bool, 8> m_wizardsUsed{ false };
@@ -120,8 +143,52 @@ private:
     int runScoreLogic(GameEndInfo& _information, size_t& _matchesPlayed, size_t& _winner, size_t& _winsNeeded);
     void runWinnerLogic(size_t _winner);
 
-    void runMatch();
-    void runMatch(const nlohmann::json& _json);
+    void runMatch(const nlohmann::json& _json = nlohmann::json{});
 
     void saveJson(bool startPlayer, int index, int matchesPlayed, Game& game);
+
+public:
+    nlohmann::json toJson(bool startPlayer, int index, int matchesPlayed, Game& game) {
+        nlohmann::json json;
+
+        json["startPlayer"] = startPlayer;
+
+        json["matchIndex"] = index;
+        json["totalMatches"] = matchesPlayed;
+
+        json["gameType"] = this->m_gameType;
+        json["matchType"] = this->m_matchType;
+        json["timerDuration"] = this->m_timerDuration;
+
+        json["illusions"] = this->m_illusions;
+        json["explosion"] = this->m_explosion;
+
+        json["p1score"] = this->m_scores.first;
+        json["p2score"] = this->m_scores.second;
+
+        json["game"] = game.getJson();
+        json["wizardsUsed"] = this->m_wizardsUsed;
+
+        nlohmann::json jsonArray = nlohmann::json::array();
+
+        for (const auto& layer1 : this->m_arena) {
+            nlohmann::json layer1Array = nlohmann::json::array();
+            for (const auto& layer2 : layer1) {
+                nlohmann::json layer2Array = nlohmann::json::array();
+                for (const auto& piece : layer2) {
+                    layer2Array.push_back(piece.toJson());
+                }
+                layer1Array.push_back(layer2Array);
+            }
+            jsonArray.push_back(layer1Array);
+        }
+
+        json["arena"] = jsonArray;
+
+        json["index"] = index;
+        json["matchesPlayed"] = matchesPlayed;
+        json["startPlayer"] = startPlayer;
+
+        return json;
+    }
 };
