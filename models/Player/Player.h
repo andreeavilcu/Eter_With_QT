@@ -89,7 +89,6 @@ public:
 
     [[nodiscard]] nlohmann::json toJson(Game& _game) const;
 
-private:
     std::optional<Card> playCardCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
     std::optional<Card> playIllusionCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
 
