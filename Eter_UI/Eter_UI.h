@@ -37,22 +37,29 @@ private:
     QPointer<QPushButton> buttonTournament;
     QPointer<QPushButton> buttonSpeed;
     QPointer<QPushButton> buttonWizardPowers;
-    QVector<CardLabel*> cards;
-    QLabel* powerCardLabel;
-
     QPointer<QPushButton> shiftUpButton;
     QPointer<QPushButton> shiftDownButton;
     QPointer<QPushButton> shiftLeftButton;
     QPointer<QPushButton> shiftRightButton;
 
+    QVector<CardLabel*> cards;
+    QVector<QLabel*> boardCells;
+   
+    QGridLayout* boardLayout;
+    QLabel* powerCardLabel;
+    QLabel* turnLabel;
+    QLabel* scoreLabel;
+
+    Board* gameBoard;
+    Match* m_match = nullptr;
+    std::unique_ptr<Game> m_game;
+
+
     bool isStartPage;
     bool isRedTurn;
-
-    QLabel* turnLabel;
-    Board* gameBoard;
-    QGridLayout* boardLayout;
-    QVector<QLabel*> boardCells;
-
+    bool firstCardPlaced = false;
+    int m_redScore;
+    int m_blueScore;
 
     void createShiftButtons();
     void onShiftUp();
@@ -61,18 +68,10 @@ private:
     void onShiftRight();
     void updateShiftButtons();
     void updateBoardDisplay();
-
-    std::unique_ptr<Game> m_game; // Instanță a clasei Game
-    ///std::unique_ptr<Match> m_match; // Instanță a clasei Match
-    Match* m_match = nullptr;
-
-    void createGame(Game::GameType gameType);         // Creează o nouă instanță Game
-    void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell); // Procesează mutarea
-    void endGame(const GameEndInfo& info);            // Termină jocul și afișează mesajul
-
+    void createGame(Game::GameType gameType);       
+    void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell); 
+    void endGame(const GameEndInfo& info);           
     bool isValidMove(size_t row, size_t col, Card::Value cardValue);
-    bool firstCardPlaced = false;
-
     void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
     void initializeButtons();
     void initializePowerCardArea();
@@ -85,22 +84,19 @@ private:
     void processCardPlacement(Player& player, int row, int col, Card::Value cardValue);
     void updateCardStacks();
     void cleanCardStack();
-
-    void displayPowerCard(const QString& powerName); // Afișează cartea puterii
-
-    // Funcții noi
-    void updateBoardFrom();               // Actualizează tabla conform stării din Match
-    void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
-    void createWizards();
+    void displayPowerCard(const QString& powerName); 
+    void updateBoardFrom();             
+    void initializeMatch(Game::GameType gameType); 
+    void startNewTurn();
+    void updateScoreLabel(); 
 private slots:
-    void OnButtonClick();
-    void onWizardPowersClicked();
     void drawTournamentMenu();
     void drawSpeedMenu();
+
+    void OnButtonClick();
+    void onWizardPowersClicked();
+    void activateWizardPower(size_t powerIndex, Player& player, Game& game);
+
     void removeCard(CardLabel* card);
-
-
-
-    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot pentru plasarea cărților
-    void activateWizardPower(size_t powerIndex, Player& player, Game& game); // Activează o putere
+    void onCardPlaced(QDropEvent* event, BoardCell* cell); 
 };

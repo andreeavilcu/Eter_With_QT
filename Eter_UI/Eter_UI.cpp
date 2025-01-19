@@ -67,7 +67,6 @@ void Eter_UI::initializeButtons() {
         &Eter_UI::drawSpeedMenu);
 }
 
-
 Eter_UI::Eter_UI(QWidget* parent)
     : QMainWindow(parent),
     isStartPage(true),
@@ -75,35 +74,50 @@ Eter_UI::Eter_UI(QWidget* parent)
     m_game(nullptr),
     m_match(nullptr),
     boardLayout(nullptr),
-    powerCardLabel(nullptr)
+    powerCardLabel(nullptr),
+    m_redScore(0),
+    m_blueScore(0)
 {
-    
     ui.setupUi(this);
 
+    // Setează fereastra la dimensiunea ecranului primar
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         QRect screenGeometry = screen->availableGeometry();
         this->setGeometry(screenGeometry);
     }
 
+    // Inițializează butoanele de pe ecranul de start
     initializeButtons();
 
+    // Label pentru (eventuale) puteri afișate
     powerCardLabel = new QLabel(this);
     powerCardLabel->setFixedSize(100, 150);
     powerCardLabel->setGeometry(width() - 150, height() / 2 - 75, 100, 150);
     powerCardLabel->setStyleSheet("border: 2px solid black; background-color: white;");
-    powerCardLabel->hide(); 
+    powerCardLabel->hide();
 
+    // Label pentru afișarea rândului curent
     turnLabel = new QLabel(this);
     turnLabel->setFont(QFont("Arial", 14, QFont::Bold));
     turnLabel->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128); padding: 5px;");
     turnLabel->setAlignment(Qt::AlignCenter);
-    turnLabel->hide(); 
+    turnLabel->hide();
+
+    // Label pentru scor (best of 3) - inițial ascuns
+    scoreLabel = new QLabel(this);
+    scoreLabel->setFont(QFont("Arial", 14, QFont::Bold));
+    scoreLabel->setStyleSheet("color: white; background-color: rgba(0,0,0,128); padding: 5px;");
+    scoreLabel->setAlignment(Qt::AlignCenter);
+    scoreLabel->setText("Score: Blue 0 - 0 Red");
+    scoreLabel->adjustSize();
+    // Poți ajusta poziția după preferințe; exemplu: colț dreapta-sus:
+    scoreLabel->move(width() - scoreLabel->width() - 20, 20);
+    scoreLabel->hide();  // Va fi afișat doar dacă se joacă Training
 }
 
 Eter_UI::~Eter_UI() {
 }
-
 void Eter_UI::OnButtonClick() {
     QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
@@ -111,7 +125,7 @@ void Eter_UI::OnButtonClick() {
     isStartPage = false;
     for (QObject* child : children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this && widget != turnLabel) {
+            if (widget != this && widget != turnLabel && widget != scoreLabel) {
                 widget->hide();
                 widget->deleteLater();
             }
@@ -145,7 +159,7 @@ void Eter_UI::OnButtonClick() {
     try {
         m_game = std::make_unique<Game>(
             gameType,
-            std::make_pair<size_t, size_t>(0, 1),  // Indici vrăjitori, dacă e relevant
+            std::make_pair<size_t, size_t>(0, 1),  // exemplu: indices wizards
             false, // illusionsAllowed
             false, // explosionAllowed
             false  // tournament
@@ -158,18 +172,21 @@ void Eter_UI::OnButtonClick() {
     }
 
     createBoard(clickedButton);
-
     createCards(clickedButton);
-
     createShiftButtons();
 
+    // Afișăm turnLabel
     turnLabel->setGeometry(width() / 2 - 100, 50, 200, 40);
     turnLabel->show();
     updateTurnLabel();
 
+    // Afișăm și scoreLabel **doar** dacă suntem în modul Training
+    if (m_game && m_game->getGameType() == Game::GameType::Training) {
+        scoreLabel->show();
+    }
+
     update();
 }
-
 void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
 
@@ -608,14 +625,6 @@ void Eter_UI::removeCard(CardLabel* card) {
     checkWinCondition();
 }
 
-void Eter_UI::showWinMessage(Card::Color winner) {
-    QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Game Over");
-    msgBox.setText(QString("%1 has won the game!").arg(winnerText));
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.exec();
-}
 
 
 void Eter_UI::processCardPlacement(Player& player, int row, int col, Card::Value cardValue) {
@@ -747,38 +756,21 @@ void Eter_UI::updateBoardDisplay() {
             BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
             if (!cell) continue;
 
-            if (!boardData[row][col].empty()) {
-                const Card& topCard = boardData[row][col].back();
-                // Construim numele fișierului
-                QString colorPrefix = (topCard.getColor() == Card::Color::Red) ? "R" : "B";
-                QString valSuffix;
-                switch (topCard.getValue()) {
-                case Card::Value::One:   valSuffix = "1"; break;
-                case Card::Value::Two:   valSuffix = "2"; break;
-                case Card::Value::Three: valSuffix = "3"; break;
-                case Card::Value::Four:  valSuffix = "4"; break;
-                case Card::Value::Eter:  valSuffix = "E"; break;
-                default:                 valSuffix = "";
-                }
-                QString imagePath = QCoreApplication::applicationDirPath()
-                    + "/cards/" + colorPrefix + valSuffix + ".png";
-
-                QPixmap pixmap(imagePath);
-                if (!pixmap.isNull()) {
-                    cell->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
-                }
-                else {
-                    cell->clear();
-                }
+            if (boardData[row][col].empty()) {
+                cell->clear(); 
             }
             else {
-                cell->clear();
+                const Card& topCard = boardData[row][col].back();
+                QString colorPrefix = (topCard.getColor() == Card::Color::Red) ? "R" : "B";
+                QString valSuffix = QString::number(static_cast<int>(topCard.getValue()));
+                QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" + colorPrefix + valSuffix + ".png";
+                QPixmap pixmap(imagePath);
+                cell->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
             }
         }
     }
-
-    updateShiftButtons();
 }
+
 
 void Eter_UI::displayPowerCard(const QString& powerName) {
     QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" + powerName + ".png";
@@ -801,4 +793,101 @@ void Eter_UI::activateWizardPower(size_t powerIndex, Player& player, Game& game)
     else {
         QMessageBox::warning(this, "Activare eșuată", "Puterea nu a putut fi activată.");
     }
+}
+void Eter_UI::startNewTurn() {
+  
+    if (!m_game) return;
+
+    Matrix<Card>& boardData = m_game->getBoard().getBoard();
+    for (auto& row : boardData) {
+        for (auto& cell : row) {
+            cell.clear(); 
+        }
+    }
+    m_game->getBoard().m_firstCardPlayed = false;
+
+    
+    cleanCardStack();       
+    createCards(nullptr);   
+
+    isRedTurn = true;
+    firstCardPlaced = false;  
+
+    updateTurnLabel();
+
+    updateBoardDisplay();
+    updateCardStacks();
+
+    QMessageBox::information(this, "New Turn", "A new turn has started!");
+}
+void Eter_UI::showWinMessage(Card::Color winner) {
+    QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
+
+    // Dacă modul este Training, incrementăm scorul și verificăm dacă cineva a ajuns la 2.
+    if (m_game && m_game->getGameType() == Game::GameType::Training) {
+        if (winner == Card::Color::Blue) {
+            m_blueScore++;
+        }
+        else if (winner == Card::Color::Red) {
+            m_redScore++;
+        }
+
+        // Actualizăm textul Label-ului de scor
+        updateScoreLabel();  // Vezi implementarea mai jos
+
+        // Verificăm dacă unul dintre jucători a obținut 2 victorii (best of 3)
+        if (m_blueScore == 2) {
+            QMessageBox::information(
+                this,
+                "Game Over",
+                QString("Blue Player wins the Best of 3 in Training Mode!")
+            );
+            // Resetăm scorul sau revenim la meniu, depinde de logică:
+            m_blueScore = 0;
+            m_redScore = 0;
+            updateScoreLabel();
+            // Poți alege să oprești jocul sau să faci un startNewTurn, după preferințe.
+            return;
+        }
+        else if (m_redScore == 2) {
+            QMessageBox::information(
+                this,
+                "Game Over",
+                QString("Red Player wins the Best of 3 in Training Mode!")
+            );
+            // Reset scor
+            m_blueScore = 0;
+            m_redScore = 0;
+            updateScoreLabel();
+            return;
+        }
+
+        // Dacă nimeni nu a atins 2, reluăm jocul (startNewTurn)
+        QMessageBox::information(
+            this,
+            "Match Over",
+            QString("%1 has won this match! Next match starts...").arg(winnerText)
+        );
+        startNewTurn();
+    }
+    else {
+        // Pentru alte moduri de joc (Wizard, Powers etc.):
+        QMessageBox::information(
+            this,
+            "Game Over",
+            QString("%1 has won the game! Starting a new turn...").arg(winnerText)
+        );
+        startNewTurn();
+    }
+}
+void Eter_UI::updateScoreLabel() {
+    if (!scoreLabel) return;
+    // Afișăm ceva de forma "Score: Blue 1 - 0 Red"
+    scoreLabel->setText(QString("Score: Blue %1 - %2 Red")
+        .arg(m_blueScore)
+        .arg(m_redScore)
+    );
+    scoreLabel->adjustSize();
+    // Repoziționăm dacă vrei să fie chiar în colț (opțional):
+    scoreLabel->move(width() - scoreLabel->width() - 20, 20);
 }
