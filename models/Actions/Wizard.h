@@ -1,10 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include <iostream>
 #include <functional>
 #include <array>
 #include <nlohmann/json.hpp>
-
 #include "Card.h"
 
 class Game;
@@ -15,6 +14,7 @@ public:
     static constexpr auto wizard_count = 8;
     friend class Player;
 
+    // Singleton
     Wizard(const Wizard&) = delete;
     Wizard& operator=(const Wizard&) = delete;
 
@@ -23,10 +23,7 @@ public:
         return instance;
     }
 
-private:
-    Wizard() = default;
-    ~Wizard() = default;
-
+    // Acțiuni vrăjitor
     struct WizardActions {
         static bool eliminateCard(Player& _player, Game& _game, bool _check);
         static bool eliminateRow(Player& _player, Game& _game, bool _check);
@@ -38,14 +35,35 @@ private:
         static bool moveEdge(Player& _player, Game& _game, bool _check);
     };
 
+    // Get hole și set hole pentru gestionarea sinkholes
+    std::pair<size_t, size_t> getHole() {
+        return this->m_hole;
+    }
+
+    void setHole(const std::pair<size_t, size_t>& _hole) {
+        this->m_hole = _hole;
+    }
+
+    // Serializare pentru salvarea stării
+    nlohmann::json serialize() {
+        nlohmann::json json;
+        json["hole"] = this->m_hole;
+        return json;
+    }
+
+    // Play function
     [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game, const bool _check) const {
         return m_wizards[_index](_player, _game, _check);
     }
 
+private:
+    Wizard() = default;
+    ~Wizard() = default;
+
     using FuncType = std::function<bool(Player&, Game&, bool)>;
 
+    // Array cu funcțiile vrăjitorului
     std::array<FuncType, wizard_count> m_wizards = {
-        
         &WizardActions::eliminateCard,
         &WizardActions::eliminateRow,
         &WizardActions::coverCard,
@@ -54,27 +72,8 @@ private:
         &WizardActions::extraEter,
         &WizardActions::moveStackOpponent,
         &WizardActions::moveEdge
- 
     };
 
-public:
-    std::pair<size_t, size_t> getHole() {
-        return this->m_hole;
-    }
-
-    void setHole(const std::pair<size_t, size_t> &_hole) {
-        this->m_hole = _hole;
-    }
-
-    nlohmann::json serialize() {
-        nlohmann::json json;
-
-        json["hole"] = this->m_hole;
-
-        return json;
-    }
-
-private:
-    std::pair<size_t, size_t> m_hole{-1, -1};
-
+    // Hole position pentru sinkhole
+    std::pair<size_t, size_t> m_hole{ -1, -1 };
 };

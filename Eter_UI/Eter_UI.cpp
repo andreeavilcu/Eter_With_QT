@@ -282,25 +282,15 @@ void Eter_UI::OnButtonClick() {
     if (!clickedButton) return;
 
     isStartPage = false;
-    for (QObject* child : children()) {
-        if (QWidget* widget = qobject_cast<QWidget*>(child)) {
-            if (widget != this && widget != turnLabel) {
-                widget->hide();
-                widget->deleteLater();
-            }
-        }
-    }
+
     Game::GameType gameType;
     if (clickedButton == buttonTraining) {
         gameType = Game::GameType::Training;
-    }
-    else if (clickedButton == buttonWizard) {
+    } else if (clickedButton == buttonWizard) {
         gameType = Game::GameType::WizardDuel;
-    }
-    else if (clickedButton == buttonPowers) {
+    } else if (clickedButton == buttonPowers) {
         gameType = Game::GameType::PowerDuel;
-    }
-    else if (clickedButton == buttonWizardPowers) {
+    } else if (clickedButton == buttonWizardPowers) {
         gameType = Game::GameType::WizardAndPowerDuel;
     }
 
@@ -522,7 +512,7 @@ void Eter_UI::cleanCardStack() {
 
 void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
     CardLabel* card = qobject_cast<CardLabel*>(event->source());
-    if (!card || !m_match) {
+    if (!card) {
         return;
     }
 
@@ -559,8 +549,8 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
 
     // Updatează logica Match
     GameEndInfo gameInfo;
-    gameInfo.x = row; 
-    gameInfo.y = col; 
+    gameInfo.x = cell->x() / 100; // Coordonate aproximative pentru rând
+    gameInfo.y = cell->y() / 100; // Coordonate aproximative pentru coloană
     gameInfo.winner = isRedTurn ? Card::Color::Red : Card::Color::Blue;
 
     m_match->runArenaLogic(gameInfo);
@@ -570,13 +560,12 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
     }
 
     card->hide();
+
     isRedTurn = !isRedTurn;
     updateCardStacks();
     updateTurnLabel();
 
-    if (m_match && m_match->checkArenaWin()) { 
-        showWinMessage(isRedTurn ? Card::Color::Blue : Card::Color::Red);
-    }
+    checkWinCondition();
 }
 
 void Eter_UI::processGameTurn(CardLabel* selectedCard, BoardCell* targetCell) {
@@ -596,27 +585,4 @@ void Eter_UI::processGameTurn(CardLabel* selectedCard, BoardCell* targetCell) {
 }
 void Eter_UI::endGame(const GameEndInfo& info) {
     showWinMessage(info.winner);
-}
-void Eter_UI::updateBoardFromMatch() {
-    if (!m_match) return;
-
-    const auto& arena = m_match->getArena();
-    for (size_t i = 0; i < arena.size(); ++i) {
-        for (size_t j = 0; j < arena[i].size(); ++j) {
-            BoardCell* cell = qobject_cast<BoardCell*>(boardCells.at(i * arena.size() + j));
-
-            const auto& pieces = arena[i][j];
-
-            if (!pieces.empty()) {
-                const auto& lastPiece = pieces.back();
-                QString color = (lastPiece.getColor() == Card::Color::Red) ? "R" : "B";
-                QString imagePath = QString(":/images/%1.png").arg(color);
-                QPixmap pixmap(imagePath);
-                cell->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
-            }
-            else {
-                cell->clear();
-            }
-        }
-    }
 }

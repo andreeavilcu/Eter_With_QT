@@ -41,6 +41,7 @@ protected:
     nlohmann::json m_json;
 
 public:
+
     std::vector<Card> m_returnedCards{};
     std::vector<Card> m_eliminatedCards{};
 

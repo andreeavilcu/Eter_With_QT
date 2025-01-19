@@ -68,8 +68,9 @@ private:
     void cleanCardStack();
 
     // Funcții noi
-    void updateBoardFromMatch();               // Actualizează tabla conform stării din Match
-    void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
+    //size_t currentWizardIndex{ 0 };  // Pentru acțiunile vrăjitorului
+    //void updateBoardFromMatch();               // Actualizează tabla conform stării din Match
+    //void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
 
 private slots:
     void OnButtonClick();
@@ -78,6 +79,7 @@ private slots:
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
 
-    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot pentru plasarea cărților
+    void onCardPlaced(QDropEvent* event, BoardCell* cell, Card::Value cardValue);
+
 };
 
