@@ -303,7 +303,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
     std::cout << "Hurricane\nShift a full row or column in the desired direction.\n";
 
     char typeChoice, directionChoice;
-    int index;
+    size_t index;
 
     std::cout << "Choose type to shift (r: row, c: column): ";
     while (std::cin >> typeChoice && typeChoice != 'r' && typeChoice != 'c') {
@@ -331,30 +331,16 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
     }
     std::cin >> index;
 
-    if (typeChoice == 'r' && (index < 0 || index >= board.m_board.size())) {
-        std::cout << "Invalid row index!\n";
-        return false;
-    }
-    if (typeChoice == 'c' && (index < 0 || index >= board.m_board[0].size())) {
-        std::cout << "Invalid column index!\n";
-        return false;
-    }
+    if (index >= board.m_board.size()) return false;
 
     if (typeChoice == 'r') {
-        for (const auto& stack : board.m_board[index]) {
-            if (stack.empty()) {
-                std::cout << "The row is not fully occupied!\n";
-                return false;
-            }
-        }
+        for (const auto& stack : board.m_board[index])
+            if (stack.empty()) return false;
     }
+
     else {
-        for (size_t i = 0; i < board.m_board.size(); ++i) {
-            if (board.m_board[i][index].empty()) {
-                std::cout << "The column is not fully occupied!\n";
-                return false;
-            }
-        }
+        for (auto & i : board.m_board)
+            if (i[index].empty()) return false;
     }
 
     if (typeChoice == 'r') {
@@ -362,55 +348,54 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
 
         if (directionChoice == 'a') {
             auto outStack = std::move(row[0]);
-            for (size_t i = 0; i < row.size() - 1; ++i) {
+
+            for (size_t i = 0; i < row.size() - 1; ++i)
                 row[i] = std::move(row[i + 1]);
-            }
+
             row[row.size() - 1].clear();
 
-            for (auto& card : outStack) {
-                _game.m_returnedCards.push_back(std::move(card));
-            }
+            for (auto& card : outStack)
+                _game.m_returnedCards.push_back(std::move(card);
         }
         else if (directionChoice == 'd') { 
             auto outStack = std::move(row[row.size() - 1]);
-            for (size_t i = row.size() - 1; i > 0; --i) {
+
+            for (size_t i = row.size() - 1; i > 0; --i)
                 row[i] = std::move(row[i - 1]);
-            }
+
             row[0].clear();
 
-            for (auto& card : outStack) {
+            for (auto& card : outStack)
                 _game.m_returnedCards.push_back(std::move(card));
-            }
         }
     }
     else if (typeChoice == 'c') {
         if (directionChoice == 'w') { 
             auto outStack = std::move(board.m_board[0][index]);
-            for (size_t i = 0; i < board.m_board.size() - 1; ++i) {
+
+            for (size_t i = 0; i < board.m_board.size() - 1; ++i)
                 board.m_board[i][index] = std::move(board.m_board[i + 1][index]);
-            }
+
             board.m_board[board.m_board.size() - 1][index].clear();
 
-            for (auto& card : outStack) {
+            for (auto& card : outStack)
                 _game.m_returnedCards.push_back(std::move(card));
-            }
         }
         else if (directionChoice == 's') {
             auto outStack = std::move(board.m_board[board.m_board.size() - 1][index]);
-            for (size_t i = board.m_board.size() - 1; i > 0; --i) {
+
+            for (size_t i = board.m_board.size() - 1; i > 0; --i)
                 board.m_board[i][index] = std::move(board.m_board[i - 1][index]);
-            }
+
             board.m_board[0][index].clear();
 
-            for (auto& card : outStack) {
+            for (auto& card : outStack)
                 _game.m_returnedCards.push_back(std::move(card));
-            }
         }
     }
 
     return true;
 }
-
 
 bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
@@ -420,10 +405,7 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     std::cout << "Enter (x, y) coordinates for card that you want to move(x,y): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y) || board.m_board[x][y].empty()) {
-        std::cout << "Invalid starting position or no card in this position!\n";
-        return false;
-    }
+    if (!board.checkIndexes(x, y) || board.m_board[x][y].empty()) return false;
 
     std::map<char, std::pair<int, int>> directionMap = {
         {'w', {-1, 0}}, 
@@ -436,32 +418,19 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     char direction;
     std::cin >> direction;
 
-    if (directionMap.find(direction) == directionMap.end()) {
-        std::cout << "Invalid direction!\n";
-        return false;
-    }
+    if (directionMap.find(direction) == directionMap.end()) return false;
 
     auto offset = directionMap[direction];
-    size_t newX = x + offset.first;
-    size_t newY = y + offset.second;
+    size_t newX = x + offset.first, newY = y + offset.second;
 
-    if (!board.checkIndexes(newX, newY)) {
-        std::cout << "The move is outside the board boundaries!\n";
-        return false;
-    }
+    if (!board.checkIndexes(newX, newY)) return false;
 
-    if (board.m_board[newX][newY].empty()) {
-        std::cout << "The target position is empty. Cannot move card there!\n";
-        return false;
-    }
+    if (board.m_board[newX][newY].empty()) return false;
 
-    Card& currentCard = board.m_board[x][y].back();
-    Card& targetCard = board.m_board[newX][newY].back();
+    auto& currentCard = board.m_board[x][y].back();
+    auto& targetCard = board.m_board[newX][newY].back();
 
-    if (currentCard.getValue() <= targetCard.getValue()) {
-        std::cout << "The target card does not have a lower value!\n";
-        return false;
-    }
+    if (currentCard.getValue() <= targetCard.getValue()) return false;
 
     if(_check && !board.checkBoardIntegrity()) {
         std::cout << "Board integrity check failed. Cannot perform move.\n";

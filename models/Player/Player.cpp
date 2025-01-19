@@ -20,7 +20,7 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     m_color{ _color },
     m_cards{ _cards },
     m_wizardIndex{ _wizardIndex },
-    m_powerIndexes{ 6, 7 /*_powerIndexFirst, _powerIndexSecond*/ } {
+    m_powerIndexes{ 8, 9 /*_powerIndexFirst, _powerIndexSecond*/ } {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
