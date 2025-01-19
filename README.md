@@ -10,3 +10,7 @@
 #### Tudose Alexandru Vasile (Chewdoughsay)
 #### Urs Ruxandra Mihaela (UrsRuxandra)
 #### Vilcu Andreea (andreeavilcu)
+
+## Demo Links
+#### Console: https://youtu.be/gptf9MK5oUM
+#### UI: https://youtu.be/6XK69b4OZAE
