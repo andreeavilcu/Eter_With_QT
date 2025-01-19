@@ -1,0 +1,277 @@
+{
+  "arena": [
+    [
+      [],
+      [],
+      [],
+      []
+    ],
+    [
+      [],
+      [],
+      [],
+      []
+    ],
+    [
+      [],
+      [],
+      [],
+      []
+    ],
+    [
+      [],
+      [],
+      [],
+      []
+    ]
+  ],
+  "explosion": true,
+  "game": {
+    "board": {
+      "board": [
+        [
+          [
+            {
+              "color": -1,
+              "illusion": false,
+              "justReturned": false,
+              "value": 1
+            }
+          ],
+          [],
+          [],
+          []
+        ],
+        [
+          [],
+          [],
+          [],
+          []
+        ],
+        [
+          [],
+          [],
+          [],
+          []
+        ],
+        [
+          [],
+          [],
+          [],
+          []
+        ]
+      ],
+      "started": true
+    },
+    "eliminatedCards": [],
+    "explosion": {
+      "explosion": [
+        [
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          2,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          3
+        ],
+        [
+          2,
+          1,
+          0,
+          0
+        ]
+      ],
+      "hole_x": 18446744073709551615,
+      "hole_y": 18446744073709551615
+    },
+    "playedExplosion": false,
+    "player1": {
+      "cards": [
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 0
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 1
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 1
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": 1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 4
+        }
+      ],
+      "last_placed_card_x": -1,
+      "last_placed_card_y": -1,
+      "last_placed_card_z": -1,
+      "playedIllusion": false,
+      "power_index_1": 0,
+      "power_index_2": 3,
+      "time_left": 60.0,
+      "wizard_index": 2
+    },
+    "player2": {
+      "cards": [
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 0
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 1
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 2
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 3
+        },
+        {
+          "color": -1,
+          "illusion": false,
+          "justReturned": false,
+          "value": 4
+        }
+      ],
+      "last_placed_card_x": 0,
+      "last_placed_card_y": 0,
+      "last_placed_card_z": 0,
+      "playedIllusion": false,
+      "power_index_1": 0,
+      "power_index_2": 3,
+      "time_left": 54.13,
+      "wizard_index": 6
+    },
+    "playerToPlay": true,
+    "power": {
+      "justBlocked": false,
+      "minusX": -1,
+      "minusY": -1,
+      "minusZ": -1,
+      "plusX": -1,
+      "plusY": -1,
+      "plusZ": -1,
+      "restrictedCol": 18446744073709551615,
+      "restrictedRow": 18446744073709551615
+    },
+    "returnedCards": [],
+    "wizard": {
+      "hole": [
+        18446744073709551615,
+        18446744073709551615
+      ]
+    }
+  },
+  "gameType": 3,
+  "illusions": true,
+  "index": 0,
+  "matchIndex": 0,
+  "matchType": 1,
+  "matchesPlayed": 5,
+  "p1score": 0.0,
+  "p2score": 0.0,
+  "startPlayer": true,
+  "timerDuration": 60,
+  "totalMatches": 5,
+  "wizardsUsed": [
+    false,
+    false,
+    true,
+    false,
+    false,
+    false,
+    true,
+    false
+  ]
+}

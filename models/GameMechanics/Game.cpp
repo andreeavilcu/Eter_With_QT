@@ -77,16 +77,18 @@ Game::Game(GameType _gameType, const nlohmann::json& _json, bool _illusions, boo
         _json["player1"]["last_placed_card_y"].get<short>(),
         _json["player1"]["last_placed_card_z"].get<short>()
     };
-    this->m_player1.setLastPlacedCard(
-        m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
+    if (playerLastPlacedCard.x != -1 && playerLastPlacedCard.y != -1 && playerLastPlacedCard.z != -1)
+        this->m_player1.setLastPlacedCard(
+            m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
 
     playerLastPlacedCard = {
         _json["player2"]["last_placed_card_x"].get<short>(),
         _json["player2"]["last_placed_card_y"].get<short>(),
         _json["player2"]["last_placed_card_z"].get<short>()
     };
-    this->m_player2.setLastPlacedCard(
-        m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
+    if (playerLastPlacedCard.x != -1 && playerLastPlacedCard.y != -1 && playerLastPlacedCard.z != -1)
+        this->m_player2.setLastPlacedCard(
+            m_board.getBoard()[playerLastPlacedCard.x][playerLastPlacedCard.y][playerLastPlacedCard.z]);
 
     this->m_playedExplosion = _json["playedExplosion"].get<bool>();
 

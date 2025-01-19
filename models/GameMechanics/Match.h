@@ -40,8 +40,6 @@ public:
         instance.m_illusions = _illusions;
         instance.m_explosion = _explosion;
 
-        if (instance.m_matchType != MatchType::Tournament) return;
-
         size_t arenaSize = instance.m_gameType == Game::GameType::Training ? 3 : 4;
 
         instance.m_arena.resize(arenaSize);
