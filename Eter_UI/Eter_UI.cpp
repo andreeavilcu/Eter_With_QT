@@ -325,33 +325,27 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         "rock"
     };
 
-
     bool includeWizards = true;
 
     if (clickedButton == buttonTraining) {
-        blueCards = { "B1","B1","B2","B2","B3","B3","B4" };
-        redCards = { "R1","R1","R2","R2","R3","R3","R4" };
-        includeWizards = false; // Nu adăugăm vrăjitori în Training Mode
+        blueCards = { "B1", "B1", "B2", "B2", "B3", "B3", "B4" };
+        redCards = { "R1", "R1", "R2", "R2", "R3", "R3", "R4" };
+        includeWizards = false; // No wizards in Training Mode
     }
     else if (clickedButton == buttonWizard) {
-        blueCards = { "B1","B1","B2","B2","B2","B3","B3","B3","B4","BE" };
-        redCards = { "R1","R1","R2","R2","R2","R3","R3","R3","R4","RE" };
+        blueCards = { "B1", "B1", "B2", "B2", "B2", "B3", "B3", "B3", "B4", "BE" };
+        redCards = { "R1", "R1", "R2", "R2", "R2", "R3", "R3", "R3", "R4", "RE" };
     }
-    else if (clickedButton == buttonPowers) {
-        blueCards = { "B1","B2","B2","B2","B3","B3","B3","B4","BE" };
-        redCards = { "R1","R2","R2","R2","R3","R3","R3","R4","RE" };
-        includeWizards = false; // Nu includem vrăjitori
+    else if (clickedButton == buttonPowers || clickedButton == buttonWizardPowers) {
+        blueCards = { "B1", "B2", "B2", "B2", "B3", "B3", "B3", "B4", "BE" };
+        redCards = { "R1", "R2", "R2", "R2", "R3", "R3", "R3", "R4", "RE" };
+        includeWizards = clickedButton == buttonWizardPowers;
 
-        // Adaugă două puteri random pentru fiecare jucător
+        // Add random powers
         auto addRandomPowers = [&](const QStringList& powerNames, int startX, int startY) {
-            int power1Index = QRandomGenerator::global()->bounded(powerNames.size());
-            int power2Index = QRandomGenerator::global()->bounded(powerNames.size());
-            while (power2Index == power1Index) {
-                power2Index = QRandomGenerator::global()->bounded(powerNames.size());
-            }
-
-            QStringList selectedPowers = { powerNames[power1Index], powerNames[power2Index] };
-            for (const QString& powerName : selectedPowers) {
+            for (int i = 0; i < 2; ++i) {
+                int powerIndex = QRandomGenerator::global()->bounded(powerNames.size());
+                QString powerName = powerNames[powerIndex];
                 QString powerImagePath = cardsPath + powerName + ".png";
                 if (QFile::exists(powerImagePath)) {
                     QLabel* powerLabel = new QLabel(this);
@@ -362,50 +356,11 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
                     startX += 110;
                 }
                 else {
-                    qDebug() << "Error: Power image not found: " << powerImagePath;
+                    qDebug() << "Error: Power image not found:" << powerImagePath;
                 }
             }
             };
 
-        // Poziționează puterile pentru jucătorii albastru și roșu
-        int startXBlue = width() / 2 + ((blueCards.size() / 2) * 110) + 120;
-        int startYBlue = height() / 2 + 230;
-        addRandomPowers(powerNames, startXBlue, startYBlue);
-
-        int startXRed = width() / 2 + ((redCards.size() / 2) * 110) + 120;
-        int startYRed = height() / 2 - 340;
-        addRandomPowers(powerNames, startXRed, startYRed);
-    }
-    else if (clickedButton == buttonWizardPowers) {
-        blueCards = { "B1","B2","B2","B2","B3","B3","B3","B4","BE" };
-        redCards = { "R1","R2","R2","R2","R3","R3","R3","R4","RE" };
-
-        // Adaugă două puteri random pentru fiecare jucător
-        auto addRandomPowers = [&](const QStringList& powerNames, int startX, int startY) {
-            int power1Index = QRandomGenerator::global()->bounded(powerNames.size());
-            int power2Index = QRandomGenerator::global()->bounded(powerNames.size());
-            while (power2Index == power1Index) {
-                power2Index = QRandomGenerator::global()->bounded(powerNames.size());
-            }
-
-            QStringList selectedPowers = { powerNames[power1Index], powerNames[power2Index] };
-            for (const QString& powerName : selectedPowers) {
-                QString powerImagePath = cardsPath + powerName + ".png";
-                if (QFile::exists(powerImagePath)) {
-                    QLabel* powerLabel = new QLabel(this);
-                    QPixmap pixmap(powerImagePath);
-                    powerLabel->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
-                    powerLabel->setGeometry(startX, startY, 100, 150);
-                    powerLabel->show();
-                    startX += 110;
-                }
-                else {
-                    qDebug() << "Error: Power image not found: " << powerImagePath;
-                }
-            }
-            };
-
-        // Poziționează puterile pentru jucătorii albastru și roșu
         int startXBlue = width() / 2 + ((blueCards.size() / 2) * 110) + 120;
         int startYBlue = height() / 2 + 230;
         addRandomPowers(powerNames, startXBlue, startYBlue);
@@ -418,13 +373,13 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         return;
     }
 
-    // Selectăm vrăjitori
+    // Select random wizards
     int blueWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     int redWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     QString blueWizard = wizardNames[blueWizardIndex];
     QString redWizard = wizardNames[redWizardIndex];
 
-    // Lambda pentru a crea o carte
+    // Lambda to create a card
     auto createCard = [&](const QString& cardName, int& startX, int startY) {
         QString imagePath = cardsPath + cardName + ".png";
         if (!QFile::exists(imagePath)) {
@@ -436,13 +391,14 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
             charToCardValue(cardName[cardName.size() - 1].toLatin1()),
             this);
 
+        card->setProperty("cardName", cardName); // Set the cardName property
         card->setGeometry(startX, startY, 100, 150);
-        cards.append(card);
+        cards.append(card); // Add the card to the global list
         card->show();
         startX += 110;
         };
 
-    // Lambda pentru a adăuga vrăjitori
+    // Lambda to add a wizard card
     auto addWizardCard = [&](const QString& wizardName, int startX, int startY) {
         if (!includeWizards) return;
 
@@ -455,29 +411,28 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
             wizardLabel->show();
         }
         else {
-            qDebug() << "Error: Wizard image not found: " << wizardImagePath;
+            qDebug() << "Error: Wizard image not found:" << wizardImagePath;
         }
         };
 
-    // Creăm cărți albastre și poziționăm vrăjitorul înainte
+    // Create blue cards and position the wizard at the start
     int startXBlue = width() / 2 - ((blueCards.size() / 2) * 110);
     int startYBlue = height() / 2 + 230;
-    addWizardCard(blueWizard, startXBlue - 120, startYBlue); // Poziționăm vrăjitorul la începutul liniei albastre
+    addWizardCard(blueWizard, startXBlue - 120, startYBlue);
     for (const QString& cardName : blueCards) {
         createCard(cardName, startXBlue, startYBlue);
     }
 
-    // Creăm cărți roșii și poziționăm vrăjitorul înainte
+    // Create red cards and position the wizard at the start
     int startXRed = width() / 2 - ((redCards.size() / 2) * 110);
     int startYRed = height() / 2 - 340;
-    addWizardCard(redWizard, startXRed - 120, startYRed); // Poziționăm vrăjitorul la începutul liniei roșii
+    addWizardCard(redWizard, startXRed - 120, startYRed);
     for (const QString& cardName : redCards) {
         createCard(cardName, startXRed, startYRed);
     }
 
     updateCardStacks();
 }
-
 
 Card::Value Eter_UI::charToCardValue(char value) {
     switch (value) {
@@ -561,6 +516,8 @@ void Eter_UI::onShiftUp() {
     if (!m_game) return;
 
     if (m_game->getBoard().circularShiftUp()) {
+       
+        m_game->getBoard().circularShiftUp();
         // Salvăm pixmapurile într-o matrice temporară
         QVector<QVector<QPixmap>> tempPixmaps;
         const int size = m_game->getBoard().getSize();
@@ -965,6 +922,7 @@ void Eter_UI::updateCardStacks() {
         }
     }
 }
+
 
 void Eter_UI::cleanCardStack() {
     cards.erase(
