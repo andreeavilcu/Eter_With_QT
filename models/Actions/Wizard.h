@@ -55,10 +55,23 @@ public:
     [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game, const bool _check) const {
         return m_wizards[_index](_player, _game, _check);
     }
-
+    const std::string& getWizardName(size_t index) const {
+        return wizardNames.at(index);
+    }
 private:
     Wizard() = default;
     ~Wizard() = default;
+
+    const std::array<std::string, wizard_count> wizardNames = {
+       "eliminateCard",
+       "eliminateRow",
+       "coverCard",
+       "sinkHole",
+       "moveStackOwn",
+       "extraEter",
+       "moveStackOpponent",
+       "moveEdge"
+    };
 
     using FuncType = std::function<bool(Player&, Game&, bool)>;
 

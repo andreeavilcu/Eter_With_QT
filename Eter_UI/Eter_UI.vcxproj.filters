@@ -113,10 +113,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="BoardCell.h">
+    <QtMoc Include="CardLabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="CardLabel.h">
+    <QtMoc Include="BoardCell.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

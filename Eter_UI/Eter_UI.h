@@ -15,9 +15,9 @@
 #include "../models/GameMechanics/Match.h"
 #include <QMessageBox>
 #include "BoardCell.h"
+#include "qrandom.h"
 
-class Eter_UI : public QMainWindow
-{
+class Eter_UI : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -38,6 +38,7 @@ private:
     QPointer<QPushButton> buttonSpeed;
     QPointer<QPushButton> buttonWizardPowers;
     QVector<CardLabel*> cards;
+    QLabel* powerCardLabel; // Eticheta pentru afisarea cartii puterii
     bool isStartPage;
     bool isRedTurn;
 
@@ -57,6 +58,7 @@ private:
 
     void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
     void initializeButtons();
+    void initializePowerCardArea();
     Card::Value charToCardValue(char value);
     void createBoard(QPushButton* clickedButton);
     void createCards(QPushButton* clickedButton);
@@ -67,11 +69,12 @@ private:
     void updateCardStacks();
     void cleanCardStack();
 
-    // Funcții noi
-    //size_t currentWizardIndex{ 0 };  // Pentru acțiunile vrăjitorului
-    //void updateBoardFromMatch();               // Actualizează tabla conform stării din Match
-    //void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
+    void displayPowerCard(const QString& powerName); // Afișează cartea puterii
 
+    // Funcții noi
+    void updateBoardFromMatch();               // Actualizează tabla conform stării din Match
+    void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
+    void createWizards();
 private slots:
     void OnButtonClick();
     void onWizardPowersClicked();
@@ -79,7 +82,6 @@ private slots:
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
 
-    void onCardPlaced(QDropEvent* event, BoardCell* cell, Card::Value cardValue);
-
+    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot pentru plasarea cărților
+    void activateWizardPower(size_t powerIndex, Player& player, Game& game); // Activează o putere
 };
-
