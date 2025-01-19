@@ -2,19 +2,19 @@
 #include "../GameMechanics/Board.h"
 #include "../GameMechanics/Game.h"
 
-cardPosition Power::getMinus(const Board &_board) const {
+CardPosition Power::getMinus(const Board &_board) const {
     return _board.findCardIndexes(m_minus);
 }
 
-void Power::setMinus(const cardPosition _position, Game &_game) {
+void Power::setMinus(const CardPosition _position, Game &_game) {
     m_minus = &_game.getBoard().getBoard()[_position.x][_position.y][_position.z];
 }
 
-cardPosition Power::getPlus(const Board &_board) const {
+CardPosition Power::getPlus(const Board &_board) const {
     return _board.findCardIndexes(m_plus);
 }
 
-void Power::setPlus(const cardPosition _position, Game &_game) {
+void Power::setPlus(const CardPosition _position, Game &_game) {
     this->m_plus = &_game.getBoard().getBoard()[_position.x][_position.y][_position.z];
 }
 

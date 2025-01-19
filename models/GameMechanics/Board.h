@@ -21,7 +21,7 @@ public:
     friend class Wizard;
     friend class Power;
 
-    cardPosition findCardIndexes(const Card* _card) const;
+    CardPosition findCardIndexes(const Card* _card) const;
 
     void setFirstCardPlayed() { m_firstCardPlayed = true; }
 

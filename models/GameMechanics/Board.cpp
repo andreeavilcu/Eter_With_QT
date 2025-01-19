@@ -2,7 +2,7 @@
 #include "../Actions/Power.h"
 #include "../Actions/Wizard.h"
 
-cardPosition Board::findCardIndexes(const Card* _card) const {
+CardPosition Board::findCardIndexes(const Card* _card) const {
     for (short i = 0; i < this->m_board.size(); i++) {
         for (short j = 0; j < this->m_board[i].size(); j++) {
             for (short height = 0; height < this->m_board[i][j].size(); height++) {

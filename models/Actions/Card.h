@@ -5,7 +5,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-struct cardPosition {
+struct CardPosition {
     short x, y, z;
 };
 

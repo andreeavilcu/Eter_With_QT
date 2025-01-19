@@ -72,7 +72,7 @@ Game::Game(GameType _gameType, const nlohmann::json& _json, bool _illusions, boo
     m_gameType{ _gameType }, m_tournament{ _tournament },
     m_board{ _json["board"] } {
 
-    cardPosition playerLastPlacedCard = {
+    CardPosition playerLastPlacedCard = {
         _json["player1"]["last_placed_card_x"].get<short>(),
         _json["player1"]["last_placed_card_y"].get<short>(),
         _json["player1"]["last_placed_card_z"].get<short>()
@@ -264,6 +264,12 @@ void Game::runMidRoundLogic() {
         Power::getInstance().setRestrictedCol(-1);
         Power::getInstance().setRestrictedRow(-1);
     }
+
+    CardPosition pos = Power::getInstance().getPlus(m_board);
+    if (m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setPlus(nullptr);
+
+    pos = Power::getInstance().getMinus(m_board);
+    if (m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setMinus(nullptr);
 
     if (!m_returnedCards.empty()) {
         for (auto& card : m_returnedCards) {

@@ -29,13 +29,15 @@ public:
 
     using FuncType = bool (*)(Player&, Game&, bool);
 
-    [[nodiscard]] cardPosition getMinus(const Board& _board) const;
+    [[nodiscard]] CardPosition getMinus(const Board& _board) const;
 
-    void setMinus(cardPosition _position, Game& _game);
+    void setMinus(CardPosition _position, Game& _game);
+    void setMinus(Card* _ptr) { m_minus = _ptr; }
 
-    [[nodiscard]] cardPosition getPlus(const Board& _board) const;
+    [[nodiscard]] CardPosition getPlus(const Board& _board) const;
 
-    void setPlus(cardPosition _position, Game& _game);
+    void setPlus(CardPosition _position, Game& _game);
+    void setPlus(Card* _ptr) { m_plus = _ptr; }
 
     size_t getRestrictedRow() const {
         return m_restrictedRow;

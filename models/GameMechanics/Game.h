@@ -8,6 +8,7 @@
 #include "../Player/Player.h"
 #include "GameEndInfo.h"
 #include "../Actions/Explosion.h"
+#include "../Actions/Card.h"
 
 inline bool running = true;
 inline bool saving;
