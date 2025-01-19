@@ -1,4 +1,5 @@
 ﻿#include "BoardCell.h"
+#include "Eter_UI.h"
 #include <QDebug>
 #include <QMimeData>
 #include <QPixmap>
@@ -16,6 +17,15 @@ void BoardCell::dragEnterEvent(QDragEnterEvent* event) {
 
 void BoardCell::dropEvent(QDropEvent* event) {
     if (event->mimeData()->hasFormat("application/x-card")) {
+        Board* gameBoard = qobject_cast<Eter_UI*>(window())->getGameBoard();
+
+        bool isFirstCard = !gameBoard->m_firstCardPlayed;
+
+        if (!isFirstCard && !gameBoard->checkNeighbours(m_row, m_col)) {
+            event->ignore();
+            return;
+        }
+
         QByteArray byteArray = event->mimeData()->data("application/x-card");
         QPixmap pixmap;
         pixmap.loadFromData(byteArray, "PNG");

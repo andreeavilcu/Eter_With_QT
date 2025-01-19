@@ -170,6 +170,7 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
             BoardCell* cell = new BoardCell(this);
             cell->setAcceptDrops(true);
             cell->setFixedSize(cellSize, cellSize);
+            cell->setGridPosition(i, j);
 
             connect(cell, &BoardCell::cardPlaced,
                 this, &Eter_UI::onCardPlaced);
@@ -534,15 +535,39 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
         return;
     }
 
+    int row = cell->getRow();
+    int col = cell->getCol();
+
+    qDebug() << "Attempting to place card at:" << row << "," << col;
+    qDebug() << "First card played:" << gameBoard->m_firstCardPlayed;
+    qDebug() << "checkNeighbours result:" << gameBoard->checkNeighbours(row, col);
+
+    if (gameBoard->m_firstCardPlayed && !gameBoard->checkNeighbours(row, col)) {
+        qDebug() << "Placement rejected - not adjacent";
+        QMessageBox::warning(this, "Mutare interzisă", "Cartea trebuie plasată adiacent unei cărți existente!");
+        //cell->clear();
+        return;
+    }
+
+    Card::Value cardValue = static_cast<Card::Value>(card->property("cardValue").toInt());
+
+    // Update internal board state first
+    Card newCard(cardValue, isRedTurn ? Card::Color::Red : Card::Color::Blue);
+    gameBoard->m_board[row][col].push_back(newCard);
+
     cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
 
     // Updatează logica Match
     GameEndInfo gameInfo;
-    gameInfo.x = cell->x() / 100; // Coordonate aproximative pentru rând
-    gameInfo.y = cell->y() / 100; // Coordonate aproximative pentru coloană
+    gameInfo.x = row; 
+    gameInfo.y = col; 
     gameInfo.winner = isRedTurn ? Card::Color::Red : Card::Color::Blue;
 
     m_match->runArenaLogic(gameInfo);
+
+    if (!gameBoard->m_firstCardPlayed) {
+        gameBoard->m_firstCardPlayed = true;
+    }
 
     card->hide();
     isRedTurn = !isRedTurn;

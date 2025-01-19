@@ -24,6 +24,8 @@ public:
     Eter_UI(QWidget* parent = nullptr);
     ~Eter_UI();
 
+    Board* getGameBoard() { return gameBoard; }
+
 protected:
     void paintEvent(QPaintEvent* event) override;
 

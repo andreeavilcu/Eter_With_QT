@@ -13,10 +13,10 @@
 #include "../Actions/Explosion.h"
 
 class Board {
-    Matrix<Card> m_board{};
-    bool m_firstCardPlayed = false;
 
 public:
+    Matrix<Card> m_board{};
+    bool m_firstCardPlayed = false;
     friend class Game;
     friend class Wizard;
     friend class Power;
