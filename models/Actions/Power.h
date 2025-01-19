@@ -41,7 +41,7 @@ public:
         return m_restrictedRow;
     }
 
-    void setRestrictedRow(size_t _row) {
+    void setRestrictedRow(const size_t _row) {
         this->m_restrictedRow = _row;
     }
 
@@ -49,7 +49,7 @@ public:
         return m_restrictedCol;
     }
 
-    void setRestrictedCol(size_t _col) {
+    void setRestrictedCol(const size_t _col) {
         this->m_restrictedCol = _col;
     }
 
@@ -57,7 +57,7 @@ public:
         return m_justBlocked;
     }
 
-    void setJustBlocked(bool _blocked) {
+    void setJustBlocked(const bool _blocked) {
         this->m_justBlocked = _blocked;
     }
 

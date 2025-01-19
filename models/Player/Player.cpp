@@ -20,7 +20,7 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     m_color{ _color },
     m_cards{ _cards },
     m_wizardIndex{ _wizardIndex },
-    m_powerIndexes{ 14, 15 /*_powerIndexFirst, _powerIndexSecond*/ } {
+    m_powerIndexes{ 22, 23 /*_powerIndexFirst, _powerIndexSecond*/ } {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
@@ -388,6 +388,8 @@ bool Player::playerTurn(Game &_game) {
     if (_game.m_explosionAllowed && !_game.m_playedExplosion && _game.getBoard().checkTwoRows()) {
         _game.getBoard().printBoard();
         _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
+
+        _game.m_playedExplosion = true;
     }
 
     return true;
