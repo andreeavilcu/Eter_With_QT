@@ -16,6 +16,10 @@ public:
         return instance;
     }
 
+    void reset() {
+        m_hole = {-1, -1};
+    }
+
     enum class ExplosionEffect : size_t {
         None = 0,
         RemoveCard,

@@ -15,6 +15,12 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
     std::mt19937 gen{ rd() };
     std::uniform_int_distribution<size_t> powerDistribution{ 0, Power::power_count - 1 };
 
+    Explosion::getInstance().reset();
+    Wizard::getInstance().reset();
+    Power::getInstance().reset();
+
+    running = true;
+
     std::pair<size_t, size_t> powerIndices1 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
         ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
         : std::make_pair(static_cast<size_t>(-1), static_cast<size_t>(-1));
@@ -71,6 +77,8 @@ Game::Game(GameType _gameType, const nlohmann::json& _json, bool _illusions, boo
     m_player1{ _json["player1"] }, m_player2{ _json["player2"] },
     m_gameType{ _gameType }, m_tournament{ _tournament },
     m_board{ _json["board"] } {
+
+    running = true;
 
     CardPosition playerLastPlacedCard = {
         _json["player1"]["last_placed_card_x"].get<short>(),

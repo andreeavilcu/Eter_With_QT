@@ -65,6 +65,16 @@ public:
 
     nlohmann::json serialize(Game& _game);
 
+    void reset() {
+        m_minus = nullptr;
+        m_plus = nullptr;
+
+        m_restrictedRow = -1;
+        m_restrictedCol = -1;
+
+        m_justBlocked = false;
+    }
+
 private:
     Power() = default;
     ~Power() = default;

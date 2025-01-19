@@ -22,7 +22,10 @@ public:
         return instance;
     }
 
-    // Acțiuni vrăjitor
+    void reset() {
+        m_hole = { -1, -1 };
+    }
+
     struct WizardActions {
         static bool eliminateCard(Player& _player, Game& _game, bool _check);
         static bool eliminateRow(Player& _player, Game& _game, bool _check);
@@ -34,7 +37,6 @@ public:
         static bool moveEdge(Player& _player, Game& _game, bool _check);
     };
 
-    // Get hole și set hole pentru gestionarea sinkholes
     std::pair<size_t, size_t> getHole() {
         return this->m_hole;
     }

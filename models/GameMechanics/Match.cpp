@@ -246,7 +246,7 @@ void Match::runMatch(nlohmann::json _json) {
     std::pair<size_t, size_t> wizardIndices;
     bool timed;
 
-    if (_json.empty()) {
+    if (_json["game"].empty()) {
         std::random_device rd;
         std::mt19937 gen{ rd() };
         std::bernoulli_distribution startPlayerDistribution{ 0.5 };
@@ -271,7 +271,7 @@ void Match::runMatch(nlohmann::json _json) {
 
         std::unique_ptr<Game> game;
 
-        if (_json.empty()) {
+        if (_json["game"].empty()) {
             game = std::make_unique<Game>(
                 m_gameType,
                 wizardIndices,
@@ -291,13 +291,13 @@ void Match::runMatch(nlohmann::json _json) {
 
         GameEndInfo information;
 
-        if (_json.empty()) information = game->run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
+        if (_json["game"].empty()) information = game->run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
         else information = game->run(_json["game"],timed, static_cast<int>(this->m_timerDuration));
 
-        _json.clear();
+        _json["game"].clear();
 
-        if (!running) {
-            if (saving) saveJson(startPlayer, index, matchesPlayed, *game);
+        if (saving) {
+            saveJson(startPlayer, index, matchesPlayed, *game);
             return;
         }
 
