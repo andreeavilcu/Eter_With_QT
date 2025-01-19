@@ -12,10 +12,12 @@ Card::Card(const Value _value, const Color _color)
 Card::Card(Card&& other) noexcept
 	: m_value(other.m_value),
 	m_color(other.m_color),
-	m_illusion(other.m_illusion) {
+	m_illusion(other.m_illusion),
+	m_justReturned(other.m_justReturned) {
 	other.m_value = Value::Eter;
 	other.m_color = Color::Undefined;
 	other.m_illusion = false;
+	other.m_justReturned = 0;
 }
 
 
@@ -24,9 +26,11 @@ Card& Card::operator=(Card&& other) noexcept {
 		m_value = other.m_value;
 		m_color = other.m_color;
 		m_illusion = other.m_illusion;
+		m_justReturned = other.m_justReturned;
 		other.m_value = Value::Eter;
 		other.m_color = Color::Undefined;
 		other.m_illusion = false;
+		other.m_justReturned = 0;
 	}
 	return *this;
 }
@@ -60,14 +64,11 @@ bool Card::isJustReturned() const {
 }
 
 void Card::setJustReturned() {
-	this->m_justReturned = 2;
+	this->m_justReturned = true;
 }
 
 void Card::resetJustReturned() {
-	if (this->m_justReturned == 0)
-		return;
-
-	this->m_justReturned--;
+	this->m_justReturned = false;
 }
 
 nlohmann::json Card::toJson() const {

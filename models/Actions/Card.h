@@ -60,6 +60,6 @@ private:
     Color m_color;
 
     bool m_illusion = false;
-    size_t m_justReturned = 0;
+    bool m_justReturned = 0;
 };
 

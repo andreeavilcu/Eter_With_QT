@@ -267,8 +267,6 @@ void Game::runMidRoundLogic() {
 
     if (!m_returnedCards.empty()) {
         for (auto& card : m_returnedCards) {
-            card.setJustReturned();
-
             if (card.getColor() == Card::Color::Red)
                 m_player1.returnCard(std::move(card));
 

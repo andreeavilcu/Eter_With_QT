@@ -20,7 +20,7 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     m_color{ _color },
     m_cards{ _cards },
     m_wizardIndex{ _wizardIndex },
-    m_powerIndexes{ 4, 5 /*_powerIndexFirst, _powerIndexSecond*/ } {
+    m_powerIndexes{ 6, 7 /*_powerIndexFirst, _powerIndexSecond*/ } {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
@@ -41,15 +41,11 @@ Player::Player(const nlohmann::json &_json) {
 }
 
 void Player::returnCard(Card&& _card) {
+    _card.setJustReturned();
     _card.resetIllusion();
     this->m_cards.push_back(_card);
 
     std::sort(this->m_cards.begin(), this->m_cards.end());
-}
-
-void Player::returnCard(Card &_card) {
-    _card.resetIllusion();
-    this->m_cards.push_back(_card);
 }
 
 void Player::printCards() {
@@ -290,20 +286,17 @@ bool Player::playWizard(Game& _game, const bool _check = false) {
 
 bool Player::playPower(Game &_game, const bool _check = false) {
     char choice;
-    bool first;
 
     std::cout << "Press 'f' for first power and 's' for second power.\n";
     std::cin >> choice;
 
     if (tolower(choice) == 'f')
-        first = true;
+        return this->usePower(_game, true, _check);
 
-    else if (tolower(choice) == 's')
-        first = false;
+    if (tolower(choice) == 's')
+        return this->usePower(_game, false, _check);
 
-    else return false;
-
-    return this->usePower(_game, first, _check);
+    return false;
 }
 
 Card::Color timer (const Player& _player, int seconds);
@@ -311,8 +304,6 @@ Card::Color timer (const Player& _player, int seconds);
 bool Player::playerTurn(Game &_game) {
     char choice;
     bool legal = false;
-
-    this->resetCards();
 
     std::cout << (this->getColor() == Card::Color::Red ? "Red" : "Blue") << " player's turn!\n";
     std::cout << "Seconds left: " << this->m_timeLeft <<"\n\n";
@@ -387,9 +378,11 @@ bool Player::playerTurn(Game &_game) {
     if (!legal)
         return false;
 
+    this->resetCards();
+
     if (_game.m_explosionAllowed && !_game.m_playedExplosion && _game.getBoard().checkTwoRows()) {
         _game.getBoard().printBoard();
-        _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_returnedCards);
+        _game.getBoard().useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
     }
 
     return true;

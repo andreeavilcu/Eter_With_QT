@@ -49,7 +49,6 @@ public:
     explicit Player(const nlohmann::json& _json);
 
     void returnCard(Card&& _card);
-    void returnCard(Card& _card);
 
     void printCards();
 

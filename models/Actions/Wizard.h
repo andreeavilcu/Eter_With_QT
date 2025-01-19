@@ -14,7 +14,6 @@ public:
     static constexpr auto wizard_count = 8;
     friend class Player;
 
-    // Singleton
     Wizard(const Wizard&) = delete;
     Wizard& operator=(const Wizard&) = delete;
 
@@ -44,17 +43,16 @@ public:
         this->m_hole = _hole;
     }
 
-    // Serializare pentru salvarea stării
     nlohmann::json serialize() {
         nlohmann::json json;
         json["hole"] = this->m_hole;
         return json;
     }
 
-    // Play function
     [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game, const bool _check) const {
         return m_wizards[_index](_player, _game, _check);
     }
+
     const std::string& getWizardName(size_t index) const {
         return wizardNames.at(index);
     }
@@ -75,7 +73,6 @@ private:
 
     using FuncType = std::function<bool(Player&, Game&, bool)>;
 
-    // Array cu funcțiile vrăjitorului
     std::array<FuncType, wizard_count> m_wizards = {
         &WizardActions::eliminateCard,
         &WizardActions::eliminateRow,
@@ -87,6 +84,5 @@ private:
         &WizardActions::moveEdge
     };
 
-    // Hole position pentru sinkhole
     std::pair<size_t, size_t> m_hole{ -1, -1 };
 };
