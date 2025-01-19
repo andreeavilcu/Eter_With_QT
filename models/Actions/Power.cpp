@@ -42,6 +42,8 @@ bool Power::PowerAction::controlledExplosion(Player &_player, Game &_game, const
 
     Board &board = _game.m_board;
 
+    if (_game.m_playedExplosion) Explosion::getInstance().generateExplosion(board.m_board.size());
+
     board.useExplosion(_game.m_returnedCards, _game.m_eliminatedCards);
     _game.m_playedExplosion = true;
 

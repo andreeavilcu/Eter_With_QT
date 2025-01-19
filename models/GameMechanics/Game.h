@@ -64,7 +64,7 @@ public:
     GameEndInfo run(const nlohmann::json& _json, bool _timed, int _duration);
 
     [[nodiscard]] GameEndInfo runEndGameLogic(bool _endedByCount);
-    void runMidRoundLogic();
+    void runMidRoundLogic(bool _player1Turn);
 
     [[nodiscard]] bool checkEmptyDeck() const;
     [[nodiscard]] std::pair<bool, bool> checkEndOfGame(Card::Color _color);

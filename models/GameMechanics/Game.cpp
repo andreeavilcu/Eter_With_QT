@@ -140,7 +140,7 @@ GameEndInfo Game::run(const bool _player1Turn, bool _timed, int _duration) {
 
             player1Turn = !player1Turn;
 
-            runMidRoundLogic();
+            runMidRoundLogic(player1Turn);
         }
     }
 
@@ -189,7 +189,7 @@ GameEndInfo Game::run(const nlohmann::json &_json, bool _timed, int _duration) {
 
             player1Turn = !player1Turn;
 
-            runMidRoundLogic();
+            runMidRoundLogic(player1Turn);
         }
     }
 
@@ -256,7 +256,7 @@ GameEndInfo Game::runEndGameLogic(const bool _endedByCount) {
     return {m_winner, x, y};
 }
 
-void Game::runMidRoundLogic() {
+void Game::runMidRoundLogic(const bool _player1Turn) {
     if (Power::getInstance().getJustBlocked())
         Power::getInstance().setJustBlocked(false);
 
@@ -271,16 +271,14 @@ void Game::runMidRoundLogic() {
     pos = Power::getInstance().getMinus(m_board);
     if (m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setMinus(nullptr);
 
+    auto& player = _player1Turn ? m_player1 : m_player2;
+
     if (!m_returnedCards.empty()) {
         for (auto& card : m_returnedCards) {
-            if (card.getColor() == Card::Color::Red)
-                m_player1.returnCard(std::move(card));
-
-            else
-                m_player2.returnCard(std::move(card));
+            if (card.getColor() == player.getColor()) {
+                player.returnCard(std::move(card));
+            }
         }
-
-        m_returnedCards.clear();
     }
 }
 
