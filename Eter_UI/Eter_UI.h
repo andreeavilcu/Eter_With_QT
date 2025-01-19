@@ -14,6 +14,7 @@
 #include "../models/GameMechanics/Game.h"
 #include "../models/GameMechanics/Match.h"
 #include <QMessageBox>
+#include <QInputDialog>
 #include "BoardCell.h"
 #include "qrandom.h"
 
@@ -41,6 +42,7 @@ private:
     QPointer<QPushButton> shiftDownButton;
     QPointer<QPushButton> shiftLeftButton;
     QPointer<QPushButton> shiftRightButton;
+    QPushButton* illusionButton;
 
     QVector<CardLabel*> cards;
     QVector<QLabel*> boardCells;
@@ -92,6 +94,8 @@ private:
 private slots:
     void drawTournamentMenu();
     void drawSpeedMenu();
+
+    void onIllusionButtonClicked();
 
     void OnButtonClick();
     void onWizardPowersClicked();
