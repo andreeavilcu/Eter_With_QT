@@ -5,6 +5,13 @@
 #include "CardLabel.h"
 #include <QScreen>
 
+bool Eter_UI::isValidMove(size_t row, size_t col, Card::Value cardValue)
+{
+    if(!m_game) return false;
+
+    return m_game->getBoard().checkPartial(row, col, static_cast<size_t>(cardValue));
+}
+
 void Eter_UI::createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)()) {
     button = new QPushButton(text, this);
     button->setFont(font);
@@ -119,6 +126,8 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
             BoardCell* cell = new BoardCell(this);
             cell->setAcceptDrops(true);
             cell->setFixedSize(cellSize, cellSize);
+            // Adaugă conexiunea aici
+            connect(cell, &BoardCell::cardPlaced, this, &Eter_UI::onCardPlaced);
             boardLayout->addWidget(cell, i, j);
             boardCells.append(cell);
         }
@@ -206,6 +215,28 @@ void Eter_UI::OnButtonClick() {
 
     isStartPage = false;
 
+    // Determină tipul jocului bazat pe butonul apăsat
+    Game::GameType gameType;
+    if (clickedButton == buttonTraining) {
+        gameType = Game::GameType::Training;
+    }
+    else if (clickedButton == buttonWizard) {
+        gameType = Game::GameType::WizardDuel;
+    }
+    else if (clickedButton == buttonPowers) {
+        gameType = Game::GameType::PowerDuel;
+    }
+    else if (clickedButton == buttonWizardPowers) {
+        gameType = Game::GameType::WizardAndPowerDuel;
+    }
+
+    // Inițializează jocul
+    std::pair<size_t, size_t> wizardIndices = { -1, -1 }; // sau generează random
+    bool illusions = false; // setează după preferință
+    bool explosion = false; // setează după preferință
+    m_game = std::make_unique<Game>(gameType, wizardIndices, illusions, explosion, false);
+
+
     for (QObject* child : children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
             if (widget != this && widget != turnLabel) {
@@ -257,6 +288,42 @@ void Eter_UI::removeCard(CardLabel* card) {
     checkWinCondition();
 }
 
+
+
+void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
+{
+    if (!m_game) return;
+
+    int row = -1, col = -1;
+    for (int i = 0; i < boardCells.size(); ++i) {
+        if (boardCells[i] == cell) {
+            row = i / m_game->getBoard().getSize();
+            col = i % m_game->getBoard().getSize();
+            break;
+        }
+    }
+
+    if (row == -1 || col == -1) return;
+
+    // Obține valoarea cărții din datele MIME
+    Card::Value cardValue = static_cast<Card::Value>(event->mimeData()->data("card-value").toInt());
+
+    if (isRedTurn) {
+        processCardPlacement(m_game->getPlayer1(), row, col, cardValue);
+    }
+    else {
+        processCardPlacement(m_game->getPlayer2(), row, col, cardValue);
+    }
+
+    isRedTurn = !isRedTurn;
+    updateTurnLabel();
+
+    Card::Color winner = m_game->getBoard().checkWin();
+    if (winner != Card::Color::Undefined) {
+        showWinMessage(winner);
+    }
+}
+
 void Eter_UI::showWinMessage(Card::Color winner) {
     QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
     QMessageBox msgBox(this);
@@ -264,6 +331,32 @@ void Eter_UI::showWinMessage(Card::Color winner) {
     msgBox.setText(QString("%1 has won the game!").arg(winnerText));
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.exec();
+}
+
+void Eter_UI::processCardPlacement(Player& player, int row, int col, Card::Value cardValue)
+{
+    // Verificăm dacă mutarea este validă
+    if (!m_game->getBoard().checkPartial(row, col, static_cast<size_t>(cardValue))) {
+        return;
+    }
+
+    auto playedCard = player.useCard(cardValue);
+    if (!playedCard) {
+        return;
+    }
+
+    auto& board = m_game->getBoard();
+    if (!board.checkIllusion(row, col, Card::Color::Undefined) &&
+        board.checkIllusionValue(row, col, static_cast<size_t>(cardValue))) {
+        board.placeCard(row, col, std::move(*playedCard));
+        player.setLastPlacedCard(board.getBoard()[row][col].back());
+    }
+    else {
+        board.getBoard()[row][col].back().resetIllusion();
+        m_game->m_eliminatedCards.push_back(std::move(*playedCard));
+    }
+
+    board.setFirstCardPlayed();
 }
 
 void Eter_UI::drawTournamentMenu() {

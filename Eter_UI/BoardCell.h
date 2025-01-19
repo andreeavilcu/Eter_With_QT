@@ -4,6 +4,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QBuffer>
+#include "../models/GameMechanics/Game.h"
 
 
 class BoardCell : public QLabel {
@@ -13,7 +14,7 @@ public:
     explicit BoardCell(QWidget* parent = nullptr);
 
 signals:
-    void cardPlaced(QDropEvent* event, BoardCell* cell);
+    void cardPlaced(QDropEvent* event, BoardCell* cell, Card::Value cardValue);
 
 
 protected:

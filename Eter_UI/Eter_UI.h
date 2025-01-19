@@ -37,16 +37,19 @@ private:
     QVector<CardLabel*> cards;
     bool isStartPage;
     bool isRedTurn;
-    Game* m_game;
 
     QLabel* turnLabel;
     Board* gameBoard;
     QGridLayout* boardLayout;
     QVector<QLabel*> boardCells;
 
+    std::unique_ptr<Game> m_game;
+
     void createGame(Game::GameType gameType);
     void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell);
     void endGame(const GameEndInfo& info);
+
+    bool isValidMove(size_t row, size_t col, Card::Value cardValue);
 
     void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
     void initializeButtons();
@@ -56,6 +59,7 @@ private:
     void updateTurnLabel();
     void checkWinCondition();
     void showWinMessage(Card::Color winner);
+    void processCardPlacement(Player& player, int row, int col, Card::Value cardValue);
 
 private slots:
     void OnButtonClick();
@@ -63,7 +67,7 @@ private slots:
     void drawTournamentMenu();
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
-
+    
     void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot for handling card placements
 
 };

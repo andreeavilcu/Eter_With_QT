@@ -20,10 +20,13 @@ void BoardCell::dropEvent(QDropEvent* event) {
         QPixmap pixmap;
         pixmap.loadFromData(byteArray, "PNG");
 
+        // Extragem valoarea cărții din datele MIME
+        Card::Value cardValue = static_cast<Card::Value>(event->mimeData()->data("card-value").toInt());
+
         setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
         event->acceptProposedAction();
 
-        emit cardPlaced(event, this);
+        emit cardPlaced(event, this, cardValue);
 
     }
 }
