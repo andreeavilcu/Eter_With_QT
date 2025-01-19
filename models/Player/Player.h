@@ -14,7 +14,7 @@
 class Game;
 
 class Player {
-protected: 
+protected:
     Card::Color m_color{};
 
     std::vector<Card> m_cards{};
@@ -22,14 +22,8 @@ protected:
     size_t m_wizardIndex{};
     std::pair<size_t, size_t> m_powerIndexes{};
 
-    bool m_playedIllusion{false};
+    bool m_playedIllusion{ false };
 
-    /*
-     * std::reference_wrapper does not work here, as initially there is no "last placed card"
-     * std::shared_ptr does not work as the matrix does not use pointers,
-     * and there were some issues regarding addresses and also maybe memory padding?
-     * std::shared_ptr<Card> m_last_placed_card_ptr{};
-     */
 
     Card* m_lastPlacedCard{};
 
@@ -44,8 +38,8 @@ public:
 
     void setTimer(int _duration);
 
-    explicit Player(Card::Color _color, const std::vector<Card> &_cards, size_t _wizardIndex, size_t _powerIndexFirst,
-                    size_t _powerIndexSecond);
+    explicit Player(Card::Color _color, const std::vector<Card>& _cards, size_t _wizardIndex, size_t _powerIndexFirst,
+        size_t _powerIndexSecond);
     explicit Player(const nlohmann::json& _json);
 
     void returnCard(Card&& _card);
@@ -91,8 +85,8 @@ public:
     [[nodiscard]] nlohmann::json toJson(Game& _game) const;
 
 private:
-    std::optional<Card> playCardCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
-    std::optional<Card> playIllusionCheck(Game &_game, size_t _x, size_t _y, size_t _int_value);
+    std::optional<Card> playCardCheck(Game& _game, size_t _x, size_t _y, size_t _int_value);
+    std::optional<Card> playIllusionCheck(Game& _game, size_t _x, size_t _y, size_t _int_value);
 
     [[nodiscard]] bool playWizard(Game& _game, bool _check);
     [[nodiscard]] bool playPower(Game& _game, bool _check);

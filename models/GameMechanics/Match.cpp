@@ -3,20 +3,18 @@
 std::pair<size_t, size_t> Match::generateWizardIndices(std::mt19937& _gen) {
     std::uniform_int_distribution<size_t> wizardDistribution{ 0, Wizard::wizard_count - 1 };
 
-    std::pair<size_t, size_t> wizardIndices = {-1, -1};
+    std::pair<size_t, size_t> wizardIndices = { -1, -1 };
 
     if (m_gameType == Game::GameType::WizardDuel || m_gameType == Game::GameType::WizardAndPowerDuel) {
         do {
             wizardIndices.first = wizardDistribution(_gen);
-        }
-        while (this->m_wizardsUsed[wizardIndices.first]);
+        } while (this->m_wizardsUsed[wizardIndices.first]);
 
         this->m_wizardsUsed[wizardIndices.first] = true;
 
         do {
             wizardIndices.second = wizardDistribution(_gen);
-        }
-        while (this->m_wizardsUsed[wizardIndices.second]);
+        } while (this->m_wizardsUsed[wizardIndices.second]);
 
         this->m_wizardsUsed[wizardIndices.second] = true;
     }
@@ -29,7 +27,7 @@ void Match::printArena() const {
 
     for (const auto& row : this->m_arena) {
         for (const auto& position : row) {
-            std::pair<size_t, size_t> pieceCounts{0, 0};
+            std::pair<size_t, size_t> pieceCounts{ 0, 0 };
 
             for (const auto& piece : position) {
                 if (piece.getColor() == Card::Color::Red)
@@ -59,7 +57,7 @@ size_t Match::runArenaLogic(GameEndInfo& _information) {
 
     auto it = std::ranges::find_if(pieces, [enemyColor](const Piece& piece) {
         return piece.getColor() == enemyColor;
-    });
+        });
 
     if (it != pieces.end())
         pieces.erase(it);
@@ -189,7 +187,7 @@ void Match::runPrintLogic(size_t _index, size_t _matchesPlayed) {
     }
 }
 
-int Match::runScoreLogic(GameEndInfo &_information, size_t &_matchesPlayed, size_t &_winner, size_t &_winsNeeded) {
+int Match::runScoreLogic(GameEndInfo& _information, size_t& _matchesPlayed, size_t& _winner, size_t& _winsNeeded) {
     if (this->m_matchType == MatchType::Tournament) {
         if (_information.winner == Card::Color::Undefined)
             return 2;
@@ -201,14 +199,14 @@ int Match::runScoreLogic(GameEndInfo &_information, size_t &_matchesPlayed, size
 
     else {
         switch (_information.winner) {
-            case Card::Color::Red:
-                this->m_scores.first++;
+        case Card::Color::Red:
+            this->m_scores.first++;
             break;
-            case Card::Color::Blue:
-                this->m_scores.second++;
+        case Card::Color::Blue:
+            this->m_scores.second++;
             break;
-            case Card::Color::Undefined:
-                this->m_scores.first += 0.5f;
+        case Card::Color::Undefined:
+            this->m_scores.first += 0.5f;
             this->m_scores.second += 0.5f;
 
             _matchesPlayed++;
@@ -223,7 +221,7 @@ int Match::runScoreLogic(GameEndInfo &_information, size_t &_matchesPlayed, size
 
 void Match::runWinnerLogic(size_t _winner) {
     if (_winner) {
-        std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
+        std::cout << "Match winner: " << (_winner == 1 ? "Red" : "Blue") << " player\n";
         return;
     }
 
@@ -238,10 +236,10 @@ void Match::runWinnerLogic(size_t _winner) {
 
     _winner = this->m_scores.first > this->m_scores.second ? 1 : 2;
 
-    std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
+    std::cout << "Match winner: " << (_winner == 1 ? "Red" : "Blue") << " player\n";
 }
 
-void Match::runMatch(const nlohmann::json &_json) {
+void Match::runMatch(const nlohmann::json& _json) {
     size_t winner = 0;
     std::pair<size_t, size_t> wizardIndices;
     bool timed;
@@ -257,7 +255,8 @@ void Match::runMatch(const nlohmann::json &_json) {
         matchesPlayed = m_gameType == Game::GameType::Training && m_matchType != MatchType::Tournament ? 3 : 5;
 
         wizardIndices = generateWizardIndices(gen);
-    } else {
+    }
+    else {
         timed = static_cast<bool>(_json["timerDuration"].get<float>());
         startPlayer = _json["startPlayer"].get<bool>();
 
@@ -279,7 +278,8 @@ void Match::runMatch(const nlohmann::json &_json) {
                 this->m_explosion,
                 this->m_matchType == MatchType::Tournament
             );
-        } else {
+        }
+        else {
             game = std::make_unique<Game>(
                 m_gameType,
                 _json["game"],
@@ -292,7 +292,7 @@ void Match::runMatch(const nlohmann::json &_json) {
         GameEndInfo information;
 
         if (_json.empty()) information = game->run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
-        else information = game->run(_json["game"],timed, static_cast<int>(this->m_timerDuration));
+        else information = game->run(_json["game"], timed, static_cast<int>(this->m_timerDuration));
 
         if (!running) {
             if (saving) saveJson(startPlayer, index, matchesPlayed, *game);

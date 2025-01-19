@@ -1,29 +1,43 @@
 ﻿#include "CardLabel.h"
 #include <QDebug>
+#include <QBuffer>
 
 CardLabel::CardLabel(const QString& imagePath,
     Card::Value cardValue,
     QWidget* parent)
-    : QLabel(parent),
-    m_value(cardValue)
+    : QLabel(parent)
 {
+    // Încarcă imaginea
     QPixmap loadedPixmap(imagePath);
     if (loadedPixmap.isNull()) {
         qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
         return;
     }
+
+    // Extrage numele cărții din calea imaginii
+    QFileInfo fileInfo(imagePath);
+    QString cardName = fileInfo.baseName();
+
+    // Setează proprietățile
+    setProperty("cardName", cardName);
+    setProperty("cardValue", static_cast<int>(cardValue));
+
+    // Setează pixmap-ul scalat
     setPixmap(loadedPixmap.scaled(100, 150, Qt::KeepAspectRatio,
         Qt::SmoothTransformation));
 
-    setProperty("cardValue", static_cast<int>(cardValue));
-    setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
+    // Setează dimensiunea fixă și stilul
     setFixedSize(100, 150);
     setStyleSheet("border: none;");
+
+    // Activează acceptarea drag & drop
+    setAcceptDrops(true);
 }
 
 void CardLabel::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton) {
+        // Creăm obiectul drag o singură dată
         QDrag* drag = new QDrag(this);
         QMimeData* mimeData = new QMimeData;
 
@@ -38,14 +52,12 @@ void CardLabel::mousePressEvent(QMouseEvent* event)
         QBuffer buffer(&byteArray);
         buffer.open(QIODevice::WriteOnly);
         cardPixmap.save(&buffer, "PNG");
-        mimeData->setData("application/x-card", byteArray);
+
+        // Setăm datele MIME o singură dată
         mimeData->setData("application/x-card", byteArray);
 
-        QDrag* drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->setPixmap(cardPixmap);
-        drag->setHotSpot(QPoint(cardPixmap.width() / 2, cardPixmap.height() / 2));
-
         drag->setHotSpot(QPoint(cardPixmap.width() / 2, cardPixmap.height() / 2));
 
         if (drag->exec(Qt::MoveAction) == Qt::MoveAction) {
