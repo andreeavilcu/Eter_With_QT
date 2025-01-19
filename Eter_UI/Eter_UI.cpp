@@ -258,13 +258,102 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
     }
 
     int widgetSize = boardSize * cellSize;
+
+    int boardX = width() / 2 - widgetSize / 2;
+    int boardY = height() / 2 - widgetSize / 2;
     boardWidget->setLayout(boardLayout);
     boardWidget->setGeometry(width() / 2 - widgetSize / 2,
         height() / 2 - widgetSize / 2,
         widgetSize,
         widgetSize);
     boardWidget->show();
+
+    illusionButton = new QPushButton("Iluzie", this);
+    illusionButton->setFont(QFont("Arial", 12, QFont::Bold));
+    illusionButton->setStyleSheet(R"(
+        QPushButton {
+            background-color: rgba(255, 255, 255, 180);
+            border: 2px solid black;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        QPushButton:hover {
+            background-color: rgba(255, 255, 255, 220);
+        }
+    )");
+
+    // Poziționează butonul în stânga tablei
+    int buttonWidth = 100;
+    int buttonHeight = 40;
+    illusionButton->setGeometry(boardX - buttonWidth - 20, boardY + widgetSize / 2 - buttonHeight / 2,
+        buttonWidth, buttonHeight);
+    illusionButton->show();
+
+    // Conectează semnalul de click
+    connect(illusionButton, &QPushButton::clicked, this, &Eter_UI::onIllusionButtonClicked);
 }
+
+
+void Eter_UI::onIllusionButtonClicked() {
+    if (!m_game) return;
+
+    // Verifică tura curentă și oferă doar opțiunea corespunzătoare
+    QString cardColor;
+    if (isRedTurn) {
+        cardColor = "Carte Roșie";
+    }
+    else {
+        cardColor = "Carte Albastră";
+    }
+
+    // Dialog pentru confirmarea alegerii
+    bool ok;
+    QString selected = QInputDialog::getItem(this, "Alegere Carte Iluzie",
+        "Confirmați crearea cărții de iluzie:", QStringList() << cardColor, 0, false, &ok);
+
+    if (!ok || selected.isEmpty())
+        return;
+
+    // Dialog pentru alegerea valorii
+    QStringList valueOptions;
+    valueOptions << "1" << "2" << "3" << "4";
+
+    QString selectedValue = QInputDialog::getItem(this, "Alegere Valoare",
+        "Alegeți valoarea cărții:", valueOptions, 0, false, &ok);
+
+    if (!ok || selectedValue.isEmpty())
+        return;
+
+    // Construiește numele pentru proprietatea cardName (pentru logica jocului)
+    QString cardName = (isRedTurn ? "R" : "B") + selectedValue;
+
+    // Construiește calea către imaginea de iluzie
+    QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" +
+        (isRedTurn ? "RI" : "BI") + ".png";
+
+    // Convertește valoarea selectată în Card::Value
+    Card::Value cardValue;
+    switch (selectedValue.toInt()) {
+    case 1: cardValue = Card::Value::One; break;
+    case 2: cardValue = Card::Value::Two; break;
+    case 3: cardValue = Card::Value::Three; break;
+    case 4: cardValue = Card::Value::Four; break;
+    default: cardValue = Card::Value::One; break;
+    }
+
+    // Creează CardLabel cu imaginea de iluzie dar valoarea reală
+    CardLabel* illusionCard = new CardLabel(imagePath, cardValue, this);
+    illusionCard->setProperty("cardName", cardName);
+
+    // Poziționează cartea în stânga tablei
+    int boardX = width() / 2 - (m_game->getBoard().getSize() * 100) / 2;
+    illusionCard->setGeometry(boardX - 120, height() / 2 + 50, 100, 150);
+
+    cards.append(illusionCard);
+    illusionCard->show();
+    updateCardStacks();
+}
+
 
 void Eter_UI::createCards(QPushButton* clickedButton) {
     QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
