@@ -11,9 +11,6 @@
 #include "BoardCell.h"
 #include "CardLabel.h"
 
-//--------------------------------------------------
-// Helper care creează și atașează un buton la fereastră
-//--------------------------------------------------
 void Eter_UI::createButton(
     QPointer<QPushButton>& button,
     const QString& text,
@@ -31,9 +28,6 @@ void Eter_UI::createButton(
     }
 }
 
-//--------------------------------------------------
-// Inițializează butoane la ecranul de start
-//--------------------------------------------------
 void Eter_UI::initializeButtons() {
     QFont buttonFont;
     buttonFont.setPointSize(16);
@@ -73,9 +67,7 @@ void Eter_UI::initializeButtons() {
         &Eter_UI::drawSpeedMenu);
 }
 
-//--------------------------------------------------
-// Constructor
-//--------------------------------------------------
+
 Eter_UI::Eter_UI(QWidget* parent)
     : QMainWindow(parent),
     isStartPage(true),
@@ -85,51 +77,37 @@ Eter_UI::Eter_UI(QWidget* parent)
     boardLayout(nullptr),
     powerCardLabel(nullptr)
 {
-    // Setează UI din .ui (dacă ai un .ui generat)
+    
     ui.setupUi(this);
 
-    // Setează dimensiunea ferestrei la dimensiunea ecranului principal
     QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         QRect screenGeometry = screen->availableGeometry();
         this->setGeometry(screenGeometry);
     }
 
-    // Inițializează butoanele jocului
     initializeButtons();
 
-    // Creează și configurează QLabel pentru afișarea puterii
     powerCardLabel = new QLabel(this);
     powerCardLabel->setFixedSize(100, 150);
     powerCardLabel->setGeometry(width() - 150, height() / 2 - 75, 100, 150);
     powerCardLabel->setStyleSheet("border: 2px solid black; background-color: white;");
-    powerCardLabel->hide(); // Ascuns până la activarea unei puteri
+    powerCardLabel->hide(); 
 
-    // Inițializează QLabel pentru indicarea rândului
     turnLabel = new QLabel(this);
     turnLabel->setFont(QFont("Arial", 14, QFont::Bold));
     turnLabel->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128); padding: 5px;");
     turnLabel->setAlignment(Qt::AlignCenter);
-    turnLabel->hide(); // Ascunde până începe jocul
+    turnLabel->hide(); 
 }
 
-//--------------------------------------------------
-// Destructor
-//--------------------------------------------------
 Eter_UI::~Eter_UI() {
-    // Nu mai ștergem gameBoard (nu îl mai avem aici),
-    // m_game se ocupă de curățare deoarece e std::unique_ptr
 }
 
-//--------------------------------------------------
-// Buton principal: decide tipul de joc și pornește jocul
-//--------------------------------------------------
 void Eter_UI::OnButtonClick() {
-    // Identifică butonul apăsat
     QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
 
-    // Ascunde tot (inclusiv butoanele) și curăță interfața
     isStartPage = false;
     for (QObject* child : children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
@@ -140,7 +118,6 @@ void Eter_UI::OnButtonClick() {
         }
     }
 
-    // Ce tip de joc avem?
     Game::GameType gameType;
     bool includeWizards = false;
     bool includePowers = false;
@@ -162,11 +139,9 @@ void Eter_UI::OnButtonClick() {
         includePowers = true;
     }
     else {
-        return; // Nimic
+        return;
     }
 
-    // Creează instanța jocului (dimensiunea tablei, etc.)
-    // Ajustează parametrii cum ai nevoie
     try {
         m_game = std::make_unique<Game>(
             gameType,
@@ -182,27 +157,19 @@ void Eter_UI::OnButtonClick() {
         return;
     }
 
-    // Creează partea vizuală a tablei (grila de BoardCell)
     createBoard(clickedButton);
 
-    // Creează și afișează cărțile (CardLabel)
     createCards(clickedButton);
 
-    // Creează butoanele de shift
     createShiftButtons();
 
-    // Afișează eticheta cu rândul curent
     turnLabel->setGeometry(width() / 2 - 100, 50, 200, 40);
     turnLabel->show();
     updateTurnLabel();
 
-    // Refresh
     update();
 }
 
-//--------------------------------------------------
-// Pictăm fundal + logo
-//--------------------------------------------------
 void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
 
@@ -213,7 +180,6 @@ void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
 
     painter.fillRect(rect(), gradient);
 
-    // Încearcă încărcarea unui logo
     QDir appDir(QCoreApplication::applicationDirPath());
     appDir.cdUp();
     QString logoPath = appDir.absoluteFilePath("logo.png");
@@ -222,14 +188,12 @@ void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     if (!logo.isNull()) {
         QRect logoRect;
         if (isStartPage) {
-            // Mare și centrat
             logoRect = QRect(width() / 2 - logo.width() / 2,
                 height() / 4 - 150,
                 logo.width(),
                 logo.height());
         }
         else {
-            // Mic, colț stânga
             logoRect = QRect(10, 10, 150, 75);
         }
         painter.drawPixmap(logoRect, logo);
@@ -239,28 +203,19 @@ void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     }
 }
 
-//--------------------------------------------------
-// Creăm tabla (strict UI): un QGridLayout cu BoardCell
-//--------------------------------------------------
 void Eter_UI::createBoard(QPushButton* clickedButton) {
-    // Ștergem layoutul vechi (dacă există)
     if (boardLayout) {
         delete boardLayout;
         boardLayout = nullptr;
     }
 
-    int boardSize = 3; // default
+    int boardSize = 3; 
     if (clickedButton == buttonWizard ||
         clickedButton == buttonPowers ||
         clickedButton == buttonWizardPowers)
     {
         boardSize = 4;
     }
-
-    // Eventual ai setat deja boardSize intern în Game, 
-    // dar dacă mai vrei să-l stabilești explicit:
-    // m_game->getBoard().setSize(boardSize); 
-    // (depinde de implementarea ta)
 
     QWidget* boardWidget = new QWidget(this);
 
@@ -294,9 +249,6 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
     boardWidget->show();
 }
 
-//--------------------------------------------------
-// Creează și așază cărțile la marginea ferestrei
-//--------------------------------------------------
 void Eter_UI::createCards(QPushButton* clickedButton) {
     QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
     if (!QDir(cardsPath).exists()) {
@@ -304,7 +256,6 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         return;
     }
 
-    // Liste de cărți
     QStringList blueCards, redCards;
     QStringList wizardNames = {
         "eliminateCard", "eliminateRow", "coverCard", "sinkHole",
@@ -318,9 +269,8 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         "border", "avalanche", "rock"
     };
 
-    bool includeWizards = true; // ajustăm mai jos
+    bool includeWizards = true; 
 
-    // Stabilim cărțile după modul de joc
     if (clickedButton == buttonTraining) {
         blueCards = { "B1","B1","B2","B2","B3","B3","B4" };
         redCards = { "R1","R1","R2","R2","R3","R3","R4" };
@@ -335,7 +285,6 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         redCards = { "R1","R2","R2","R2","R3","R3","R3","R4","RE" };
         includeWizards = (clickedButton == buttonWizardPowers);
 
-        // Exemplu: adăugăm random niște puteri (dacă vrei)
         auto addRandomPowers = [&](const QStringList& pnames, int startX, int startY) {
             for (int i = 0; i < 2; ++i) {
                 int idx = QRandomGenerator::global()->bounded(pnames.size());
@@ -363,20 +312,17 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         addRandomPowers(powerNames, startXRed, startYRed);
     }
 
-    // Vrăjitori random
     int blueWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     int redWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     QString blueWizard = wizardNames[blueWizardIndex];
     QString redWizard = wizardNames[redWizardIndex];
 
-    // Helper: creează un CardLabel
     auto createCard = [&](const QString& cardName, int& startX, int startY) {
         QString imagePath = cardsPath + cardName + ".png";
         if (!QFile::exists(imagePath)) {
             qDebug() << "Image not found:" << imagePath;
             return;
         }
-        // Ultimul caracter e 1..4 sau E
         char valChar = cardName.at(cardName.size() - 1).toLatin1();
         Card::Value val = charToCardValue(valChar);
 
@@ -388,7 +334,6 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         startX += 110;
         };
 
-    // Helper: afișează un wizard
     auto addWizardCard = [&](const QString& wizName, int startX, int startY) {
         if (!includeWizards) return;
         QString wizPath = cardsPath + wizName + ".png";
@@ -404,7 +349,6 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         }
         };
 
-    // Creează cărțile albastre
     int startXBlue = width() / 2 - ((blueCards.size() / 2) * 110);
     int startYBlue = height() / 2 + 230;
     addWizardCard(blueWizard, startXBlue - 120, startYBlue);
@@ -412,7 +356,6 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         createCard(cardName, startXBlue, startYBlue);
     }
 
-    // Creează cărțile roșii
     int startXRed = width() / 2 - ((redCards.size() / 2) * 110);
     int startYRed = height() / 2 - 340;
     addWizardCard(redWizard, startXRed - 120, startYRed);
@@ -420,13 +363,9 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         createCard(cardName, startXRed, startYRed);
     }
 
-    // Activează/dezactivează stivele
     updateCardStacks();
 }
 
-//--------------------------------------------------
-// Convertește un caracter ('1','2','3','4','E') în Card::Value
-//--------------------------------------------------
 Card::Value Eter_UI::charToCardValue(char value) {
     switch (value) {
     case '1': return Card::Value::One;
@@ -438,15 +377,11 @@ Card::Value Eter_UI::charToCardValue(char value) {
     }
 }
 
-//--------------------------------------------------
-// Creează butoanele de shift și le conectează
-//--------------------------------------------------
 void Eter_UI::createShiftButtons() {
     const int buttonSize = 50;
     const int spacing = 10;
 
-    // Poziționare la dreapta tablei
-    int boardPixels = 300; // Să fie puțin offset; modifică după nevoi
+    int boardPixels = 300;
     int startX = width() / 2 + boardPixels / 2 + spacing * 2;
     int startY = height() / 2 - (buttonSize * 2 + spacing);
 
@@ -502,19 +437,14 @@ void Eter_UI::createShiftButtons() {
         connect(shiftDownButton, &QPushButton::clicked, this, &Eter_UI::onShiftDown);
     }
 
-    // Inițial, update
     updateShiftButtons();
 }
 
-//--------------------------------------------------
-// Handler pt shift UP
-//--------------------------------------------------
 void Eter_UI::onShiftUp() {
     if (!m_game) return;
 
     Board& board = m_game->getBoard();
     if (board.circularShiftUp()) {
-        // Logica a mutat, acum reafișăm
         updateBoardDisplay();
         checkWinCondition();
     }
@@ -523,7 +453,6 @@ void Eter_UI::onShiftUp() {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::onShiftDown() {
     if (!m_game) return;
 
@@ -537,7 +466,6 @@ void Eter_UI::onShiftDown() {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::onShiftLeft() {
     if (!m_game) return;
 
@@ -551,7 +479,6 @@ void Eter_UI::onShiftLeft() {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::onShiftRight() {
     if (!m_game) return;
 
@@ -564,12 +491,7 @@ void Eter_UI::onShiftRight() {
         qDebug() << "circularShiftRight did not execute properly";
     }
 }
-
-//--------------------------------------------------
-// Când plasăm o carte
-//--------------------------------------------------
-void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
-{
+void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
     if (!m_game) return;
 
     CardLabel* card = qobject_cast<CardLabel*>(event->source());
@@ -584,7 +506,6 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
     QString cardName = card->property("cardName").toString();
     Card::Color cardColor = isRedTurn ? Card::Color::Red : Card::Color::Blue;
 
-    // Verificăm dacă jucătorul are dreptul să plaseze cartea (culoarea)
     if (isRedTurn && !cardName.contains("R")) {
         QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului roșu!");
         return;
@@ -594,10 +515,11 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
         return;
     }
 
-    // Referință la Board
     Board& board = m_game->getBoard();
 
-    // Dacă s-a mai plasat o carte înainte, impunem plasarea lângă una existentă
+    char valChar = cardName.at(cardName.size() - 1).toLatin1();
+    Card::Value val = charToCardValue(valChar);
+
     if (firstCardPlaced) {
         if (!board.checkNeighbours(row, col)) {
             QMessageBox::warning(this, "Mutare interzisă",
@@ -606,29 +528,25 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
         }
     }
 
-    // Construcția cărții logice
-    char valChar = cardName.at(cardName.size() - 1).toLatin1();
-    Card::Value val = charToCardValue(valChar);
-    Card newCard(val, cardColor);
+    if (!board.checkValue(row, col, val)) {
+        QMessageBox::warning(this, "Mutare interzisă", "Cartea nu poate fi plasata in acest loc!");
+        return;
+    }
 
-    // Plasare în Board (logica jocului)
+    Card newCard(val, cardColor);
     board.getBoard()[row][col].push_back(newCard);
 
-    // Actualizare UI: punem imaginea în celulă și ascundem cartea din mână
     cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
     card->hide();
 
-    // Dacă este prima carte plasată, marcăm acest lucru
     if (!firstCardPlaced) {
         firstCardPlaced = true;
     }
 
-    // Schimbăm jucătorul curent și actualizăm interfața
     isRedTurn = !isRedTurn;
     updateTurnLabel();
     updateCardStacks();
 
-    // Verificăm dacă cineva a câștigat
     Card::Color winner = board.checkWin();
     if (winner != Card::Color::Undefined) {
         showWinMessage(winner);
@@ -636,15 +554,12 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
 }
 
 
-//--------------------------------------------------
-// Actualizează butoanele de shift pe baza logicii
-//--------------------------------------------------
 void Eter_UI::updateShiftButtons() {
     if (!m_game) return;
 
     Board& board = m_game->getBoard();
 
-    bool canShiftUp = board.circularShiftUp(true);    // mod "simulate only"
+    bool canShiftUp = board.circularShiftUp(true);   
     bool canShiftDown = board.circularShiftDown(true);
     bool canShiftLeft = board.circularShiftLeft(true);
     bool canShiftRight = board.circularShiftRight(true);
@@ -655,9 +570,6 @@ void Eter_UI::updateShiftButtons() {
     if (shiftRightButton) shiftRightButton->setEnabled(canShiftRight);
 }
 
-//--------------------------------------------------
-// Actualizează label-ul cu rândul curent
-//--------------------------------------------------
 void Eter_UI::updateTurnLabel() {
     if (!turnLabel) return;
 
@@ -674,12 +586,10 @@ void Eter_UI::updateTurnLabel() {
     turnLabel->move(width() / 2 - turnLabel->width() / 2, 20);
 }
 
-//--------------------------------------------------
 void Eter_UI::onWizardPowersClicked() {
     OnButtonClick();
 }
 
-//--------------------------------------------------
 void Eter_UI::checkWinCondition() {
     if (!m_game) return;
 
@@ -689,7 +599,6 @@ void Eter_UI::checkWinCondition() {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::removeCard(CardLabel* card) {
     cards.removeOne(card);
     card->deleteLater();
@@ -699,7 +608,6 @@ void Eter_UI::removeCard(CardLabel* card) {
     checkWinCondition();
 }
 
-//--------------------------------------------------
 void Eter_UI::showWinMessage(Card::Color winner) {
     QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
     QMessageBox msgBox(this);
@@ -709,13 +617,13 @@ void Eter_UI::showWinMessage(Card::Color winner) {
     msgBox.exec();
 }
 
-//--------------------------------------------------
+
 void Eter_UI::processCardPlacement(Player& player, int row, int col, Card::Value cardValue) {
     // Ex. dacă ai nevoie de logică la plasare
     // TOTUL însă să meargă prin m_game->getBoard()
 }
 
-//--------------------------------------------------
+
 void Eter_UI::drawTournamentMenu() {
     isStartPage = false;
 
@@ -760,7 +668,6 @@ void Eter_UI::drawTournamentMenu() {
         buttonFont, &Eter_UI::onWizardPowersClicked);
 }
 
-//--------------------------------------------------
 void Eter_UI::drawSpeedMenu() {
     isStartPage = false;
 
@@ -805,9 +712,7 @@ void Eter_UI::drawSpeedMenu() {
         buttonFont, &Eter_UI::onWizardPowersClicked);
 }
 
-//--------------------------------------------------
 void Eter_UI::updateCardStacks() {
-    // Activează / dezactivează cardurile în funcție de rând
     for (CardLabel* c : cards) {
         if (!c) continue;
         if (c->isHidden()) continue;
@@ -815,7 +720,6 @@ void Eter_UI::updateCardStacks() {
         QString name = c->property("cardName").toString();
         bool isRedCard = name.contains("R", Qt::CaseInsensitive);
         bool isBlueCard = name.contains("B", Qt::CaseInsensitive);
-        // Poți adăuga extra condiții pentru alt tip de carte
 
         if (isRedTurn) {
             c->setEnabled(isRedCard);
@@ -826,7 +730,6 @@ void Eter_UI::updateCardStacks() {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::cleanCardStack() {
     cards.erase(
         std::remove_if(cards.begin(), cards.end(), [](CardLabel* c) {
@@ -836,9 +739,8 @@ void Eter_UI::cleanCardStack() {
     );
 }
 
-//--------------------------------------------------
+
 void Eter_UI::updateBoardDisplay() {
-    // Citește starea din m_game->getBoard() și desenează
     const auto& boardData = m_game->getBoard().getBoard();
     for (int row = 0; row < (int)boardData.size(); ++row) {
         for (int col = 0; col < (int)boardData[row].size(); ++col) {
@@ -878,7 +780,6 @@ void Eter_UI::updateBoardDisplay() {
     updateShiftButtons();
 }
 
-//--------------------------------------------------
 void Eter_UI::displayPowerCard(const QString& powerName) {
     QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" + powerName + ".png";
     if (QFile::exists(imagePath)) {
@@ -891,9 +792,7 @@ void Eter_UI::displayPowerCard(const QString& powerName) {
     }
 }
 
-//--------------------------------------------------
 void Eter_UI::activateWizardPower(size_t powerIndex, Player& player, Game& game) {
-    // Exemplu: vrăjitorul face ceva, apoi afișăm cartea
     Wizard& wizard = Wizard::getInstance();
     if (wizard.play(powerIndex, player, game, /*check=*/false)) {
         QString powerName = QString::fromStdString(wizard.getWizardName(powerIndex));
