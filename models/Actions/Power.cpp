@@ -355,7 +355,7 @@ bool Power::PowerAction::hurricane(Player& _player, Game& _game, const bool _che
             row[row.size() - 1].clear();
 
             for (auto& card : outStack)
-                _game.m_returnedCards.push_back(std::move(card);
+                _game.m_returnedCards.push_back(std::move(card));
         }
         else if (directionChoice == 'd') { 
             auto outStack = std::move(row[row.size() - 1]);
