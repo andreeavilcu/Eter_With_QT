@@ -134,20 +134,15 @@ bool Power::PowerAction::ash(Player& _player, Game& _game, const bool _check) {
     Board& board = _game.m_board;
 
     const auto& eliminatedCards = _game.m_eliminatedCards;
-    if (eliminatedCards.empty()) {
-        return false;
-    }
+    if (eliminatedCards.empty()) return false;
 
-    for (size_t i = 0; i < eliminatedCards.size(); ++i) {
+    for (size_t i = 0; i < eliminatedCards.size(); ++i)
         std::cout << i + 1 << ": " << eliminatedCards[i] << std::endl;
-    }
 
     size_t cardIndex;
     std::cin >> cardIndex;
 
-    if (cardIndex < 1 || cardIndex > eliminatedCards.size()) {
-        return false;
-    }
+    if (cardIndex < 1 || cardIndex > eliminatedCards.size()) return false;
 
     Card chosenCard = eliminatedCards[cardIndex - 1];
 
