@@ -22,7 +22,11 @@ void startNewGame() {
     int timerInput;
     std::cout << "Select Timer Duration:\n1. Untimed\n2. Short\n3. Medium\n4. Long\nChoice: ";
     std::cin >> timerInput;
-    timerDuration = static_cast<Match::TimerDuration>(timerInput - 1);
+
+    if (timerInput == 1) timerDuration = Match::TimerDuration::Untimed;
+    else if (timerInput == 2) timerDuration = Match::TimerDuration::Short;
+    else if (timerInput == 3) timerDuration = Match::TimerDuration::Medium;
+    else if (timerInput == 4) timerDuration = Match::TimerDuration::Long;
 
     int gameTypeInput;
     std::cout << "Select Game Type:\n1. Training\n2. WizardDuel\n3. PowerDuel\n4. WizardAndPowerDuel\nChoice: ";
