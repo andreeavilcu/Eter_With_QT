@@ -1,13 +1,14 @@
 #pragma once
+
 #include <QLabel>
+#include <QPixmap>
 #include <QDrag>
 #include <QMimeData>
-#include <QPixmap>
 #include <QMouseEvent>
-#include <QBuffer>
 #include "../models/Actions/Card.h"
 
-class CardLabel : public QLabel {
+class CardLabel : public QLabel
+{
     Q_OBJECT
 
 public:
@@ -18,4 +19,7 @@ signals:
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
+
+private:
+    Card::Value m_value;
 };
