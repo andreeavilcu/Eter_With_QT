@@ -38,7 +38,12 @@ private:
     QPointer<QPushButton> buttonSpeed;
     QPointer<QPushButton> buttonWizardPowers;
     QVector<CardLabel*> cards;
-    QLabel* powerCardLabel; // Eticheta pentru afisarea cartii puterii
+
+    QPointer<QPushButton> shiftUpButton;
+    QPointer<QPushButton> shiftDownButton;
+    QPointer<QPushButton> shiftLeftButton;
+    QPointer<QPushButton> shiftRightButton;
+
     bool isStartPage;
     bool isRedTurn;
 
@@ -46,6 +51,15 @@ private:
     Board* gameBoard;
     QGridLayout* boardLayout;
     QVector<QLabel*> boardCells;
+
+
+    void createShiftButtons();
+    void onShiftUp();
+    void onShiftDown();
+    void onShiftLeft();
+    void onShiftRight();
+    void updateShiftButtons();
+    void updateBoardDisplay();
 
     std::unique_ptr<Game> m_game; // Instanță a clasei Game
     std::unique_ptr<Match> m_match; // Instanță a clasei Match
@@ -81,6 +95,8 @@ private slots:
     void drawTournamentMenu();
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
+
+   
 
     void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot pentru plasarea cărților
     void activateWizardPower(size_t powerIndex, Player& player, Game& game); // Activează o putere
