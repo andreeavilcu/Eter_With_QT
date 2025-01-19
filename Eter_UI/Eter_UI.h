@@ -12,7 +12,6 @@
 #include "../models/GameMechanics/Board.h"
 #include "CardLabel.h"
 #include "../models/GameMechanics/Game.h"
-#include "../models/GameMechanics/Match.h"
 #include <QMessageBox>
 #include "BoardCell.h"
 
@@ -44,12 +43,11 @@ private:
     QGridLayout* boardLayout;
     QVector<QLabel*> boardCells;
 
-    std::unique_ptr<Game> m_game; // Instanță a clasei Game
-    std::unique_ptr<Match> m_match; // Instanță a clasei Match
+    std::unique_ptr<Game> m_game;
 
-    void createGame(Game::GameType gameType);         // Creează o nouă instanță Game
-    void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell); // Procesează mutarea
-    void endGame(const GameEndInfo& info);            // Termină jocul și afișează mesajul
+    void createGame(Game::GameType gameType);
+    void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell);
+    void endGame(const GameEndInfo& info);
 
     bool isValidMove(size_t row, size_t col, Card::Value cardValue);
 
@@ -62,12 +60,6 @@ private:
     void checkWinCondition();
     void showWinMessage(Card::Color winner);
     void processCardPlacement(Player& player, int row, int col, Card::Value cardValue);
-    void updateCardStacks();
-    void cleanCardStack();
-
-    // Funcții noi
-    void updateBoardFromMatch();               // Actualizează tabla conform stării din Match
-    void initializeMatch(Game::GameType gameType); // Inițializează o instanță Match
 
 private slots:
     void OnButtonClick();
@@ -75,7 +67,7 @@ private slots:
     void drawTournamentMenu();
     void drawSpeedMenu();
     void removeCard(CardLabel* card);
+    
+    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot for handling card placements
 
-    void onCardPlaced(QDropEvent* event, BoardCell* cell); // Slot pentru plasarea cărților
 };
-

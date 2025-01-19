@@ -1,17 +1,19 @@
 ﻿#include "CardLabel.h"
 #include <QDebug>
-#include "qfileinfo.h""
 
-CardLabel::CardLabel(const QString& imagePath, Card::Value cardValue, QWidget* parent)
-    : QLabel(parent) {
-    QPixmap pixmap(imagePath);
-    if (pixmap.isNull()) {
+CardLabel::CardLabel(const QString& imagePath,
+    Card::Value cardValue,
+    QWidget* parent)
+    : QLabel(parent),
+    m_value(cardValue)
+{
+    QPixmap loadedPixmap(imagePath);
+    if (loadedPixmap.isNull()) {
         qDebug() << "Eroare: Nu s-a putut încărca imaginea:" << imagePath;
         return;
     }
-
-    // Setează proprietatea cardName
-    setProperty("cardName", QFileInfo(imagePath).baseName());
+    setPixmap(loadedPixmap.scaled(100, 150, Qt::KeepAspectRatio,
+        Qt::SmoothTransformation));
 
     setProperty("cardValue", static_cast<int>(cardValue));
     setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
@@ -19,9 +21,10 @@ CardLabel::CardLabel(const QString& imagePath, Card::Value cardValue, QWidget* p
     setStyleSheet("border: none;");
 }
 
-
-void CardLabel::mousePressEvent(QMouseEvent* event) {
+void CardLabel::mousePressEvent(QMouseEvent* event)
+{
     if (event->button() == Qt::LeftButton) {
+        QDrag* drag = new QDrag(this);
         QMimeData* mimeData = new QMimeData;
 
         // Salvăm valoarea cărții în datele MIME
@@ -49,4 +52,6 @@ void CardLabel::mousePressEvent(QMouseEvent* event) {
             emit cardMoved(this);
         }
     }
+
+    QLabel::mousePressEvent(event);
 }

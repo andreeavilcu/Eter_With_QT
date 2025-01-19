@@ -2,15 +2,25 @@
 #include <QDebug>
 #include <QMimeData>
 #include <QPixmap>
+#include "CardLabel.h"
 
 BoardCell::BoardCell(QWidget* parent) : QLabel(parent) {
     setAcceptDrops(true);
-    setStyleSheet("border: 2px solid black;");
+    setStyleSheet("border: 2px solid black;"); 
 }
 
-void BoardCell::dragEnterEvent(QDragEnterEvent* event) {
-    if (event->mimeData()->hasFormat("application/x-card")) {
-        event->acceptProposedAction();
+void BoardCell::dropEvent(QDropEvent* event) {
+    if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+        CardLabel* sourceCard = qobject_cast<CardLabel*>(event->source());
+        if (sourceCard) {
+            // Folosim pixmap() în loc să dereferențiem
+            setPixmap(sourceCard->pixmap(Qt::ReturnByValue));
+            event->acceptProposedAction();
+            emit cardPlaced(event, this);
+        }
+    }
+    else {
+        event->ignore();
     }
 }
 
@@ -30,3 +40,12 @@ void BoardCell::dropEvent(QDropEvent* event) {
 
     }
 }
+//void BoardCell::dropEvent(QDropEvent* event) {
+//    if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+//        event->acceptProposedAction();
+//        emit cardPlaced(event, this);
+//    }
+//    else {
+//        event->ignore();
+//    }
+//}
