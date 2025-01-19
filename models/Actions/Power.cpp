@@ -402,7 +402,7 @@ bool Power::PowerAction::gust(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Gust: Moves horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
+    std::cout << "Gust: Move horizontally or vertically any visible card on the board to a position adjacent to a card with a lower number.\n";
     std::cout << "Enter the coordinates for the card that you want to move: ";
     std::cin >> x >> y;
 
@@ -491,7 +491,7 @@ bool Power::PowerAction::storm(Player& _player, Game& _game, const bool _check) 
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Storm: Remove from play any pile of cards containing 2 or more cards.\n";
+    std::cout << "Storm: Remove any pile of cards containing 2 or more cards.\n";
     std::cout << "Enter coordinates for pile: ";
     std::cin >> x >> y;
 
@@ -521,17 +521,14 @@ bool Power::PowerAction::tide(Player& _player, Game& _game, const bool _check) {
     size_t x, y, v, w;
     Board& board = _game.m_board;
 
-    std::cout << "Tide\nSwitch 2 pile of cards.\n";
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)(FIRST Pile)\n";
+    std::cout << "Tide: Switch 2 piles of cards.\n";
+    std::cout << "Enter coordinates for the first pile (0-indexed): ";
     std::cin >> x >> y;
-    std::cout << "Enter (x, y) coordinates for power action (0-indexed)(SECOND Pile)\n";
+    std::cout << "Enter coordinates for the second pile (0-indexed): ";
     std::cin >> v >> w;
 
-    if (!board.checkIndexes(x,y) || !board.checkIndexes(v, w))
-        return false;
-    
-    if (!board.isAPile(x, y) || !board.isAPile(v, w))
-        return false;
+    if (!board.checkIndexes(x,y) || !board.checkIndexes(v, w)) return false;
+    if (!board.isAPile(x, y) || !board.isAPile(v, w)) return false;
     
     std::swap(board.m_board[x][y], board.m_board[v][w]);
 
@@ -539,38 +536,27 @@ bool Power::PowerAction::tide(Player& _player, Game& _game, const bool _check) {
 }
 
 bool Power::PowerAction::mist(Player& _player, Game& _game, const bool _check) {
-    size_t x, y;
+    size_t x, y, value;
     Board& board = _game.m_board;
 
-    std::cout << "\n Mist \nPlay an extra illusion.\n"; 
+    for (auto& row : board.m_board)
+        for (auto& col : row)
+            if (!col.empty() && col.back().isIllusion() && col.back().getColor() == _player.getColor()) return false;
 
-    if (_player.wasIllusionPlayed()) {
-        std::cout << "You have already played an illusion. You cannot have two illusions at the same time!\n";
-        return false;
-    }
+    std::cout << "Mist: Play an extra illusion.\n";
+    std::cout << "Enter the coordinates and value for the new illusion\n";
+    std::cin >> x >> y >> value;
 
-    std::cout << "Enter (x, y) coordinates for the new ilusion\n";
-    std::cin >> x >> y;
+    if (!board.checkIndexes(x, y)) return false;
+    if (value > static_cast<size_t>(Card::Value::Four)) return false;
 
-    if (!board.checkIndexes(x, y))
-        return false;
+    auto playedCard = _player.useCard(static_cast<Card::Value>(value));
 
-    if (!board.m_board[x][y].empty()) {
-        if (board.m_board[x][y].back().isIllusion()) {
-            std::cout << "There is a illusion in this position!\n";
-            return false;
-        }
-    }
+    if (!playedCard) return false;
 
-    if (board.checkIllusion(x, y, _player.getColor())) {
-        std::cout << "You cannot have two illusions on the board at the same time!\n";
-        return false;
-    }
-    std::cout << "\nValid coordinates. Please confirm them, and select card to play\n";
-    if (!_player.playIllusion(_game)) {
-        std::cout << "Failed to play an illusion\n";
-        return false;
-    }
+    playedCard->setIllusion();
+    board.m_board[x][y].push_back(std::move(*playedCard));
+    _player.setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
 
     return true;
 }
@@ -579,18 +565,12 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Wave\n Move a pile to an adjacent empty position. Play a card on the new empty position.\n";
-    std::cout << "Enter (x, y) coordinates for pile (0-indexed): ";
+    std::cout << "Wave: Move a pile to an adjacent empty position. Play a card on the new empty position.\n";
+    std::cout << "Enter the coordinates for pile (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y)) {
-        std::cout << "Invalid coordinates!\n";
-        return false;
-    }
-
-    if (!board.isAPile(x, y)) {
-        return false;
-    }
+    if (!board.checkIndexes(x, y)) return false;
+    if (!board.isAPile(x, y)) return false;
 
     std::map<char, std::pair<int, int>> directionMap = {
         {'w', {-1, 0}}, 
@@ -614,113 +594,103 @@ bool Power::PowerAction::wave(Player& _player, Game& _game, const bool _check) {
         }
     }
 
-
     auto offset = directionMap[direction];
     int newX = static_cast<int>(x) + offset.first;
     int newY = static_cast<int>(y) + offset.second;
 
-    if (!board.checkIndexes(newX, newY)) {
-        std::cout << "The move is outside the board boundaries!\n";
-        return false;
-    }
+    if (!board.checkIndexes(newX, newY)) return false;
+    if (!board.m_board[newX][newY].empty()) return false;
 
-    if (!board.m_board[newX][newY].empty()) {
-        std::cout << "The target position is not empty!\n";
-        return false;
-    }
+    size_t int_value;
+    std::cout << "Enter value for the new card: ";
+    std::cin >> int_value;
+
+    auto playedCard = _player.playCardCheck(_game, x, y, int_value);
+
+    if (!playedCard) return false;
 
     board.m_board[newX][newY] = std::move(board.m_board[x][y]);
     board.m_board[x][y].clear();
 
-
-    _player.playCard(_game);
+    _game.getBoard().placeCard(x, y, std::move(*playedCard));
+    _player.setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
 
     return true;
 }
+
 bool Power::PowerAction::whirlpool(Player& _player, Game& _game, const bool _check) {
     size_t x, y;
     Board& board = _game.m_board;
 
-    std::cout << "Whirlpool\nMove 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
+    std::cout << "Whirlpool: Move 2 cards from the same row or column, but separated by an empty space, onto that empty space. The card with the higher number is placed on top, and in case of a tie, the player chooses.\n";
 
     char choice;
     std::cout << "Choose row ('r') or column ('c'): ";
     std::cin >> choice;
 
-    if (choice != 'r' && choice != 'c')  
-        return false;
+    if (choice != 'r' && choice != 'c') return false;
 
-    size_t index;
-    std::cout << "Enter the index of the row/column (0-indexed): ";
-    std::cin >> index;
-
-    std::cout << "Enter (x, y) coordinates for the empty spot (0-indexed): ";
+    std::cout << "Enter the index for the empty spot on the row/column (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty())
+    if (!board.checkIndexes(x, y) || !board.m_board[x][y].empty()) return false;
+
+    size_t firstIndex = (choice == 'c' ? x : y) - 1;
+    size_t secondIndex = (choice == 'c' ? x : y) + 1;
+
+    if (firstIndex > static_cast<size_t>(Card::Value::Four) ||
+        secondIndex > static_cast<size_t>(Card::Value::Four))
         return false;
 
-    size_t firstIndex = static_cast<size_t>(-1), secondIndex = static_cast<size_t>(-1);
-
     if (choice == 'r') {
-        for (size_t i = 0; i < board.m_board[x].size(); ++i) {
-            if (!board.m_board[x][i].empty() && i != y) {
-                if (firstIndex == static_cast<size_t>(-1))
-                    firstIndex = i;
-                else {
-                    secondIndex = i;
-                    break;
-                }
-            }
-        }
-    }
-    else {
-        for (size_t i = 0; i < board.m_board.size(); ++i) {
-            if (!board.m_board[i][y].empty() && i != x) {
-                if (firstIndex == static_cast<size_t>(-1))
-                    firstIndex = i;
-                else {
-                    secondIndex = i;
-                    break;
-                }
-            }
-        }
+        if (board.m_board[x][firstIndex].empty() || board.m_board[x][secondIndex].empty()) return false;
+    } else {
+        if (board.m_board[firstIndex][x].empty() || board.m_board[secondIndex][x].empty()) return false;
     }
 
-    if (firstIndex == static_cast<size_t>(-1) || secondIndex == static_cast<size_t>(-1)) return false;
+    std::unique_ptr<Card> firstCard = std::make_unique<Card>(choice == 'r' ? board.m_board[x][firstIndex].back() : board.m_board[firstIndex][y].back());
+    std::unique_ptr<Card> secondCard = std::make_unique<Card>(choice == 'r' ? board.m_board[x][secondIndex].back() : board.m_board[secondIndex][y].back());
 
-    auto& firstCard = (choice == 'r') ? board.m_board[x][firstIndex].back() : board.m_board[firstIndex][y].back();
-    auto& secondCard = (choice == 'r') ? board.m_board[x][secondIndex].back() : board.m_board[secondIndex][y].back();
+    const auto firstCardValue = firstCard->getValue();
+    const auto secondCardValue = secondCard->getValue();
 
-    if (firstCard.getValue() == secondCard.getValue()) {
+    bool switchCards;
+
+    if (firstCardValue < secondCardValue) std::swap(firstCard, secondCard);
+
+    if (firstCardValue == secondCardValue) {
         std::cout << "Cards have the same value. Choose which card goes on top:\n";
-        std::cout << "1. First card\n2. Second card\n";
-        int cardChoice;
-        std::cin >> cardChoice;
+        std::cout << "0. " << *firstCard << "\n1. " << *secondCard << "\n";
+        std::cin >> switchCards;
 
-        if (cardChoice == 1) {
-            board.m_board[x][y].push_back(std::move(firstCard));
-            board.m_board[(choice == 'r') ? x : firstIndex][(choice == 'r') ? firstIndex : y].clear();
-            board.m_board[x][y].push_back(std::move(secondCard));
-            board.m_board[(choice == 'r') ? x : secondIndex][(choice == 'r') ? secondIndex : y].clear();
-        }
-        else {
-            board.m_board[x][y].push_back(std::move(secondCard));
-            board.m_board[(choice == 'r') ? x : secondIndex][(choice == 'r') ? secondIndex : y].clear();
-            board.m_board[x][y].push_back(std::move(firstCard));
-            board.m_board[(choice == 'r') ? x : firstIndex][(choice == 'r') ? firstIndex : y].clear();
-        }
+        if (!switchCards) std::swap(firstCard, secondCard);
     }
-    else {
-        auto& higherCard = (firstCard.getValue() < secondCard.getValue()) ? firstCard : secondCard;
-        auto& lowerCard = (firstCard.getValue() < secondCard.getValue()) ? secondCard : firstCard;
 
-        board.m_board[x][y].push_back(std::move(higherCard));
-        board.m_board[(choice == 'r') ? x : ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)][(choice == 'r') ? ((higherCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y].clear();
+    board.m_board[x][y].push_back(std::move(*firstCard));
+    board.m_board[x][y].push_back(std::move(*secondCard));
 
-        board.m_board[x][y].push_back(std::move(lowerCard));
-        board.m_board[(choice == 'r') ? x : ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex)][(choice == 'r') ? ((lowerCard.getValue() == firstCard.getValue()) ? firstIndex : secondIndex) : y].clear();
+    board.m_board[choice == 'r' ? x : firstIndex][choice == 'r' ? firstIndex : y].pop_back();
+    board.m_board[choice == 'r' ? x : secondIndex][choice == 'r' ? secondIndex : y].pop_back();
+
+    if (!board.checkBoardIntegrity()) {
+        board.m_board[choice == 'r' ? x : secondIndex][choice == 'r' ? secondIndex : y].push_back(
+           std::move(board.m_board[x][y].back())
+        );
+        board.m_board[x][y].pop_back();
+
+        board.m_board[choice == 'r' ? x : firstIndex][choice == 'r' ? firstIndex : y].push_back(
+            std::move(board.m_board[x][y].back()
+        ));
+        board.m_board[x][y].pop_back();
+
+        if (!switchCards) std::swap(
+            board.m_board[choice == 'r' ? x : secondIndex][choice == 'r' ? secondIndex : y].back(),
+            board.m_board[choice == 'r' ? x : firstIndex][choice == 'r' ? firstIndex : y].back()
+        );
+
+        return false;
     }
+
 
     return true;
 }

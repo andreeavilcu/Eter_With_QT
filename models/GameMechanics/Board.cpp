@@ -425,7 +425,7 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
         return false;
 
     if (this->m_firstCardPlayed && !this->checkNeighbours(_x, _y))
-        if (!this->checkBoardIntegrity())
+        if (this->checkBoardIntegrity())
             return false;
 
     const auto& power = Power::getInstance();

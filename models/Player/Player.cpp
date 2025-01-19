@@ -20,7 +20,7 @@ Player::Player(const Card::Color _color, const std::vector<Card>& _cards, const 
     m_color{ _color },
     m_cards{ _cards },
     m_wizardIndex{ _wizardIndex },
-    m_powerIndexes{ 10, 11 /*_powerIndexFirst, _powerIndexSecond*/ } {
+    m_powerIndexes{ 14, 15 /*_powerIndexFirst, _powerIndexSecond*/ } {
 
     for (size_t i = 0; i < _cards.size(); ++i)
         m_cards[i].setColor(_color);
@@ -249,6 +249,10 @@ std::optional<Card> Player::playCardCheck(Game &_game, const size_t _x, const si
 bool Player::playIllusion(Game &_game) {
     size_t x, y, int_value;
 
+    for (auto& row : _game.getBoard().m_board)
+        for (auto& col : row)
+            if (!col.empty() && col.back().isIllusion() && col.back().getColor() == this->getColor()) return false;
+
     std::cin >> x;
     std::cin >> y;
     std::cin >> int_value;
@@ -266,6 +270,9 @@ bool Player::playIllusion(Game &_game) {
 }
 
 std::optional<Card> Player::playIllusionCheck(Game &_game, const size_t _x, const size_t _y, const size_t _int_value) {
+    if (!_game.getBoard().m_board[_x][_y].empty())
+        return std::nullopt;
+
     if (!_game.getBoard().checkPartial(_x, _y, _int_value))
         return std::nullopt;
 
