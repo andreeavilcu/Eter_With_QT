@@ -341,44 +341,57 @@ bool Player::playerTurn(Game &_game) {
 
     std::cin >> choice;
 
-    std::unordered_map<char, std::function<bool(Game&)>> actions{
-         {'c', [this](Game& game) { return this->playCard(game); }},
-         {'m', [this](Game& game) {
-            this->shiftBoard(game); 
-            return false; 
-        }},
-         {'i', [this, &_game](Game& game) {
-             if (_game.m_illusionsAllowed)
-                 return this->playIllusion(game);
-             return false;
-         }},
-         {'w', [this, &_game](Game& game) {
-             if (_game.getGameType() == Game::GameType::WizardDuel ||
-                 _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                 return this->playWizard(game);
-             return false;
-         }},
-         {'p', [this, &_game](Game& game) {
-             if (_game.getGameType() == Game::GameType::PowerDuel ||
-                 _game.getGameType() == Game::GameType::WizardAndPowerDuel)
-                 return this->playPower(game);
-             return false;
-         }},
-        {'x', [this, &_game](Game& game) {
-            running = false;
-            saving = false;
-            return false;
-        }},
-        {'s', [this, &_game](Game& game) {
-            running = false;
-            saving = true;
-            return false;
-        }},
-    };
+    std::cout << std::endl;
 
-    std::cout <<std::endl;
+    switch (choice) {
+        case 'c':
+            legal = this->playCard(_game);
+        break;
 
-    if (actions.find(choice) != actions.end()) legal = actions[choice](_game);
+        case 'm':
+            this->shiftBoard(_game);
+        legal = false;
+        break;
+
+        case 'i':
+            if (_game.m_illusionsAllowed)
+                legal = this->playIllusion(_game);
+            else
+                legal = false;
+        break;
+
+        case 'w':
+            if (_game.getGameType() == Game::GameType::WizardDuel ||
+                _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                legal = this->playWizard(_game);
+            else
+                legal = false;
+        break;
+
+        case 'p':
+            if (_game.getGameType() == Game::GameType::PowerDuel ||
+                _game.getGameType() == Game::GameType::WizardAndPowerDuel)
+                legal = this->playPower(_game);
+            else
+                legal = false;
+        break;
+
+        case 'x':
+            running = false;
+        saving = false;
+        legal = false;
+        break;
+
+        case 's':
+            running = false;
+        saving = true;
+        legal = false;
+        break;
+
+        default:
+            legal = false;
+        break;
+    }
 
     if (!legal)
         return false;

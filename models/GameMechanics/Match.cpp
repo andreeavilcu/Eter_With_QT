@@ -184,8 +184,8 @@ void Match::runPrintLogic(size_t _index, size_t _matchesPlayed) {
         std::cout << "Match Score: Player1 - Player2\n";
         std::cout << "Match Score:   Red   -   Blue\n";
         std::cout << "Game " + std::to_string(_index) + "/" + std::to_string(_matchesPlayed) +
-            "        " + formatScore(this->m_scores.first) +
-            "  -  " + formatScore(this->m_scores.second);
+            "       " + formatScore(this->m_scores.first) +
+            "   -   " + formatScore(this->m_scores.second);
         std::cout << std::endl << std::endl;
     }
 }

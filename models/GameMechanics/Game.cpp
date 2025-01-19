@@ -276,10 +276,10 @@ void Game::runMidRoundLogic(const bool _player1Turn) {
     }
 
     CardPosition pos = Power::getInstance().getPlus(m_board);
-    if (m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setPlus(nullptr);
+    if (pos.x != -1 && pos.y == -1 && m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setPlus(nullptr);
 
     pos = Power::getInstance().getMinus(m_board);
-    if (m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setMinus(nullptr);
+    if (pos.x != -1 && pos.y == -1 && m_board.m_board[pos.x][pos.y].size() != pos.z) Power::getInstance().setMinus(nullptr);
 
     auto& player = _player1Turn ? m_player1 : m_player2;
 
