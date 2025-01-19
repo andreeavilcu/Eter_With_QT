@@ -1,11 +1,13 @@
 ﻿#include "CardLabel.h"
 #include <QDebug>
+#include <QToolTip>
 
 CardLabel::CardLabel(const QString& imagePath,
     Card::Value cardValue,
     QWidget* parent)
     : QLabel(parent),
-    m_value(cardValue)
+    m_value(cardValue),
+    m_description("")
 {
     QPixmap loadedPixmap(imagePath);
     if (loadedPixmap.isNull()) {
@@ -17,6 +19,10 @@ CardLabel::CardLabel(const QString& imagePath,
 
     setFixedSize(100, 150);
     setStyleSheet("border: none;");
+}
+
+void CardLabel::setDescription(const QString& description) {
+    m_description = description;
 }
 
 void CardLabel::mousePressEvent(QMouseEvent* event)
@@ -41,4 +47,11 @@ void CardLabel::mousePressEvent(QMouseEvent* event)
     }
 
     QLabel::mousePressEvent(event);
+}
+
+void CardLabel::enterEvent(QEnterEvent* event) {
+    if (!m_description.isEmpty()) {
+        QToolTip::showText(QCursor::pos(), m_description, this);
+    }
+    QLabel::enterEvent(event);
 }
