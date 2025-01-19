@@ -241,7 +241,7 @@ void Match::runWinnerLogic(size_t _winner) {
     std::cout << "Match winner: " << (_winner == 1? "Red" : "Blue") << " player\n";
 }
 
-void Match::runMatch(const nlohmann::json &_json) {
+void Match::runMatch(nlohmann::json _json) {
     size_t winner = 0;
     std::pair<size_t, size_t> wizardIndices;
     bool timed;
@@ -293,6 +293,8 @@ void Match::runMatch(const nlohmann::json &_json) {
 
         if (_json.empty()) information = game->run(index % 2 == startPlayer, timed, static_cast<int>(this->m_timerDuration));
         else information = game->run(_json["game"],timed, static_cast<int>(this->m_timerDuration));
+
+        _json.clear();
 
         if (!running) {
             if (saving) saveJson(startPlayer, index, matchesPlayed, *game);

@@ -141,7 +141,7 @@ private:
     int runScoreLogic(GameEndInfo& _information, size_t& _matchesPlayed, size_t& _winner, size_t& _winsNeeded);
     void runWinnerLogic(size_t _winner);
 
-    void runMatch(const nlohmann::json& _json = nlohmann::json{});
+    void runMatch(nlohmann::json _json = nlohmann::json{});
 
     void saveJson(bool startPlayer, int index, int matchesPlayed, Game& game);
 
