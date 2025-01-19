@@ -71,6 +71,7 @@ private:
     void endGame(const GameEndInfo& info);            // Termină jocul și afișează mesajul
 
     bool isValidMove(size_t row, size_t col, Card::Value cardValue);
+    bool firstCardPlaced = false;
 
     void createButton(QPointer<QPushButton>& button, const QString& text, int x, int y, int width, int height, const QFont& font, void (Eter_UI::* slot)());
     void initializeButtons();

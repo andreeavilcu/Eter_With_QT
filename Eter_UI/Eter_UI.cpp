@@ -11,13 +11,14 @@
 #include "BoardCell.h"
 #include "CardLabel.h"
 
-
-void Eter_UI::createButton(QPointer<QPushButton>& button,
+//--------------------------------------------------
+// Helper care creează și atașează un buton la fereastră
+//--------------------------------------------------
+void Eter_UI::createButton(
+    QPointer<QPushButton>& button,
     const QString& text,
-    int x,
-    int y,
-    int width,
-    int height,
+    int x, int y,
+    int width, int height,
     const QFont& font,
     void (Eter_UI::* slot)())
 {
@@ -30,6 +31,9 @@ void Eter_UI::createButton(QPointer<QPushButton>& button,
     }
 }
 
+//--------------------------------------------------
+// Inițializează butoane la ecranul de start
+//--------------------------------------------------
 void Eter_UI::initializeButtons() {
     QFont buttonFont;
     buttonFont.setPointSize(16);
@@ -67,21 +71,21 @@ void Eter_UI::initializeButtons() {
         centerX, centerY + (spacing + buttonHeight) * 4 - yOffset,
         buttonWidth, buttonHeight, buttonFont,
         &Eter_UI::drawSpeedMenu);
-
-
 }
 
+//--------------------------------------------------
+// Constructor
+//--------------------------------------------------
 Eter_UI::Eter_UI(QWidget* parent)
     : QMainWindow(parent),
     isStartPage(true),
     isRedTurn(false),
     m_game(nullptr),
     m_match(nullptr),
-    gameBoard(nullptr),
     boardLayout(nullptr),
-    powerCardLabel(nullptr) // Inițializarea QLabel pentru puteri
+    powerCardLabel(nullptr)
 {
-    // Configurează interfața UI
+    // Setează UI din .ui (dacă ai un .ui generat)
     ui.setupUi(this);
 
     // Setează dimensiunea ferestrei la dimensiunea ecranului principal
@@ -99,29 +103,33 @@ Eter_UI::Eter_UI(QWidget* parent)
     powerCardLabel->setFixedSize(100, 150);
     powerCardLabel->setGeometry(width() - 150, height() / 2 - 75, 100, 150);
     powerCardLabel->setStyleSheet("border: 2px solid black; background-color: white;");
-    powerCardLabel->hide(); // Ascunde până la activarea unei puteri
+    powerCardLabel->hide(); // Ascuns până la activarea unei puteri
 
     // Inițializează QLabel pentru indicarea rândului
     turnLabel = new QLabel(this);
     turnLabel->setFont(QFont("Arial", 14, QFont::Bold));
     turnLabel->setStyleSheet("color: white; background-color: rgba(0, 0, 0, 128); padding: 5px;");
     turnLabel->setAlignment(Qt::AlignCenter);
-    turnLabel->hide(); // Ascunde până când începe jocul
+    turnLabel->hide(); // Ascunde până începe jocul
 }
 
+//--------------------------------------------------
+// Destructor
+//--------------------------------------------------
 Eter_UI::~Eter_UI() {
-    // Curăță resursele alocate
-    if (gameBoard) {
-        delete gameBoard;
-        gameBoard = nullptr;
-    }
+    // Nu mai ștergem gameBoard (nu îl mai avem aici),
+    // m_game se ocupă de curățare deoarece e std::unique_ptr
 }
+
+//--------------------------------------------------
+// Buton principal: decide tipul de joc și pornește jocul
+//--------------------------------------------------
 void Eter_UI::OnButtonClick() {
     // Identifică butonul apăsat
     QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
     if (!clickedButton) return;
 
-    // Ascunde toate componentele existente și curăță interfața
+    // Ascunde tot (inclusiv butoanele) și curăță interfața
     isStartPage = false;
     for (QObject* child : children()) {
         if (QWidget* widget = qobject_cast<QWidget*>(child)) {
@@ -132,40 +140,40 @@ void Eter_UI::OnButtonClick() {
         }
     }
 
+    // Ce tip de joc avem?
     Game::GameType gameType;
-    bool includeWizards = false; // Flag pentru a decide dacă se adaugă vrăjitori
-    bool includePowers = false;  // Flag pentru a decide dacă se adaugă puteri
+    bool includeWizards = false;
+    bool includePowers = false;
 
-    // Determină tipul de joc pe baza butonului apăsat
     if (clickedButton == buttonTraining) {
         gameType = Game::GameType::Training;
     }
     else if (clickedButton == buttonWizard) {
         gameType = Game::GameType::WizardDuel;
-        includeWizards = true; // Adaugă vrăjitori
+        includeWizards = true;
     }
     else if (clickedButton == buttonPowers) {
         gameType = Game::GameType::PowerDuel;
-        includePowers = true; // Adaugă puteri
+        includePowers = true;
     }
     else if (clickedButton == buttonWizardPowers) {
         gameType = Game::GameType::WizardAndPowerDuel;
         includeWizards = true;
-        includePowers = true; // Adaugă și vrăjitori, și puteri
+        includePowers = true;
     }
     else {
-        return; // Dacă nu s-a identificat butonul, ieșim
+        return; // Nimic
     }
 
-    // Crearea și configurarea instanței jocului
+    // Creează instanța jocului (dimensiunea tablei, etc.)
+    // Ajustează parametrii cum ai nevoie
     try {
-        // Constructor specific pentru clasa Game
         m_game = std::make_unique<Game>(
-            gameType,                     // Tipul jocului
-            std::make_pair<size_t, size_t>(0, 1), // Indicii vrăjitorilor (explicit size_t)
-            false,                        // illusionsAllowed
-            false,                        // explosionAllowed
-            false                         // tournament
+            gameType,
+            std::make_pair<size_t, size_t>(0, 1),  // Indici vrăjitori, dacă e relevant
+            false, // illusionsAllowed
+            false, // explosionAllowed
+            false  // tournament
         );
     }
     catch (const std::exception& e) {
@@ -174,25 +182,27 @@ void Eter_UI::OnButtonClick() {
         return;
     }
 
-    // Creează tabla de joc
+    // Creează partea vizuală a tablei (grila de BoardCell)
     createBoard(clickedButton);
 
-    // Creează cărțile specifice tipului de joc
+    // Creează și afișează cărțile (CardLabel)
     createCards(clickedButton);
 
-    // Adaugă butoane de shift (dacă sunt necesare pentru joc)
+    // Creează butoanele de shift
     createShiftButtons();
 
-    // Actualizează eticheta pentru indicarea rândului
+    // Afișează eticheta cu rândul curent
     turnLabel->setGeometry(width() / 2 - 100, 50, 200, 40);
     turnLabel->show();
     updateTurnLabel();
 
-    // Reînnoiește interfața
+    // Refresh
     update();
 }
 
-
+//--------------------------------------------------
+// Pictăm fundal + logo
+//--------------------------------------------------
 void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     QPainter painter(this);
 
@@ -203,23 +213,23 @@ void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
 
     painter.fillRect(rect(), gradient);
 
-    // Attempt to load a logo
+    // Încearcă încărcarea unui logo
     QDir appDir(QCoreApplication::applicationDirPath());
-    appDir.cdUp();  // Adjust if your actual path differs
+    appDir.cdUp();
     QString logoPath = appDir.absoluteFilePath("logo.png");
 
     QPixmap logo(logoPath);
     if (!logo.isNull()) {
         QRect logoRect;
         if (isStartPage) {
-            // Large centered
+            // Mare și centrat
             logoRect = QRect(width() / 2 - logo.width() / 2,
                 height() / 4 - 150,
                 logo.width(),
                 logo.height());
         }
         else {
-            // Smaller corner
+            // Mic, colț stânga
             logoRect = QRect(10, 10, 150, 75);
         }
         painter.drawPixmap(logoRect, logo);
@@ -229,26 +239,31 @@ void Eter_UI::paintEvent(QPaintEvent* /*event*/) {
     }
 }
 
+//--------------------------------------------------
+// Creăm tabla (strict UI): un QGridLayout cu BoardCell
+//--------------------------------------------------
 void Eter_UI::createBoard(QPushButton* clickedButton) {
-    // Cleanup old board if any
-    if (gameBoard) {
-        delete gameBoard;
-        gameBoard = nullptr;
-    }
-
-    int boardSize = 3;
-    if (clickedButton == buttonWizard || clickedButton == buttonPowers || clickedButton == buttonWizardPowers) {
-        boardSize = 4;
-    }
-
-    gameBoard = new Board(boardSize);
-
-    QWidget* boardWidget = new QWidget(this);
-
+    // Ștergem layoutul vechi (dacă există)
     if (boardLayout) {
         delete boardLayout;
         boardLayout = nullptr;
     }
+
+    int boardSize = 3; // default
+    if (clickedButton == buttonWizard ||
+        clickedButton == buttonPowers ||
+        clickedButton == buttonWizardPowers)
+    {
+        boardSize = 4;
+    }
+
+    // Eventual ai setat deja boardSize intern în Game, 
+    // dar dacă mai vrei să-l stabilești explicit:
+    // m_game->getBoard().setSize(boardSize); 
+    // (depinde de implementarea ta)
+
+    QWidget* boardWidget = new QWidget(this);
+
     boardLayout = new QGridLayout(boardWidget);
     boardLayout->setSpacing(0);
     boardLayout->setContentsMargins(0, 0, 0, 0);
@@ -277,9 +292,11 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
         widgetSize,
         widgetSize);
     boardWidget->show();
-
 }
 
+//--------------------------------------------------
+// Creează și așază cărțile la marginea ferestrei
+//--------------------------------------------------
 void Eter_UI::createCards(QPushButton* clickedButton) {
     QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
     if (!QDir(cardsPath).exists()) {
@@ -287,65 +304,42 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         return;
     }
 
+    // Liste de cărți
     QStringList blueCards, redCards;
     QStringList wizardNames = {
-        "eliminateCard",
-        "eliminateRow",
-        "coverCard",
-        "sinkHole",
-        "moveStackOwn",
-        "extraEter",
-        "moveStackOpponent",
-        "moveEdge"
+        "eliminateCard", "eliminateRow", "coverCard", "sinkHole",
+        "moveStackOwn", "extraEter", "moveStackOpponent", "moveEdge"
     };
     QStringList powerNames = {
-        "controlledExplosion",
-        "destruction",
-        "flame",
-        "lava",
-        "ash",
-        "spark",
-        "squall",
-        "gale",
-        "hurricane",
-        "gust",
-        "mirage",
-        "storm",
-        "tide",
-        "mist",
-        "wave",
-        "whirlpool",
-        "tsunami",
-        "waterfall",
-        "support",
-        "earthquake",
-        "crumble",
-        "border",
-        "avalanche",
-        "rock"
+        "controlledExplosion", "destruction", "flame", "lava",
+        "ash", "spark", "squall", "gale", "hurricane", "gust",
+        "mirage", "storm", "tide", "mist", "wave", "whirlpool",
+        "tsunami", "waterfall", "support", "earthquake", "crumble",
+        "border", "avalanche", "rock"
     };
 
-    bool includeWizards = true;
+    bool includeWizards = true; // ajustăm mai jos
 
+    // Stabilim cărțile după modul de joc
     if (clickedButton == buttonTraining) {
-        blueCards = { "B1", "B1", "B2", "B2", "B3", "B3", "B4" };
-        redCards = { "R1", "R1", "R2", "R2", "R3", "R3", "R4" };
-        includeWizards = false; // No wizards in Training Mode
+        blueCards = { "B1","B1","B2","B2","B3","B3","B4" };
+        redCards = { "R1","R1","R2","R2","R3","R3","R4" };
+        includeWizards = false;
     }
     else if (clickedButton == buttonWizard) {
-        blueCards = { "B1", "B1", "B2", "B2", "B2", "B3", "B3", "B3", "B4", "BE" };
-        redCards = { "R1", "R1", "R2", "R2", "R2", "R3", "R3", "R3", "R4", "RE" };
+        blueCards = { "B1","B1","B2","B2","B2","B3","B3","B3","B4","BE" };
+        redCards = { "R1","R1","R2","R2","R2","R3","R3","R3","R4","RE" };
     }
     else if (clickedButton == buttonPowers || clickedButton == buttonWizardPowers) {
-        blueCards = { "B1", "B2", "B2", "B2", "B3", "B3", "B3", "B4", "BE" };
-        redCards = { "R1", "R2", "R2", "R2", "R3", "R3", "R3", "R4", "RE" };
-        includeWizards = clickedButton == buttonWizardPowers;
+        blueCards = { "B1","B2","B2","B2","B3","B3","B3","B4","BE" };
+        redCards = { "R1","R2","R2","R2","R3","R3","R3","R4","RE" };
+        includeWizards = (clickedButton == buttonWizardPowers);
 
-        // Add random powers
-        auto addRandomPowers = [&](const QStringList& powerNames, int startX, int startY) {
+        // Exemplu: adăugăm random niște puteri (dacă vrei)
+        auto addRandomPowers = [&](const QStringList& pnames, int startX, int startY) {
             for (int i = 0; i < 2; ++i) {
-                int powerIndex = QRandomGenerator::global()->bounded(powerNames.size());
-                QString powerName = powerNames[powerIndex];
+                int idx = QRandomGenerator::global()->bounded(pnames.size());
+                QString powerName = pnames[idx];
                 QString powerImagePath = cardsPath + powerName + ".png";
                 if (QFile::exists(powerImagePath)) {
                     QLabel* powerLabel = new QLabel(this);
@@ -356,11 +350,10 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
                     startX += 110;
                 }
                 else {
-                    qDebug() << "Error: Power image not found:" << powerImagePath;
+                    qDebug() << "Power image not found:" << powerImagePath;
                 }
             }
             };
-
         int startXBlue = width() / 2 + ((blueCards.size() / 2) * 110) + 120;
         int startYBlue = height() / 2 + 230;
         addRandomPowers(powerNames, startXBlue, startYBlue);
@@ -369,53 +362,49 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         int startYRed = height() / 2 - 340;
         addRandomPowers(powerNames, startXRed, startYRed);
     }
-    else {
-        return;
-    }
 
-    // Select random wizards
+    // Vrăjitori random
     int blueWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     int redWizardIndex = QRandomGenerator::global()->bounded(wizardNames.size());
     QString blueWizard = wizardNames[blueWizardIndex];
     QString redWizard = wizardNames[redWizardIndex];
 
-    // Lambda to create a card
+    // Helper: creează un CardLabel
     auto createCard = [&](const QString& cardName, int& startX, int startY) {
         QString imagePath = cardsPath + cardName + ".png";
         if (!QFile::exists(imagePath)) {
-            qDebug() << "Error: Image not found:" << imagePath;
+            qDebug() << "Image not found:" << imagePath;
             return;
         }
+        // Ultimul caracter e 1..4 sau E
+        char valChar = cardName.at(cardName.size() - 1).toLatin1();
+        Card::Value val = charToCardValue(valChar);
 
-        CardLabel* card = new CardLabel(imagePath,
-            charToCardValue(cardName[cardName.size() - 1].toLatin1()),
-            this);
-
-        card->setProperty("cardName", cardName); // Set the cardName property
+        CardLabel* card = new CardLabel(imagePath, val, this);
+        card->setProperty("cardName", cardName);
         card->setGeometry(startX, startY, 100, 150);
-        cards.append(card); // Add the card to the global list
+        cards.append(card);
         card->show();
         startX += 110;
         };
 
-    // Lambda to add a wizard card
-    auto addWizardCard = [&](const QString& wizardName, int startX, int startY) {
+    // Helper: afișează un wizard
+    auto addWizardCard = [&](const QString& wizName, int startX, int startY) {
         if (!includeWizards) return;
-
-        QString wizardImagePath = cardsPath + wizardName + ".png";
-        if (QFile::exists(wizardImagePath)) {
+        QString wizPath = cardsPath + wizName + ".png";
+        if (QFile::exists(wizPath)) {
             QLabel* wizardLabel = new QLabel(this);
-            QPixmap pixmap(wizardImagePath);
+            QPixmap pixmap(wizPath);
             wizardLabel->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
             wizardLabel->setGeometry(startX, startY, 100, 150);
             wizardLabel->show();
         }
         else {
-            qDebug() << "Error: Wizard image not found:" << wizardImagePath;
+            qDebug() << "Wizard image not found:" << wizPath;
         }
         };
 
-    // Create blue cards and position the wizard at the start
+    // Creează cărțile albastre
     int startXBlue = width() / 2 - ((blueCards.size() / 2) * 110);
     int startYBlue = height() / 2 + 230;
     addWizardCard(blueWizard, startXBlue - 120, startYBlue);
@@ -423,7 +412,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         createCard(cardName, startXBlue, startYBlue);
     }
 
-    // Create red cards and position the wizard at the start
+    // Creează cărțile roșii
     int startXRed = width() / 2 - ((redCards.size() / 2) * 110);
     int startYRed = height() / 2 - 340;
     addWizardCard(redWizard, startXRed - 120, startYRed);
@@ -431,9 +420,13 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         createCard(cardName, startXRed, startYRed);
     }
 
+    // Activează/dezactivează stivele
     updateCardStacks();
 }
 
+//--------------------------------------------------
+// Convertește un caracter ('1','2','3','4','E') în Card::Value
+//--------------------------------------------------
 Card::Value Eter_UI::charToCardValue(char value) {
     switch (value) {
     case '1': return Card::Value::One;
@@ -441,296 +434,230 @@ Card::Value Eter_UI::charToCardValue(char value) {
     case '3': return Card::Value::Three;
     case '4': return Card::Value::Four;
     case 'E': return Card::Value::Eter;
-        ///default:  return Card::Value::Undefined;
+   /// default:  return Card::Value::Undefined;
     }
 }
 
+//--------------------------------------------------
+// Creează butoanele de shift și le conectează
+//--------------------------------------------------
 void Eter_UI::createShiftButtons() {
     const int buttonSize = 50;
     const int spacing = 10;
 
-    int boardSize = boardCells.size() * 50;  // va fi 150 pentru 3x3 sau 200 pentru 4x4
-    int startX = width() / 2 + boardSize / 2 + spacing * 2;
+    // Poziționare la dreapta tablei
+    int boardPixels = 300; // Să fie puțin offset; modifică după nevoi
+    int startX = width() / 2 + boardPixels / 2 + spacing * 2;
     int startY = height() / 2 - (buttonSize * 2 + spacing);
 
-    QString buttonStyle = "QPushButton {"
-        "background-color: rgba(255, 255, 255, 180);"
-        "border: 2px solid black;"
-        "border-radius: 5px;"
-        "}"
-        "QPushButton:hover {"
-        "background-color: rgba(255, 255, 255, 220);"
-        "}"
-        "QPushButton:disabled {"
-        "background-color: rgba(128, 128, 128, 180);"
-        "}";
+    QString buttonStyle = R"(
+       QPushButton {
+          background-color: rgba(255, 255, 255, 180);
+          border: 2px solid black;
+          border-radius: 5px;
+       }
+       QPushButton:hover {
+          background-color: rgba(255, 255, 255, 220);
+       }
+       QPushButton:disabled {
+          background-color: rgba(128, 128, 128, 180);
+       }
+    )";
 
     shiftUpButton = new QPushButton("↑", this);
     shiftDownButton = new QPushButton("↓", this);
     shiftLeftButton = new QPushButton("←", this);
     shiftRightButton = new QPushButton("→", this);
 
-    // Aranjare verticală a butoanelor
     if (shiftUpButton) {
         shiftUpButton->setFixedSize(buttonSize, buttonSize);
         shiftUpButton->setStyleSheet(buttonStyle);
         shiftUpButton->setFont(QFont("Arial", 20, QFont::Bold));
         shiftUpButton->move(startX, startY);
         shiftUpButton->show();
+        connect(shiftUpButton, &QPushButton::clicked, this, &Eter_UI::onShiftUp);
     }
-
     if (shiftLeftButton) {
         shiftLeftButton->setFixedSize(buttonSize, buttonSize);
         shiftLeftButton->setStyleSheet(buttonStyle);
         shiftLeftButton->setFont(QFont("Arial", 20, QFont::Bold));
         shiftLeftButton->move(startX, startY + buttonSize + spacing);
         shiftLeftButton->show();
+        connect(shiftLeftButton, &QPushButton::clicked, this, &Eter_UI::onShiftLeft);
     }
-
     if (shiftRightButton) {
         shiftRightButton->setFixedSize(buttonSize, buttonSize);
         shiftRightButton->setStyleSheet(buttonStyle);
         shiftRightButton->setFont(QFont("Arial", 20, QFont::Bold));
         shiftRightButton->move(startX, startY + (buttonSize + spacing) * 2);
         shiftRightButton->show();
+        connect(shiftRightButton, &QPushButton::clicked, this, &Eter_UI::onShiftRight);
     }
-
     if (shiftDownButton) {
         shiftDownButton->setFixedSize(buttonSize, buttonSize);
         shiftDownButton->setStyleSheet(buttonStyle);
         shiftDownButton->setFont(QFont("Arial", 20, QFont::Bold));
         shiftDownButton->move(startX, startY + (buttonSize + spacing) * 3);
         shiftDownButton->show();
+        connect(shiftDownButton, &QPushButton::clicked, this, &Eter_UI::onShiftDown);
     }
 
-    connect(shiftUpButton, &QPushButton::clicked, this, &Eter_UI::onShiftUp);
-    connect(shiftDownButton, &QPushButton::clicked, this, &Eter_UI::onShiftDown);
-    connect(shiftLeftButton, &QPushButton::clicked, this, &Eter_UI::onShiftLeft);
-    connect(shiftRightButton, &QPushButton::clicked, this, &Eter_UI::onShiftRight);
-
+    // Inițial, update
     updateShiftButtons();
 }
 
+//--------------------------------------------------
+// Handler pt shift UP
+//--------------------------------------------------
 void Eter_UI::onShiftUp() {
-    qDebug() << "Shift Up button pressed";
     if (!m_game) return;
 
-    if (m_game->getBoard().circularShiftUp()) {
-       
-        m_game->getBoard().circularShiftUp();
-        // Salvăm pixmapurile într-o matrice temporară
-        QVector<QVector<QPixmap>> tempPixmaps;
-        const int size = m_game->getBoard().getSize();
-        tempPixmaps.resize(size);
-        for (int i = 0; i < size; i++) {
-            tempPixmaps[i].resize(size);
-            for (int j = 0; j < size; j++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(i, j)->widget());
-                if (cell && !cell->pixmap().isNull()) {
-                    tempPixmaps[i][j] = cell->pixmap(Qt::ReturnByValue);
-                }
-            }
-        }
-
-        // Mutăm pixmapurile
-        for (int row = 0; row < size - 1; row++) {
-            for (int col = 0; col < size; col++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
-                if (cell) {
-                    if (!tempPixmaps[row + 1][col].isNull()) {
-                        cell->setPixmap(tempPixmaps[row + 1][col].scaled(100, 150, Qt::KeepAspectRatio));
-                    }
-                    else {
-                        cell->clear();
-                    }
-                }
-            }
-        }
-
-        // Curățăm ultima linie
-        for (int col = 0; col < size; col++) {
-            BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(size - 1, col)->widget());
-            if (cell) {
-                cell->clear();
-            }
-        }
-
-        updateShiftButtons();
+    Board& board = m_game->getBoard();
+    if (board.circularShiftUp()) {
+        // Logica a mutat, acum reafișăm
+        updateBoardDisplay();
+        checkWinCondition();
+    }
+    else {
+        qDebug() << "circularShiftUp did not execute properly";
     }
 }
 
+//--------------------------------------------------
 void Eter_UI::onShiftDown() {
     if (!m_game) return;
 
-    if (m_game->getBoard().circularShiftDown()) {
-        const int size = m_game->getBoard().getSize();
-        QVector<QVector<QPixmap>> tempPixmaps;
-        tempPixmaps.resize(size);
-        for (int i = 0; i < size; i++) {
-            tempPixmaps[i].resize(size);
-            for (int j = 0; j < size; j++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(i, j)->widget());
-                if (cell && !cell->pixmap().isNull()) {
-                    tempPixmaps[i][j] = cell->pixmap(Qt::ReturnByValue);
-                }
-            }
-        }
-
-        for (int row = size - 1; row > 0; row--) {
-            for (int col = 0; col < size; col++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
-                if (cell) {
-                    if (!tempPixmaps[row - 1][col].isNull()) {
-                        cell->setPixmap(tempPixmaps[row - 1][col].scaled(100, 150, Qt::KeepAspectRatio));
-                    }
-                    else {
-                        cell->clear();
-                    }
-                }
-            }
-        }
-
-        // Curățăm prima linie
-        for (int col = 0; col < size; col++) {
-            BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(0, col)->widget());
-            if (cell) {
-                cell->clear();
-            }
-        }
-
-        updateShiftButtons();
+    Board& board = m_game->getBoard();
+    if (board.circularShiftDown()) {
+        updateBoardDisplay();
+        checkWinCondition();
+    }
+    else {
+        qDebug() << "circularShiftDown did not execute properly";
     }
 }
 
+//--------------------------------------------------
 void Eter_UI::onShiftLeft() {
     if (!m_game) return;
 
-    if (m_game->getBoard().circularShiftLeft()) {
-        const int size = m_game->getBoard().getSize();
-        QVector<QVector<QPixmap>> tempPixmaps;
-        tempPixmaps.resize(size);
-        for (int i = 0; i < size; i++) {
-            tempPixmaps[i].resize(size);
-            for (int j = 0; j < size; j++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(i, j)->widget());
-                if (cell && !cell->pixmap().isNull()) {
-                    tempPixmaps[i][j] = cell->pixmap(Qt::ReturnByValue);
-                }
-            }
-        }
-
-        for (int row = 0; row < size; row++) {
-            for (int col = 0; col < size - 1; col++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
-                if (cell) {
-                    if (!tempPixmaps[row][col + 1].isNull()) {
-                        cell->setPixmap(tempPixmaps[row][col + 1].scaled(100, 150, Qt::KeepAspectRatio));
-                    }
-                    else {
-                        cell->clear();
-                    }
-                }
-            }
-        }
-
-        // Curățăm ultima coloană
-        for (int row = 0; row < size; row++) {
-            BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, size - 1)->widget());
-            if (cell) {
-                cell->clear();
-            }
-        }
-
-        updateShiftButtons();
+    Board& board = m_game->getBoard();
+    if (board.circularShiftLeft()) {
+        updateBoardDisplay();
+        checkWinCondition();
+    }
+    else {
+        qDebug() << "circularShiftLeft did not execute properly";
     }
 }
 
+//--------------------------------------------------
 void Eter_UI::onShiftRight() {
     if (!m_game) return;
 
-    if (m_game->getBoard().circularShiftRight()) {
-        const int size = m_game->getBoard().getSize();
-        QVector<QVector<QPixmap>> tempPixmaps;
-        tempPixmaps.resize(size);
-        for (int i = 0; i < size; i++) {
-            tempPixmaps[i].resize(size);
-            for (int j = 0; j < size; j++) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(i, j)->widget());
-                if (cell && !cell->pixmap().isNull()) {
-                    tempPixmaps[i][j] = cell->pixmap(Qt::ReturnByValue);
-                }
-            }
-        }
-
-        for (int row = 0; row < size; row++) {
-            for (int col = size - 1; col > 0; col--) {
-                BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
-                if (cell) {
-                    if (!tempPixmaps[row][col - 1].isNull()) {
-                        cell->setPixmap(tempPixmaps[row][col - 1].scaled(100, 150, Qt::KeepAspectRatio));
-                    }
-                    else {
-                        cell->clear();
-                    }
-                }
-            }
-        }
-
-        // Curățăm prima coloană
-        for (int row = 0; row < size; row++) {
-            BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, 0)->widget());
-            if (cell) {
-                cell->clear();
-            }
-        }
-
-        updateShiftButtons();
+    Board& board = m_game->getBoard();
+    if (board.circularShiftRight()) {
+        updateBoardDisplay();
+        checkWinCondition();
+    }
+    else {
+        qDebug() << "circularShiftRight did not execute properly";
     }
 }
 
-void Eter_UI::createGame(Game::GameType gameType) {
-    if (m_game) {
-    }
+//--------------------------------------------------
+// Când plasăm o carte
+//--------------------------------------------------
+void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell)
+{
+    if (!m_game) return;
 
-    std::pair<size_t, size_t> wizardIndices = { 0, 1 };
-    bool illusionsAllowed = false;
-    bool explosionAllowed = false;
-    bool tournament = false;
-
-    m_game = std::make_unique<Game>(gameType, wizardIndices, illusionsAllowed, explosionAllowed, tournament);
-
-}
-
-void Eter_UI::updateShiftButtons() {
-    if (!m_game) {
-        qDebug() << "No game instance";
+    CardLabel* card = qobject_cast<CardLabel*>(event->source());
+    if (!card) {
+        QMessageBox::warning(this, "Eroare", "Nu s-a putut plasa cartea.");
         return;
     }
 
-    bool checkTwoRows = gameBoard->checkTwoRows();
-    bool emptyDeck = m_game->checkEmptyDeck();
-    bool fullBoard = m_game->getBoard().checkFullBoard();
-    qDebug() << "Empty deck:" << emptyDeck;
-    qDebug() << "Full board:" << fullBoard;
+    int row = cell->getRow();
+    int col = cell->getCol();
 
-    // Verificăm posibilitatea de shift pentru fiecare direcție
-    bool canShiftUp = m_game->getBoard().circularShiftUp(true);
-    bool canShiftDown = m_game->getBoard().circularShiftDown(true);
-    bool canShiftLeft = m_game->getBoard().circularShiftLeft(true);
-    bool canShiftRight = m_game->getBoard().circularShiftRight(true);
+    QString cardName = card->property("cardName").toString();
+    Card::Color cardColor = isRedTurn ? Card::Color::Red : Card::Color::Blue;
+
+    // Verificăm dacă jucătorul are dreptul să plaseze cartea (culoarea)
+    if (isRedTurn && !cardName.contains("R")) {
+        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului roșu!");
+        return;
+    }
+    if (!isRedTurn && !cardName.contains("B")) {
+        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului albastru!");
+        return;
+    }
+
+    // Referință la Board
+    Board& board = m_game->getBoard();
+
+    // Dacă s-a mai plasat o carte înainte, impunem plasarea lângă una existentă
+    if (firstCardPlaced) {
+        if (!board.checkNeighbours(row, col)) {
+            QMessageBox::warning(this, "Mutare interzisă",
+                "Cartea trebuie plasată lângă (adiacent) unei cărți deja existente!");
+            return;
+        }
+    }
+
+    // Construcția cărții logice
+    char valChar = cardName.at(cardName.size() - 1).toLatin1();
+    Card::Value val = charToCardValue(valChar);
+    Card newCard(val, cardColor);
+
+    // Plasare în Board (logica jocului)
+    board.getBoard()[row][col].push_back(newCard);
+
+    // Actualizare UI: punem imaginea în celulă și ascundem cartea din mână
+    cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
+    card->hide();
+
+    // Dacă este prima carte plasată, marcăm acest lucru
+    if (!firstCardPlaced) {
+        firstCardPlaced = true;
+    }
+
+    // Schimbăm jucătorul curent și actualizăm interfața
+    isRedTurn = !isRedTurn;
+    updateTurnLabel();
+    updateCardStacks();
+
+    // Verificăm dacă cineva a câștigat
+    Card::Color winner = board.checkWin();
+    if (winner != Card::Color::Undefined) {
+        showWinMessage(winner);
+    }
+}
 
 
-    qDebug() << "Can shift up:" << canShiftUp;
-    qDebug() << "Can shift down:" << canShiftDown;
-    qDebug() << "Can shift left:" << canShiftLeft;
-    qDebug() << "Can shift right:" << canShiftRight;
+//--------------------------------------------------
+// Actualizează butoanele de shift pe baza logicii
+//--------------------------------------------------
+void Eter_UI::updateShiftButtons() {
+    if (!m_game) return;
 
-    if (shiftUpButton) shiftUpButton->setEnabled(canShiftUp);
-    if (shiftDownButton) shiftDownButton->setEnabled(canShiftDown);
-    if (shiftLeftButton) shiftLeftButton->setEnabled(canShiftLeft);
+    Board& board = m_game->getBoard();
+
+    bool canShiftUp = board.circularShiftUp(true);    // mod "simulate only"
+    bool canShiftDown = board.circularShiftDown(true);
+    bool canShiftLeft = board.circularShiftLeft(true);
+    bool canShiftRight = board.circularShiftRight(true);
+
+    if (shiftUpButton)    shiftUpButton->setEnabled(canShiftUp);
+    if (shiftDownButton)  shiftDownButton->setEnabled(canShiftDown);
+    if (shiftLeftButton)  shiftLeftButton->setEnabled(canShiftLeft);
     if (shiftRightButton) shiftRightButton->setEnabled(canShiftRight);
 }
 
+//--------------------------------------------------
+// Actualizează label-ul cu rândul curent
+//--------------------------------------------------
 void Eter_UI::updateTurnLabel() {
     if (!turnLabel) return;
 
@@ -747,29 +674,32 @@ void Eter_UI::updateTurnLabel() {
     turnLabel->move(width() / 2 - turnLabel->width() / 2, 20);
 }
 
+//--------------------------------------------------
 void Eter_UI::onWizardPowersClicked() {
     OnButtonClick();
 }
 
+//--------------------------------------------------
 void Eter_UI::checkWinCondition() {
-    if (gameBoard) {
-        Card::Color winner = gameBoard->checkWin();
-        if (winner != Card::Color::Undefined) {
-            showWinMessage(winner);
-        }
+    if (!m_game) return;
+
+    Card::Color winner = m_game->getBoard().checkWin();
+    if (winner != Card::Color::Undefined) {
+        showWinMessage(winner);
     }
 }
 
+//--------------------------------------------------
 void Eter_UI::removeCard(CardLabel* card) {
     cards.removeOne(card);
     card->deleteLater();
 
     isRedTurn = !isRedTurn;
     updateTurnLabel();
-
     checkWinCondition();
 }
 
+//--------------------------------------------------
 void Eter_UI::showWinMessage(Card::Color winner) {
     QString winnerText = (winner == Card::Color::Red) ? "Red Player" : "Blue Player";
     QMessageBox msgBox(this);
@@ -779,32 +709,13 @@ void Eter_UI::showWinMessage(Card::Color winner) {
     msgBox.exec();
 }
 
-void Eter_UI::processCardPlacement(Player& player, int row, int col, Card::Value cardValue)
-{
-    // Verificăm dacă mutarea este validă
-    if (!m_game->getBoard().checkPartial(row, col, static_cast<size_t>(cardValue))) {
-        return;
-    }
-
-    auto playedCard = player.useCard(cardValue);
-    if (!playedCard) {
-        return;
-    }
-
-    auto& board = m_game->getBoard();
-    if (!board.checkIllusion(row, col, Card::Color::Undefined) &&
-        board.checkIllusionValue(row, col, static_cast<size_t>(cardValue))) {
-        board.placeCard(row, col, std::move(*playedCard));
-        player.setLastPlacedCard(board.getBoard()[row][col].back());
-    }
-    else {
-        board.getBoard()[row][col].back().resetIllusion();
-        m_game->m_eliminatedCards.push_back(std::move(*playedCard));
-    }
-
-    board.setFirstCardPlayed();
+//--------------------------------------------------
+void Eter_UI::processCardPlacement(Player& player, int row, int col, Card::Value cardValue) {
+    // Ex. dacă ai nevoie de logică la plasare
+    // TOTUL însă să meargă prin m_game->getBoard()
 }
 
+//--------------------------------------------------
 void Eter_UI::drawTournamentMenu() {
     isStartPage = false;
 
@@ -849,6 +760,7 @@ void Eter_UI::drawTournamentMenu() {
         buttonFont, &Eter_UI::onWizardPowersClicked);
 }
 
+//--------------------------------------------------
 void Eter_UI::drawSpeedMenu() {
     isStartPage = false;
 
@@ -891,152 +803,82 @@ void Eter_UI::drawSpeedMenu() {
         centerX, centerY + (buttonHeight + spacing) * 3,
         buttonWidth, buttonHeight,
         buttonFont, &Eter_UI::onWizardPowersClicked);
-
 }
+
+//--------------------------------------------------
 void Eter_UI::updateCardStacks() {
-    for (CardLabel* card : cards) {
-        if (!card) {
-            qDebug() << "Invalid card pointer (nullptr) detected!";
-            continue;
-        }
+    // Activează / dezactivează cardurile în funcție de rând
+    for (CardLabel* c : cards) {
+        if (!c) continue;
+        if (c->isHidden()) continue;
 
-        if (card->isHidden()) {
-            qDebug() << "Card is hidden, skipping:" << card;
-            continue;
-        }
-
-        QString cardName = card->property("cardName").toString();
-        bool isRedCard = cardName.contains("R", Qt::CaseInsensitive);
-        bool isBlueCard = cardName.contains("B", Qt::CaseInsensitive);
-
-        // Disable special cards if it's not the player's turn
-        bool isSpecialCard = cardName.contains("E") || cardName.contains("P");
+        QString name = c->property("cardName").toString();
+        bool isRedCard = name.contains("R", Qt::CaseInsensitive);
+        bool isBlueCard = name.contains("B", Qt::CaseInsensitive);
+        // Poți adăuga extra condiții pentru alt tip de carte
 
         if (isRedTurn) {
-            card->setEnabled(isRedCard || (isSpecialCard && isRedCard));
-            qDebug() << "Enabling red card or special:" << cardName;
+            c->setEnabled(isRedCard);
         }
         else {
-            card->setEnabled(isBlueCard || (isSpecialCard && isBlueCard));
-            qDebug() << "Enabling blue card or special:" << cardName;
+            c->setEnabled(isBlueCard);
         }
     }
 }
 
-
+//--------------------------------------------------
 void Eter_UI::cleanCardStack() {
     cards.erase(
-        std::remove_if(cards.begin(), cards.end(),
-            [](CardLabel* card) {
-                return !card || card->isHidden();
+        std::remove_if(cards.begin(), cards.end(), [](CardLabel* c) {
+            return !c || c->isHidden();
             }),
-        cards.end());
+        cards.end()
+    );
 }
 
-
-void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
-    CardLabel* card = qobject_cast<CardLabel*>(event->source());
-    if (!card || !gameBoard) {
-        QMessageBox::warning(this, "Eroare", "Nu s-a putut plasa cartea.");
-        return;
-    }
-
-    int row = cell->getRow();
-    int col = cell->getCol();
-
-    QString cardName = card->property("cardName").toString();
-    Card::Color cardColor = isRedTurn ? Card::Color::Red : Card::Color::Blue;
-
-    // Verifică dacă jucătorul poate plasa cartea
-    if ((isRedTurn && !cardName.contains("R")) || (!isRedTurn && !cardName.contains("B"))) {
-        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul tău!");
-        return;
-    }
-
-    // Verifică dacă poziția este validă (adiacentă dacă nu este prima carte)
-    if (gameBoard->m_firstCardPlayed && !gameBoard->checkNeighbours(row, col)) {
-        QMessageBox::warning(this, "Mutare interzisă", "Cartea trebuie plasată adiacent unei cărți existente!");
-        return;
-    }
-
-    // Crează cartea și adaug-o în board
-    Card::Value cardValue = static_cast<Card::Value>(card->property("cardValue").toInt());
-    Card newCard(cardValue, cardColor);
-    gameBoard->getBoard()[row][col].push_back(newCard);
-
-    // Actualizează vizualizarea celulei
-    cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
-    card->hide();
-
-    // Marchează prima carte plasată
-    if (!gameBoard->m_firstCardPlayed) {
-        gameBoard->m_firstCardPlayed = true;
-    }
-
-    // Schimbă rândul și actualizează interfața
-    isRedTurn = !isRedTurn;
-    updateTurnLabel();
-    updateCardStacks();
-
-    // Verifică dacă există un câștigător
-    Card::Color winner = gameBoard->checkWin();
-    if (winner != Card::Color::Undefined) {
-        showWinMessage(winner);
-    }
-}
-
-void Eter_UI::processGameTurn(CardLabel* selectedCard, BoardCell* targetCell) {
-    if (!m_game) {
-        qWarning() << "No valid Game object to process turn.";
-        return;
-    }
-
-    targetCell->setPixmap(selectedCard->pixmap(Qt::ReturnByValue));
-
-    auto info = m_game->run(isRedTurn, /*timed=*/false, /*duration=*/0);
-    removeCard(selectedCard);
-
-    if (info.winner != Card::Color::Undefined) {
-        endGame(info);
-    }
-}
-void Eter_UI::endGame(const GameEndInfo& info) {
-    showWinMessage(info.winner);
-}
+//--------------------------------------------------
 void Eter_UI::updateBoardDisplay() {
-    // Accesează tabla de joc din gameBoard
-    const auto& board = gameBoard->getBoard();
-
-    for (int row = 0; row < static_cast<int>(board.size()); ++row) {
-        for (int col = 0; col < static_cast<int>(board[row].size()); ++col) {
+    // Citește starea din m_game->getBoard() și desenează
+    const auto& boardData = m_game->getBoard().getBoard();
+    for (int row = 0; row < (int)boardData.size(); ++row) {
+        for (int col = 0; col < (int)boardData[row].size(); ++col) {
             BoardCell* cell = qobject_cast<BoardCell*>(boardLayout->itemAtPosition(row, col)->widget());
             if (!cell) continue;
 
-            // Verifică dacă există cărți pe această poziție
-            if (!board[row][col].empty()) {
-                // Ia cartea din vârf
-                const auto& topCard = board[row][col].back();
+            if (!boardData[row][col].empty()) {
+                const Card& topCard = boardData[row][col].back();
+                // Construim numele fișierului
+                QString colorPrefix = (topCard.getColor() == Card::Color::Red) ? "R" : "B";
+                QString valSuffix;
+                switch (topCard.getValue()) {
+                case Card::Value::One:   valSuffix = "1"; break;
+                case Card::Value::Two:   valSuffix = "2"; break;
+                case Card::Value::Three: valSuffix = "3"; break;
+                case Card::Value::Four:  valSuffix = "4"; break;
+                case Card::Value::Eter:  valSuffix = "E"; break;
+                default:                 valSuffix = "";
+                }
+                QString imagePath = QCoreApplication::applicationDirPath()
+                    + "/cards/" + colorPrefix + valSuffix + ".png";
 
-                // Construiește calea către imaginea cărții
-                QString cardName = (topCard.getColor() == Card::Color::Red) ? "R" : "B";
-                cardName += QString::number(static_cast<int>(topCard.getValue()));
-                QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" + cardName + ".png";
-
-                // Setează imaginea în celulă
                 QPixmap pixmap(imagePath);
                 if (!pixmap.isNull()) {
                     cell->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
                 }
+                else {
+                    cell->clear();
+                }
             }
             else {
-                // Dacă nu există cărți, curăță celula
                 cell->clear();
             }
         }
     }
+
+    updateShiftButtons();
 }
 
-
+//--------------------------------------------------
 void Eter_UI::displayPowerCard(const QString& powerName) {
     QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" + powerName + ".png";
     if (QFile::exists(imagePath)) {
@@ -1045,10 +887,13 @@ void Eter_UI::displayPowerCard(const QString& powerName) {
         powerCardLabel->show();
     }
     else {
-        qDebug() << "Eroare: Imaginea pentru puterea" << powerName << "nu a fost găsită!";
+        qDebug() << "Eroare: Nu am găsit imaginea pt puterea" << powerName;
     }
 }
+
+//--------------------------------------------------
 void Eter_UI::activateWizardPower(size_t powerIndex, Player& player, Game& game) {
+    // Exemplu: vrăjitorul face ceva, apoi afișăm cartea
     Wizard& wizard = Wizard::getInstance();
     if (wizard.play(powerIndex, player, game, /*check=*/false)) {
         QString powerName = QString::fromStdString(wizard.getWizardName(powerIndex));
@@ -1058,38 +903,3 @@ void Eter_UI::activateWizardPower(size_t powerIndex, Player& player, Game& game)
         QMessageBox::warning(this, "Activare eșuată", "Puterea nu a putut fi activată.");
     }
 }
-//void Eter_UI::createWizards() {
-//    QString cardsPath = QCoreApplication::applicationDirPath() + "/cards/";
-//
-//    QStringList wizardNames = {
-//        "eliminateCard",
-//        "eliminateRow",
-//        "coverCard",
-//        "sinkHole",
-//        "moveStackOwn",
-//        "extraEter",
-//        "moveStackOpponent",
-//        "moveEdge"
-//    };
-//
-//    int startX = width() - 200; // Poziția în partea dreaptă
-//    int startY = 100;
-//
-//    for (const QString& wizardName : wizardNames) {
-//        QString imagePath = cardsPath + wizardName + ".png";
-//
-//        if (!QFile::exists(imagePath)) {
-//            qDebug() << "Imaginea vrăjitorului lipsă: " << imagePath;
-//            continue;
-//        }
-//
-//        QLabel* wizardLabel = new QLabel(this);
-//        QPixmap pixmap(imagePath);
-//        wizardLabel->setPixmap(pixmap.scaled(100, 150, Qt::KeepAspectRatio));
-//        wizardLabel->setGeometry(startX, startY, 100, 150);
-//        wizardLabel->show();
-//
-//        startY += 160; // Spațiere între imagini
-//    }
-//}
-
