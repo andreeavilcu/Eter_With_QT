@@ -7,7 +7,7 @@
 #include "Board.h"
 #include "../Player/Player.h"
 #include "GameEndInfo.h"
-#include "../Actions/Explosion.h"
+#include "Explosion.h"
 #include "../Actions/Card.h"
 
 inline bool running = true;

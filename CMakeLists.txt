@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
+add_subdirectory(models/Actions/Explosion)
+
 add_executable(Eter source.cpp
-        models/Actions/Explosion.h
-        models/Actions/Explosion.cpp
         models/Actions/Wizard.h
         models/Actions/Wizard.cpp
         models/Actions/Power.h
@@ -29,4 +29,7 @@ add_executable(Eter source.cpp
         models/GameMechanics/Match.cpp
 )
 
-target_link_libraries(Eter PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(Eter PRIVATE
+        nlohmann_json::nlohmann_json
+        explosion
+)
