@@ -69,6 +69,11 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -98,13 +103,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\models\Actions\Explosion\Explosion.cpp" />
     <ClCompile Include="BoardCell.cpp" />
     <ClCompile Include="CardLabel.cpp" />
     <QtRcc Include="Eter_UI.qrc" />
     <QtUic Include="Eter_UI.ui" />
     <QtMoc Include="Eter_UI.h" />
     <ClCompile Include="..\models\Actions\Card.cpp" />
-    <ClCompile Include="..\models\Actions\Explosion.cpp" />
     <ClCompile Include="..\models\Actions\Piece.cpp" />
     <ClCompile Include="..\models\Actions\Power.cpp" />
     <ClCompile Include="..\models\Actions\Wizard.cpp" />
@@ -122,7 +127,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\models\Actions\Card.h" />
-    <ClInclude Include="..\models\Actions\Explosion.h" />
+    <ClInclude Include="..\models\Actions\Explosion\Explosion.h" />
     <ClInclude Include="..\models\Actions\Piece.h" />
     <ClInclude Include="..\models\Actions\Power.h" />
     <ClInclude Include="..\models\Actions\Wizard.h" />

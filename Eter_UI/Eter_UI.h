@@ -62,6 +62,8 @@ private:
     bool firstCardPlaced = false;
     int m_redScore;
     int m_blueScore;
+    bool redIllusionPlayed = false;
+    bool blueIllusionPlayed = false;
 
     void createShiftButtons();
     void onShiftUp();

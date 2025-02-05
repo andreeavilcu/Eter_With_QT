@@ -7,7 +7,9 @@
 BoardCell::BoardCell(QWidget* parent) : QLabel(parent) {
     setAcceptDrops(true);
     setStyleSheet("border: 2px solid black;");
+
 }
+
 
 void BoardCell::setGridPosition(int row, int col) {
     this->row = row;
@@ -24,11 +26,17 @@ int BoardCell::getCol() const {
 
 void BoardCell::dragEnterEvent(QDragEnterEvent* event) {
     if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+        setStyleSheet("border: none; background-color: rgba(255,255,255,0.5);");
         event->acceptProposedAction();
     }
     else {
         event->ignore();
     }
+}
+
+void BoardCell::dragLeaveEvent(QDragLeaveEvent* event) {
+    setStyleSheet("border: none; background: transparent;");
+    QLabel::dragLeaveEvent(event);
 }
 
 void BoardCell::dragMoveEvent(QDragMoveEvent* event) {
@@ -37,6 +45,7 @@ void BoardCell::dragMoveEvent(QDragMoveEvent* event) {
 
 void BoardCell::dropEvent(QDropEvent* event) {
     if (event->mimeData()->hasFormat("application/x-qt-cardlabel")) {
+        setStyleSheet("border: none; background: transparent;");
         event->acceptProposedAction();
         emit cardPlaced(event, this);
     }
