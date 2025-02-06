@@ -72,6 +72,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -148,12 +149,12 @@
     <Import Project="$(QtMsBuild)\qt.targets" />
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="packages\nlohmann.json.decomposed.3.11.2\build\native\nlohmann.json.decomposed.targets" Condition="Exists('packages\nlohmann.json.decomposed.3.11.2\build\native\nlohmann.json.decomposed.targets')" />
+    <Import Project="packages\nlohmann.json.decomposed.3.11.3\build\native\nlohmann.json.decomposed.targets" Condition="Exists('packages\nlohmann.json.decomposed.3.11.3\build\native\nlohmann.json.decomposed.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('packages\nlohmann.json.decomposed.3.11.2\build\native\nlohmann.json.decomposed.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nlohmann.json.decomposed.3.11.2\build\native\nlohmann.json.decomposed.targets'))" />
+    <Error Condition="!Exists('packages\nlohmann.json.decomposed.3.11.3\build\native\nlohmann.json.decomposed.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nlohmann.json.decomposed.3.11.3\build\native\nlohmann.json.decomposed.targets'))" />
   </Target>
 </Project>

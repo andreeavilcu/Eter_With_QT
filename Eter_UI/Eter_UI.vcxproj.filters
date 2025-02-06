@@ -110,14 +110,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <QtMoc Include="BoardCell.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="CardLabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
