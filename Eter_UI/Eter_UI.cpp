@@ -187,7 +187,7 @@ void Eter_UI::OnButtonClick() {
     // Construim tabla, cărțile și butoanele de shift
     createBoard(clickedButton);
     createCards(clickedButton);
-    createShiftButtons();
+    //createShiftButtons();
 
     // Afișăm turnLabel
     turnLabel->setGeometry(width() / 2 - 100, 50, 200, 40);
@@ -270,7 +270,7 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
             cell->setAcceptDrops(true);
             cell->setFixedSize(cellSize, cellSize);
             cell->setGridPosition(i, j);
-
+            cell->setStyleSheet("border: none; background: transparent;"); // Adaugă această linie
             connect(cell, &BoardCell::cardPlaced,
                 this, &Eter_UI::onCardPlaced);
 
@@ -319,61 +319,43 @@ void Eter_UI::createBoard(QPushButton* clickedButton) {
 void Eter_UI::onIllusionButtonClicked() {
     if (!m_game) return;
 
-    // Verifică tura curentă și oferă doar opțiunea corespunzătoare
-    QString cardColor;
-    if (isRedTurn) {
-        cardColor = "Carte Roșie";
-    }
-    else {
-        cardColor = "Carte Albastră";
-    }
-
-    // Dialog pentru confirmarea alegerii
-    bool ok;
-    QString selected = QInputDialog::getItem(this, "Alegere Carte Iluzie",
-        "Confirmați crearea cărții de iluzie:", QStringList() << cardColor, 0, false, &ok);
-
-    if (!ok || selected.isEmpty())
+    if ((isRedTurn && redIllusionPlayed) || (!isRedTurn && blueIllusionPlayed)) {
+        QMessageBox::warning(this, "Eroare", "Ați folosit deja iluzia!");
         return;
+    }
 
-    // Dialog pentru alegerea valorii
-    QStringList valueOptions;
-    valueOptions << "1" << "2" << "3" << "4";
-
+    // Get card value from player
+    bool ok;
     QString selectedValue = QInputDialog::getItem(this, "Alegere Valoare",
-        "Alegeți valoarea cărții:", valueOptions, 0, false, &ok);
+        "Alegeți valoarea cărții:", QStringList() << "1" << "2" << "3" << "4", 0, false, &ok);
 
     if (!ok || selectedValue.isEmpty())
         return;
 
-    // Construiește numele pentru proprietatea cardName (pentru logica jocului)
-    QString cardName = (isRedTurn ? "R" : "B") + selectedValue;
+    // Find a matching card in the player's hand (cards vector)
+    QString prefix = isRedTurn ? "R" : "B";
+    QString cardName = prefix + selectedValue;
 
-    // Construiește calea către imaginea de iluzie
-    QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" +
-        (isRedTurn ? "RI" : "BI") + ".png";
-
-    // Convertește valoarea selectată în Card::Value
-    Card::Value cardValue;
-    switch (selectedValue.toInt()) {
-    case 1: cardValue = Card::Value::One; break;
-    case 2: cardValue = Card::Value::Two; break;
-    case 3: cardValue = Card::Value::Three; break;
-    case 4: cardValue = Card::Value::Four; break;
-    default: cardValue = Card::Value::One; break;
+    CardLabel* selectedCard = nullptr;
+    for (CardLabel* card : cards) {
+        if (card->property("cardName").toString() == cardName && !card->isHidden()) {
+            selectedCard = card;
+            break;
+        }
     }
 
-    // Creează CardLabel cu imaginea de iluzie dar valoarea reală
-    CardLabel* illusionCard = new CardLabel(imagePath, cardValue, this);
-    illusionCard->setProperty("cardName", cardName);
+    if (!selectedCard) {
+        QMessageBox::warning(this, "Eroare", "Nu aveți această carte în mână!");
+        return;
+    }
 
-    // Poziționează cartea în stânga tablei
-    int boardX = width() / 2 - (m_game->getBoard().getSize() * 100) / 2;
-    illusionCard->setGeometry(boardX - 120, height() / 2 + 50, 100, 150);
+    // Set card as illusion
+    selectedCard->setProperty("isIllusion", true);
 
-    cards.append(illusionCard);
-    illusionCard->show();
-    updateCardStacks();
+    // Update card image to illusion
+    QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" +
+        prefix + "I.png";
+    selectedCard->setPixmap(QPixmap(imagePath).scaled(100, 150, Qt::KeepAspectRatio));
 }
 
 
@@ -561,195 +543,302 @@ Card::Value Eter_UI::charToCardValue(char value) {
 }
 
 // Creăm butoanele de shift (sus, jos, stânga, dreapta)
-void Eter_UI::createShiftButtons() {
-    const int buttonSize = 50;
-    const int spacing = 10;
-    const int offsetX = 30;
+//void Eter_UI::createShiftButtons() {
+//    const int buttonSize = 50;
+//    const int spacing = 10;
+//    const int offsetX = 30;
+//
+//    int boardPixels = 300;  // pentru un 3x3 => 300 pixeli
+//    // (Pentru 4x4 e 400, însă se poate ajusta dacă vrei un calcul mai exact)
+//    int startX = width() / 2 + boardPixels / 2 + spacing * 2 + offsetX;
+//    int startY = height() / 2 - (buttonSize * 2 + spacing);
+//
+//    QString buttonStyle = R"(
+//       QPushButton {
+//          background-color: rgba(255, 255, 255, 180);
+//          border: 2px solid black;
+//          border-radius: 5px;
+//       }
+//       QPushButton:hover {
+//          background-color: rgba(255, 255, 255, 220);
+//       }
+//       QPushButton:disabled {
+//          background-color: rgba(128, 128, 128, 180);
+//       }
+//    )";
+//
+//    /*shiftUpButton = new QPushButton("↑", this);
+//    shiftDownButton = new QPushButton("↓", this);
+//    shiftLeftButton = new QPushButton("←", this);
+//    shiftRightButton = new QPushButton("→", this);
+//
+//    if (shiftUpButton) {
+//        shiftUpButton->setFixedSize(buttonSize, buttonSize);
+//        shiftUpButton->setStyleSheet(buttonStyle);
+//        shiftUpButton->setFont(QFont("Arial", 20, QFont::Bold));
+//        shiftUpButton->move(startX, startY);
+//        shiftUpButton->show();
+//        connect(shiftUpButton, &QPushButton::clicked, this, &Eter_UI::onShiftUp);
+//    }
+//    if (shiftLeftButton) {
+//        shiftLeftButton->setFixedSize(buttonSize, buttonSize);
+//        shiftLeftButton->setStyleSheet(buttonStyle);
+//        shiftLeftButton->setFont(QFont("Arial", 20, QFont::Bold));
+//        shiftLeftButton->move(startX, startY + buttonSize + spacing);
+//        shiftLeftButton->show();
+//        connect(shiftLeftButton, &QPushButton::clicked, this, &Eter_UI::onShiftLeft);
+//    }
+//    if (shiftRightButton) {
+//        shiftRightButton->setFixedSize(buttonSize, buttonSize);
+//        shiftRightButton->setStyleSheet(buttonStyle);
+//        shiftRightButton->setFont(QFont("Arial", 20, QFont::Bold));
+//        shiftRightButton->move(startX, startY + (buttonSize + spacing) * 2);
+//        shiftRightButton->show();
+//        connect(shiftRightButton, &QPushButton::clicked, this, &Eter_UI::onShiftRight);
+//    }
+//    if (shiftDownButton) {
+//        shiftDownButton->setFixedSize(buttonSize, buttonSize);
+//        shiftDownButton->setStyleSheet(buttonStyle);
+//        shiftDownButton->setFont(QFont("Arial", 20, QFont::Bold));
+//        shiftDownButton->move(startX, startY + (buttonSize + spacing) * 3);
+//        shiftDownButton->show();
+//        connect(shiftDownButton, &QPushButton::clicked, this, &Eter_UI::onShiftDown);
+//    }*/
+//
+//    // Verificăm dacă shift-urile sunt permise (opțional)
+//    //updateShiftButtons();
+//}
 
-    int boardPixels = 300;  // pentru un 3x3 => 300 pixeli
-    // (Pentru 4x4 e 400, însă se poate ajusta dacă vrei un calcul mai exact)
-    int startX = width() / 2 + boardPixels / 2 + spacing * 2 + offsetX;
-    int startY = height() / 2 - (buttonSize * 2 + spacing);
-
-    QString buttonStyle = R"(
-       QPushButton {
-          background-color: rgba(255, 255, 255, 180);
-          border: 2px solid black;
-          border-radius: 5px;
-       }
-       QPushButton:hover {
-          background-color: rgba(255, 255, 255, 220);
-       }
-       QPushButton:disabled {
-          background-color: rgba(128, 128, 128, 180);
-       }
-    )";
-
-    shiftUpButton = new QPushButton("↑", this);
-    shiftDownButton = new QPushButton("↓", this);
-    shiftLeftButton = new QPushButton("←", this);
-    shiftRightButton = new QPushButton("→", this);
-
-    if (shiftUpButton) {
-        shiftUpButton->setFixedSize(buttonSize, buttonSize);
-        shiftUpButton->setStyleSheet(buttonStyle);
-        shiftUpButton->setFont(QFont("Arial", 20, QFont::Bold));
-        shiftUpButton->move(startX, startY);
-        shiftUpButton->show();
-        connect(shiftUpButton, &QPushButton::clicked, this, &Eter_UI::onShiftUp);
-    }
-    if (shiftLeftButton) {
-        shiftLeftButton->setFixedSize(buttonSize, buttonSize);
-        shiftLeftButton->setStyleSheet(buttonStyle);
-        shiftLeftButton->setFont(QFont("Arial", 20, QFont::Bold));
-        shiftLeftButton->move(startX, startY + buttonSize + spacing);
-        shiftLeftButton->show();
-        connect(shiftLeftButton, &QPushButton::clicked, this, &Eter_UI::onShiftLeft);
-    }
-    if (shiftRightButton) {
-        shiftRightButton->setFixedSize(buttonSize, buttonSize);
-        shiftRightButton->setStyleSheet(buttonStyle);
-        shiftRightButton->setFont(QFont("Arial", 20, QFont::Bold));
-        shiftRightButton->move(startX, startY + (buttonSize + spacing) * 2);
-        shiftRightButton->show();
-        connect(shiftRightButton, &QPushButton::clicked, this, &Eter_UI::onShiftRight);
-    }
-    if (shiftDownButton) {
-        shiftDownButton->setFixedSize(buttonSize, buttonSize);
-        shiftDownButton->setStyleSheet(buttonStyle);
-        shiftDownButton->setFont(QFont("Arial", 20, QFont::Bold));
-        shiftDownButton->move(startX, startY + (buttonSize + spacing) * 3);
-        shiftDownButton->show();
-        connect(shiftDownButton, &QPushButton::clicked, this, &Eter_UI::onShiftDown);
-    }
-
-    // Verificăm dacă shift-urile sunt permise (opțional)
-    updateShiftButtons();
-}
-
-void Eter_UI::updateShiftButtons() {
-    if (!m_game) return;
-
-    Board& board = m_game->getBoard();
-
-    bool canShiftUp = board.circularShiftUp(true);
-    bool canShiftDown = board.circularShiftDown(true);
-    bool canShiftLeft = board.circularShiftLeft(true);
-    bool canShiftRight = board.circularShiftRight(true);
-
-    if (shiftUpButton)    shiftUpButton->setEnabled(canShiftUp);
-    if (shiftDownButton)  shiftDownButton->setEnabled(canShiftDown);
-    if (shiftLeftButton)  shiftLeftButton->setEnabled(canShiftLeft);
-    if (shiftRightButton) shiftRightButton->setEnabled(canShiftRight);
-}
+//void Eter_UI::updateShiftButtons() {
+//    if (!m_game) return;
+//
+//    Board& board = m_game->getBoard();
+//
+//    bool canShiftUp = board.circularShiftUp(true);
+//    bool canShiftDown = board.circularShiftDown(true);
+//    bool canShiftLeft = board.circularShiftLeft(true);
+//    bool canShiftRight = board.circularShiftRight(true);
+//
+//    if (shiftUpButton)    shiftUpButton->setEnabled(canShiftUp);
+//    if (shiftDownButton)  shiftDownButton->setEnabled(canShiftDown);
+//    if (shiftLeftButton)  shiftLeftButton->setEnabled(canShiftLeft);
+//    if (shiftRightButton) shiftRightButton->setEnabled(canShiftRight);
+//}
 
 // Funcții de shift
-void Eter_UI::onShiftUp() {
-    if (!m_game) return;
-    Board& board = m_game->getBoard();
-    if (board.circularShiftUp()) {
-        updateBoardDisplay();
-        checkWinCondition();
-    }
-}
+//void Eter_UI::onShiftUp() {
+//    if (!m_game) return;
+//    Board& board = m_game->getBoard();
+//    if (board.circularShiftUp()) {
+//        updateBoardDisplay();
+//        checkWinCondition();
+//    }
+//}
+//
+//void Eter_UI::onShiftDown() {
+//    if (!m_game) return;
+//    Board& board = m_game->getBoard();
+//    if (board.circularShiftDown()) {
+//        updateBoardDisplay();
+//        checkWinCondition();
+//    }
+//}
+//
+//void Eter_UI::onShiftLeft() {
+//    if (!m_game) return;
+//    Board& board = m_game->getBoard();
+//    if (board.circularShiftLeft()) {
+//        updateBoardDisplay();
+//        checkWinCondition();
+//    }
+//}
+//
+//void Eter_UI::onShiftRight() {
+//    if (!m_game) return;
+//    Board& board = m_game->getBoard();
+//    if (board.circularShiftRight()) {
+//        updateBoardDisplay();
+//        checkWinCondition();
+//    }
+//}
 
-void Eter_UI::onShiftDown() {
-    if (!m_game) return;
-    Board& board = m_game->getBoard();
-    if (board.circularShiftDown()) {
-        updateBoardDisplay();
-        checkWinCondition();
-    }
-}
 
-void Eter_UI::onShiftLeft() {
-    if (!m_game) return;
-    Board& board = m_game->getBoard();
-    if (board.circularShiftLeft()) {
-        updateBoardDisplay();
-        checkWinCondition();
-    }
-}
-
-void Eter_UI::onShiftRight() {
-    if (!m_game) return;
-    Board& board = m_game->getBoard();
-    if (board.circularShiftRight()) {
-        updateBoardDisplay();
-        checkWinCondition();
-    }
-}
-
-// Se apelează când se plasează o carte pe tablă (drag&drop)
 void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
     if (!m_game) return;
-
     CardLabel* card = qobject_cast<CardLabel*>(event->source());
-    if (!card) {
-        QMessageBox::warning(this, "Eroare", "Nu s-a putut plasa cartea.");
-        return;
-    }
+    if (!card) return;
 
     int row = cell->getRow();
     int col = cell->getCol();
-
-    QString cardName = card->property("cardName").toString();
-    Card::Color cardColor = isRedTurn ? Card::Color::Red : Card::Color::Blue;
-
-    // Verificăm dacă jucătorul are dreptul să plaseze cartea
-    if (isRedTurn && !cardName.contains("R")) {
-        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului roșu!");
-        return;
-    }
-    if (!isRedTurn && !cardName.contains("B")) {
-        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului albastru!");
-        return;
-    }
-
     Board& board = m_game->getBoard();
 
-    char valChar = cardName.at(cardName.size() - 1).toLatin1();
-    Card::Value val = charToCardValue(valChar);
-
-    // Prima carte poate fi plasată oriunde, apoi doar adiacent
-    if (firstCardPlaced) {
-        if (!board.checkNeighbours(row, col)) {
-            QMessageBox::warning(this, "Mutare interzisă",
-                "Cartea trebuie plasată lângă (adiacent) unei cărți deja existente!");
-            return;
-        }
+    QString cardName = card->property("cardName").toString();
+    if ((isRedTurn && !cardName.contains("R")) || (!isRedTurn && !cardName.contains("B"))) {
+        QMessageBox::warning(this, "Mutare interzisă",
+            QString("Nu este rândul jucătorului %1!").arg(isRedTurn ? "roșu" : "albastru"));
+        return;
     }
 
-    // Verificăm dacă valoarea e permisă acolo
+    Card::Value val = charToCardValue(cardName.back().toLatin1());
+
+    if (firstCardPlaced && !board.checkNeighbours(row, col)) {
+        QMessageBox::warning(this, "Mutare interzisă",
+            "Cartea trebuie plasată adiacent unei cărți existente!");
+        return;
+    }
+
     if (!board.checkValue(row, col, val)) {
         QMessageBox::warning(this, "Mutare interzisă",
             "Cartea nu poate fi plasată în acest loc!");
         return;
     }
 
-    // Plasăm cartea propriu-zis în model
-    Card newCard(val, cardColor);
-    board.getBoard()[row][col].push_back(newCard);
-
-    // Setăm imaginea top pe BoardCell
-    cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
-    card->hide(); // ascundem cartea din "mână"
-
-    if (!firstCardPlaced) {
-        firstCardPlaced = true;
+    bool isIllusion = card->property("isIllusion").toBool();
+    Card newCard(val, isRedTurn ? Card::Color::Red : Card::Color::Blue);
+    if (isIllusion) {
+        newCard.setIllusion();
+        QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" +
+            (isRedTurn ? "RI.png" : "BI.png");
+        cell->setPixmap(QPixmap(imagePath).scaled(100, 150, Qt::KeepAspectRatio));
+    }
+    else {
+        cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
     }
 
-    // Schimbăm rândul
+    board.getBoard()[row][col].push_back(newCard);
+
+    auto checkForCompleteLines = [&]() {
+        bool rowComplete = std::all_of(board.getBoard()[row].begin(),
+            board.getBoard()[row].end(),
+            [](const auto& cell) { return !cell.empty(); });
+
+        bool colComplete = true;
+        for (size_t r = 0; r < board.getSize(); r++) {
+            if (board.getBoard()[r][col].empty()) {
+                colComplete = false;
+                break;
+            }
+        }
+
+        if (rowComplete) {
+            bool topEmpty = row > 0 &&
+                std::all_of(board.getBoard()[0].begin(),
+                    board.getBoard()[0].end(),
+                    [](const auto& cell) { return cell.empty(); });
+            bool bottomEmpty = row < board.getSize() - 1 &&
+                std::all_of(board.getBoard()[board.getSize() - 1].begin(),
+                    board.getBoard()[board.getSize() - 1].end(),
+                    [](const auto& cell) { return cell.empty(); });
+
+            if (topEmpty) board.circularShiftUp();
+            else if (bottomEmpty) board.circularShiftDown();
+        }
+        else if (colComplete) {
+            bool leftEmpty = col > 0 &&
+                std::all_of(board.getBoard().begin(),
+                    board.getBoard().end(),
+                    [](const auto& row) { return row[0].empty(); });
+            bool rightEmpty = col < board.getSize() - 1 &&
+                std::all_of(board.getBoard().begin(),
+                    board.getBoard().end(),
+                    [&](const auto& row) { return row[board.getSize() - 1].empty(); });
+
+            if (leftEmpty) board.circularShiftLeft();
+            else if (rightEmpty) board.circularShiftRight();
+        }
+        };
+
+    checkForCompleteLines();
+    updateBoardDisplay();
+
+    if (isIllusion) {
+        if (isRedTurn) {
+            redIllusionPlayed = true;
+        }
+        else {
+            blueIllusionPlayed = true;
+        }
+    }
+
+    card->hide();
+    firstCardPlaced = true;
     isRedTurn = !isRedTurn;
     updateTurnLabel();
     updateCardStacks();
-
-    // Verificăm dacă cineva a câștigat
-    Card::Color winner = board.checkWin();
-    if (winner != Card::Color::Undefined) {
-        showWinMessage(winner);
-    }
+    checkWinCondition();
 }
+
+
+// Se apelează când se plasează o carte pe tablă (drag&drop)
+//void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
+//    if (!m_game) return;
+//
+//    CardLabel* card = qobject_cast<CardLabel*>(event->source());
+//    if (!card) {
+//        QMessageBox::warning(this, "Eroare", "Nu s-a putut plasa cartea.");
+//        return;
+//    }
+//
+//    int row = cell->getRow();
+//    int col = cell->getCol();
+//
+//    QString cardName = card->property("cardName").toString();
+//    Card::Color cardColor = isRedTurn ? Card::Color::Red : Card::Color::Blue;
+//
+//    // Verificăm dacă jucătorul are dreptul să plaseze cartea
+//    if (isRedTurn && !cardName.contains("R")) {
+//        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului roșu!");
+//        return;
+//    }
+//    if (!isRedTurn && !cardName.contains("B")) {
+//        QMessageBox::warning(this, "Mutare interzisă", "Nu este rândul jucătorului albastru!");
+//        return;
+//    }
+//
+//    Board& board = m_game->getBoard();
+//
+//    char valChar = cardName.at(cardName.size() - 1).toLatin1();
+//    Card::Value val = charToCardValue(valChar);
+//
+//    // Prima carte poate fi plasată oriunde, apoi doar adiacent
+//    if (firstCardPlaced) {
+//        if (!board.checkNeighbours(row, col)) {
+//            QMessageBox::warning(this, "Mutare interzisă",
+//                "Cartea trebuie plasată lângă (adiacent) unei cărți deja existente!");
+//            return;
+//        }
+//    }
+//
+//    // Verificăm dacă valoarea e permisă acolo
+//    if (!board.checkValue(row, col, val)) {
+//        QMessageBox::warning(this, "Mutare interzisă",
+//            "Cartea nu poate fi plasată în acest loc!");
+//        return;
+//    }
+//
+//    // Plasăm cartea propriu-zis în model
+//    Card newCard(val, cardColor);
+//    board.getBoard()[row][col].push_back(newCard);
+//
+//    // Setăm imaginea top pe BoardCell
+//    cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
+//    card->hide(); // ascundem cartea din "mână"
+//
+//    if (!firstCardPlaced) {
+//        firstCardPlaced = true;
+//    }
+//
+//    // Schimbăm rândul
+//    isRedTurn = !isRedTurn;
+//    updateTurnLabel();
+//    updateCardStacks();
+//
+//    // Verificăm dacă cineva a câștigat
+//    Card::Color winner = board.checkWin();
+//    if (winner != Card::Color::Undefined) {
+//        showWinMessage(winner);
+//    }
+//}
 
 // Actualizează eticheta cu cine e la rând
 void Eter_UI::updateTurnLabel() {

@@ -40,9 +40,6 @@
     <ClCompile Include="..\models\Actions\Card.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\models\Actions\Explosion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\models\Actions\Piece.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,9 +47,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\models\Actions\Wizard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\models\GameMechanics\Board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\models\GameMechanics\Game.cpp">
@@ -73,12 +67,15 @@
     <ClCompile Include="BoardCell.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\models\Actions\Explosion\Explosion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\models\GameMechanics\Board.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\models\Actions\Card.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\models\Actions\Explosion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\models\Actions\Piece.h">
@@ -106,6 +103,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\models\Player\Player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\models\Actions\Explosion\Explosion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

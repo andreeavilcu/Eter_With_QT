@@ -10,7 +10,7 @@
 
 #include "Matrix.h"
 #include "../Actions/Card.h"
-#include "Explosion.h"
+#include "../Actions/Explosion/Explosion.h"
 
 class Board {
 
