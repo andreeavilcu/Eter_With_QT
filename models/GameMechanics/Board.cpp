@@ -374,7 +374,7 @@ void Board::useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& el
     }
 }
 
-bool Board::checkBoardIntegrity() const {
+bool Board::checkBoardIntegrity() {
     const size_t rows = m_board.size();
     const size_t cols = m_board[0].size();
     std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols, false));
@@ -393,7 +393,9 @@ bool Board::checkBoardIntegrity() const {
             for (const auto& [dr, dc] : { std::pair{-1, 0}, {1, 0}, {0, -1}, {0, 1},
                                                                 {-1, -1}, {-1, 1}, {1, -1}, {1, 1} }) {
                 size_t nr = r + dr, nc = c + dc;
-                if (nr < rows && nc < cols && !visited[nr][nc] && !m_board[nr][nc].empty())
+                if (nr < rows && nc < cols && !visited[nr][nc] &&
+                    !m_board[nr][nc].empty() &&
+                    m_board[nr][nc].back().getColor() != Card::Color::Undefined)
                     stack.emplace(nr, nc);
             }
         }
@@ -409,6 +411,7 @@ bool Board::checkBoardIntegrity() const {
         }
     }
 
+    if (!foundFirstSet) m_firstCardPlayed = false;
     return true;
 }
 
@@ -425,8 +428,7 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
         return false;
 
     if (this->m_firstCardPlayed && !this->checkNeighbours(_x, _y))
-        if (this->checkBoardIntegrity())
-            return false;
+        return false;
 
     const auto& power = Power::getInstance();
 
@@ -435,18 +437,6 @@ bool Board::checkPartial(const size_t _x, const size_t _y, const size_t _int_val
     }
 
     return true;
-}
-
-std::optional<Card> Board::placeCard(const size_t _row, const size_t _col, const Card&& _card) {
-    m_board[_row][_col].push_back(_card);
-    std::optional<Card> card = std::nullopt;
-
-    if (!this->checkBoardIntegrity()) {
-        card = std::move(m_board[_row][_col].back());
-        m_board[_row][_col].pop_back();
-    }
-
-    return card;
 }
 
 nlohmann::json Board::toJson() const {

@@ -225,7 +225,19 @@ bool Player::playCard(Game &_game) {
         return false;
 
     if (!_game.getBoard().checkIllusion(x, y, Card::Color::Undefined) && _game.getBoard().checkIllusionValue(x, y, int_value)) {
-        _game.getBoard().placeCard(x, y, std::move(*playedCard));
+        _game.getBoard().m_board[x][y].push_back(std::move(*playedCard));
+
+        if (!_game.getBoard().checkBoardIntegrity()) {
+            playedCard = std::move(_game.getBoard().m_board[x][y].back());
+            _game.getBoard().m_board[x][y].pop_back();
+
+            auto& player = _game.getPlayer1().getColor() == playedCard->getColor() ? _game.getPlayer1() : _game.getPlayer2();
+
+            player.returnCard(std::move(*playedCard));
+
+            return false;
+        }
+
         this->setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
     }
 
@@ -266,7 +278,19 @@ bool Player::playIllusion(Game &_game) {
     if (!playedCard)
         return false;
 
-    _game.getBoard().placeCard(x, y, std::move(*playedCard));
+    _game.getBoard().m_board[x][y].push_back(std::move(*playedCard));
+
+    if (!_game.getBoard().checkBoardIntegrity()) {
+        playedCard = std::move(_game.getBoard().m_board[x][y].back());
+        _game.getBoard().m_board[x][y].pop_back();
+
+        auto& player = _game.getPlayer1().getColor() == playedCard->getColor() ? _game.getPlayer1() : _game.getPlayer2();
+
+        player.returnCard(std::move(*playedCard));
+
+        return false;
+    }
+
     this->setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
 
     _game.getBoard().setFirstCardPlayed();

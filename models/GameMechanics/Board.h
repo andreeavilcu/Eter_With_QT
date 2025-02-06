@@ -57,11 +57,9 @@ public:
     [[nodiscard]] bool checkTwoRows() const;
     void useExplosion(std::vector<Card>& returnedCards, std::vector<Card>& eliminatedCards);
 
-    [[nodiscard]] bool checkBoardIntegrity() const;
+    [[nodiscard]] bool checkBoardIntegrity();
 
     [[nodiscard]] bool checkPartial(size_t _x, size_t _y, size_t _value) const;
-
-    std::optional<Card> placeCard(size_t _row, size_t _col, const Card&& _card);
 
     [[nodiscard]] nlohmann::json toJson() const;
 };

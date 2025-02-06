@@ -162,7 +162,7 @@ bool Power::PowerAction::ash(Player &_player, Game &_game, const bool _check) {
 
     _game.m_eliminatedCards.erase(_game.m_eliminatedCards.begin() + 1);
 
-    board.placeCard(x, y, std::move(chosenCard));
+    board.m_board[y][x].push_back(std::move(chosenCard));
 
     if (!board.checkBoardIntegrity()) {
         chosenCard = std::move(board.m_board[x][y].back());
@@ -220,7 +220,7 @@ bool Power::PowerAction::spark(Player &_player, Game &_game, const bool _check) 
 
     auto &originalStack = board.m_board[origRow][origCol];
     originalStack.erase(originalStack.end() - 2);
-    board.placeCard(newRow, newCol, std::move(chosenCard));
+    board.m_board[newRow][newCol].push_back(std::move(chosenCard));
 
     if (!board.checkBoardIntegrity()) {
         auto card = std::move(board.m_board[newRow][newCol].back());
@@ -615,7 +615,7 @@ bool Power::PowerAction::wave(Player &_player, Game &_game, const bool _check) {
     board.m_board[newX][newY] = std::move(board.m_board[x][y]);
     board.m_board[x][y].clear();
 
-    _game.getBoard().placeCard(x, y, std::move(*playedCard));
+    board.m_board[x][y].push_back(std::move(*playedCard));
     _player.setLastPlacedCard(_game.getBoard().getBoard()[x][y].back());
 
     return true;
@@ -1071,7 +1071,7 @@ bool Power::PowerAction::rock(Player &_player, Game &_game, const bool _check) {
 
     if (!selectedCard) return false;
 
-    board.placeCard(x, y, std::move(*selectedCard));
+    board.m_board[x][y].push_back(std::move(*selectedCard));
 
     return true;
 }
