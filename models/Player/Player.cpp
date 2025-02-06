@@ -152,8 +152,12 @@ bool Player::usePower(Game& _game, const bool _first, const bool _check) {
 
     const bool legal = Power::getInstance().play(_first ? m_powerIndexes.first : m_powerIndexes.second, *this, _game, _check);
 
-    if (legal)
+    if (legal) {
         _first ? m_powerIndexes.first = -1 : m_powerIndexes.second = -1;
+
+        auto& opponent = &_game.getPlayer1() == this ? _game.getPlayer2() : *this;
+        _first ? opponent.m_powerIndexes.first = -1 : opponent.m_powerIndexes.second = -1;
+    }
 
     return legal;
 }

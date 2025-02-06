@@ -21,14 +21,15 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
 
     running = true;
 
-    std::pair<size_t, size_t> powerIndices1 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
-        ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
-        : std::make_pair(static_cast<size_t>(-1), static_cast<size_t>(-1));
+    std::pair<size_t, size_t> powerIndices = { -1, -1 };
 
-    std::pair<size_t, size_t> powerIndices2 = _gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel
-        ? std::make_pair(powerDistribution(gen), powerDistribution(gen))
-        : std::make_pair(static_cast<size_t>(-1), static_cast<size_t>(-1));
+    if (_gameType == GameType::PowerDuel || _gameType == GameType::WizardAndPowerDuel) {
+        powerIndices.first = 0; // powerDistribution(gen);
 
+        do {
+            powerIndices.second = powerDistribution(gen);
+        } while (powerIndices.first == powerIndices.second);
+    }
    
     m_player1 = Player{
      Card::Color::Red,
@@ -47,8 +48,8 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
              Card{Card::Value::Three}, Card{Card::Value::Four}
          }),
      _wizardIndices.first,
-     powerIndices1.first,
-     powerIndices1.second    
+     powerIndices.first,
+     powerIndices.second
     };
 
     m_player2 = Player{
@@ -68,8 +69,8 @@ Game::Game(const GameType _gameType, const std::pair<size_t, size_t>& _wizardInd
                 Card{Card::Value::Three}, Card{Card::Value::Four}
             }),
         _wizardIndices.second,
-        powerIndices2.first,
-        powerIndices2.second   
+        powerIndices.first,
+        powerIndices.second
     };
 }
 

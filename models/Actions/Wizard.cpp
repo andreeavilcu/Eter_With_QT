@@ -10,35 +10,23 @@ bool Wizard::WizardActions::eliminateCard(Player &_player, Game &_game, const bo
     std::cout << "Enter (x, y) coordinates (0-indexed): ";
     std::cin >> x >> y;
 
-    if (!board.checkIndexes(x, y)) {
-        std::cout << "Invalid coordinates!\n";
+    if (!board.checkIndexes(x, y))
         return false;
-    }
 
-    if (board.m_board[x][y].empty() || board.m_board[x][y].size() < 2) {
+    if (board.m_board[x][y].empty() || !board.isAPile(x, y))
         return false;
-    }
 
-    if (board.m_board[x][y].back().getColor() == _player.getColor()) {
+    if (board.m_board[x][y].back().getColor() == _player.getColor())
         return false;
-    }
 
     size_t secondLastCardIndex = board.m_board[x][y].size() - 2;
-    if (board.m_board[x][y][secondLastCardIndex].getColor() != _player.getColor()) {
+    if (board.m_board[x][y][secondLastCardIndex].getColor() != _player.getColor())
         return false;
-    }
 
     Card eliminatedCard = std::move(board.m_board[x][y].back());
     board.m_board[x][y].pop_back();
 
-    if (!board.checkBoardIntegrity()) {
-        board.m_board[x][y].push_back(std::move(eliminatedCard));
-        return false;
-    }
-
     _game.m_eliminatedCards.push_back(std::move(eliminatedCard));
-
-    std::cout << "Card successfully eliminated!\n";
     return true;
 }
 
