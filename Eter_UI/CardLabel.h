@@ -19,6 +19,15 @@ public:
         QWidget* parent = nullptr);
 
     void setDescription(const QString& description); // Setează descrierea cardului
+    bool isWizardCard() const { return isWizard; }
+    size_t getWizardIndex() const { return wizardIndex; }
+    void setWizardCard(bool value, size_t index, const QString& name) {
+        isWizard = value;
+        wizardIndex = index;
+        wizardName = name;
+    }
+signals:
+    void clicked();
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
@@ -27,4 +36,8 @@ protected:
 private:
     Card::Value m_value;
     QString m_description; // Stochează descrierea cardului
+
+    bool isWizard = false;
+    size_t wizardIndex = 0;
+    QString wizardName;
 };

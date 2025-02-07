@@ -5,7 +5,9 @@
 #include <array>
 #include <nlohmann/json.hpp>
 #include "Card.h"
-
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QString>
 class Game;
 class Player;
 

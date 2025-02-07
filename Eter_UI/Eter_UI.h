@@ -65,12 +65,11 @@ private:
     bool redIllusionPlayed = false;
     bool blueIllusionPlayed = false;
 
-    void createShiftButtons();
-    void onShiftUp();
-    void onShiftDown();
-    void onShiftLeft();
-    void onShiftRight();
-    void updateShiftButtons();
+    
+    bool redWizardUsed = false;
+    bool blueWizardUsed = false;
+
+
     void updateBoardDisplay();
     void createGame(Game::GameType gameType);       
     void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell); 
@@ -98,9 +97,9 @@ private slots:
     void drawSpeedMenu();
 
     void onIllusionButtonClicked();
-
+    void onWizardCardClicked(CardLabel* card);
     void OnButtonClick();
-    void onWizardPowersClicked();
+    //void onWizardPowersClicked();
     void activateWizardPower(size_t powerIndex, Player& player, Game& game);
 
     void removeCard(CardLabel* card);

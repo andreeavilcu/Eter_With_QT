@@ -491,29 +491,47 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         };
 
     // Funcție locală pentru a crea cartea de vrăjitor, dacă `includeWizards == true`
-    auto addWizardCard = [&](const QString& wizName, int startX, int startY) {
+    auto addWizardCard = [&](const QString& wizName, int startX, int startY, const QString& color) {
         if (!includeWizards) return;
+
         QString wizPath = cardsPath + wizName + ".png";
+        qDebug() << "Creating wizard card from:" << wizPath;
+        qDebug() << "File exists:" << QFile::exists(wizPath);
+
+        QPixmap testPixmap(wizPath);
+        qDebug() << "Pixmap is null:" << testPixmap.isNull(); // adaugă acest debug
+        qDebug() << "Pixmap size:" << testPixmap.size();
+
         if (QFile::exists(wizPath)) {
             int wizardIndex = wizardNames.indexOf(wizName);
             CardLabel* wizardLabel = new CardLabel(wizPath, Card::Value::Three, this);
-            // Setați description pt hover
-            if (wizardIndex >= 0 && wizardIndex < wizardDescriptions.size()) {
-                wizardLabel->setDescription(wizardDescriptions[wizardIndex]);
-            }
+            wizardLabel->setWizardCard(true, wizardIndex, wizName);
+            wizardLabel->setProperty("cardName", color);
+            wizardLabel->setEnabled(true); // Asigură-te că este enabled
+
+            wizardLabel->setDescription(wizardDescriptions[wizardIndex]);
+
+            // Conectează explicit semnalul clicked
+            connect(wizardLabel, &CardLabel::clicked, this, [this, wizardLabel]() {
+                qDebug() << "Wizard card clicked";
+                onWizardCardClicked(wizardLabel);
+                });
+
             wizardLabel->setGeometry(startX, startY, 100, 150);
             cards.append(wizardLabel);
             wizardLabel->show();
+
+            qDebug() << "Wizard card created successfully";
         }
         else {
-            qDebug() << "Wizard image not found:" << wizPath;
+            qDebug() << "Error: Wizard image not found at:" << wizPath;
         }
         };
 
     // Poziționare cărți Albastre (Blue)
     int startXBlue = width() / 2 - ((blueCards.size() / 2) * 110);
     int startYBlue = height() / 2 + 230;
-    addWizardCard(blueWizard, startXBlue - 120, startYBlue);
+    addWizardCard(blueWizard, startXBlue - 120, startYBlue, "B");
     for (const QString& cardName : blueCards) {
         createCard(cardName, startXBlue, startYBlue);
     }
@@ -521,7 +539,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
     // Poziționare cărți Roșii (Red)
     int startXRed = width() / 2 - ((redCards.size() / 2) * 110);
     int startYRed = height() / 2 - 340;
-    addWizardCard(redWizard, startXRed - 120, startYRed);
+    addWizardCard(redWizard, startXRed - 120, startYRed, "R");
     for (const QString& cardName : redCards) {
         createCard(cardName, startXRed, startYRed);
     }
@@ -761,10 +779,10 @@ void Eter_UI::updateTurnLabel() {
 }
 
 // Buton "Wizard and Powers" (din meniu) -> apel direct
-void Eter_UI::onWizardPowersClicked() {
-    // Apelăm direct OnButtonClick, astfel încât logica să fie aceeași
-    OnButtonClick();
-}
+//void Eter_UI::onWizardPowersClicked() {
+//    // Apelăm direct OnButtonClick, astfel încât logica să fie aceeași
+//    OnButtonClick();
+//}
 
 // Meniu "Tournament game"
 void Eter_UI::drawTournamentMenu() {
@@ -810,7 +828,7 @@ void Eter_UI::drawTournamentMenu() {
     createButton(buttonWizardPowers, "Wizard and Powers",
         centerX, centerY + (buttonHeight + spacing) * 3,
         buttonWidth, buttonHeight,
-        buttonFont, &Eter_UI::onWizardPowersClicked);
+        buttonFont, &Eter_UI::OnButtonClick);
 }
 
 // Meniu "Speed game"
@@ -856,7 +874,7 @@ void Eter_UI::drawSpeedMenu() {
     createButton(buttonWizardPowers, "Wizard and Powers",
         centerX, centerY + (buttonHeight + spacing) * 3,
         buttonWidth, buttonHeight,
-        buttonFont, &Eter_UI::onWizardPowersClicked);
+        buttonFont, &Eter_UI::OnButtonClick);
 }
 
 // Marchează cărțile care aparțin jucătorului curent ca active
@@ -864,6 +882,26 @@ void Eter_UI::updateCardStacks() {
     for (CardLabel* c : cards) {
         if (!c) continue;
         if (c->isHidden()) continue;
+
+
+        if (c->isWizardCard()) {
+            // Add check for card ownership
+            QString name = c->property("cardName").toString();
+            bool isRedCard = name.contains("R", Qt::CaseInsensitive);
+            bool isBlueCard = name.contains("B", Qt::CaseInsensitive);
+
+            bool isRedWizard = isRedTurn && !redWizardUsed && isRedCard;
+            bool isBlueWizard = !isRedTurn && !blueWizardUsed && isBlueCard;
+            c->setEnabled(isRedWizard || isBlueWizard);
+
+            if (c->isEnabled()) {
+                c->setStyleSheet("QLabel { border: none; }");
+            }
+            else {
+                c->setStyleSheet("QLabel { border: none; opacity: 0.5; }");
+            }
+            continue;
+        }
 
         QString name = c->property("cardName").toString();
         bool isRedCard = name.contains("R", Qt::CaseInsensitive);
@@ -886,6 +924,59 @@ void Eter_UI::cleanCardStack() {
             }),
         cards.end()
     );
+}
+
+void Eter_UI::onWizardCardClicked(CardLabel* card) {
+    qDebug() << "Wizard clicked:" << card->getWizardIndex();
+
+    if (!m_game) return;
+
+    if ((isRedTurn && redWizardUsed) || (!isRedTurn && blueWizardUsed)) {
+        QMessageBox::warning(this, "Wizard Used",
+            "You have already used your wizard in this game!");
+        return;
+    }
+
+    Player& currentPlayer = isRedTurn ? m_game->getPlayer1() : m_game->getPlayer2();
+    size_t wizardIndex = card->getWizardIndex();
+    bool actionSuccessful = false;
+
+    switch (wizardIndex) {
+    case 0: // eliminateCard
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 1: // eliminateRow
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 2: // coverCard
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 3: // sinkHole
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 4: // moveStackOwn
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 5: // extraEter
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 6: // moveStackOpponent
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    case 7: // moveEdge
+        actionSuccessful = Wizard::getInstance().play(wizardIndex, currentPlayer, *m_game, false);
+        break;
+    default:
+        QMessageBox::warning(this, "Error", "Unknown wizard action!");
+        return;
+    }
+
+    if (actionSuccessful) {
+        if (isRedTurn) redWizardUsed = true;
+        else blueWizardUsed = true;
+        card->hide();
+        updateBoardDisplay();
+    }
 }
 
 // Re-actualizează ce se vede pe tablă după shift
@@ -964,6 +1055,8 @@ void Eter_UI::startNewTurn() {
 
     isRedTurn = true;
     firstCardPlaced = false;
+    redWizardUsed = false;   // Add here
+    blueWizardUsed = false;
 
     updateTurnLabel();
     updateBoardDisplay();
