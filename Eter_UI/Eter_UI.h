@@ -26,7 +26,7 @@ public:
     ~Eter_UI();
 
     Board* getGameBoard() { return gameBoard; }
-
+    void updateBoardDisplay();
 protected:
     void paintEvent(QPaintEvent* event) override;
 
@@ -69,8 +69,10 @@ private:
     bool redWizardUsed = false;
     bool blueWizardUsed = false;
 
-
-    void updateBoardDisplay();
+    void handleReturnedCards();
+    void placeCardInHand(CardLabel* card, int startX, int startY, bool isRedCard);
+    void handleSquallReturnedCard();
+    
     void createGame(Game::GameType gameType);       
     void processGameTurn(CardLabel* selectedCard, BoardCell* targetCell); 
     void endGame(const GameEndInfo& info);           
@@ -98,6 +100,7 @@ private slots:
 
     void onIllusionButtonClicked();
     void onWizardCardClicked(CardLabel* card);
+    void onPowerCardClicked(CardLabel* card);
     void OnButtonClick();
     //void onWizardPowersClicked();
     void activateWizardPower(size_t powerIndex, Player& player, Game& game);

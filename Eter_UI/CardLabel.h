@@ -26,6 +26,14 @@ public:
         wizardIndex = index;
         wizardName = name;
     }
+
+    void setPowerCard(bool value, size_t index) {
+        isPower = value;
+        powerIndex = index;
+    }
+    bool isPowerCard() const { return isPower; }
+    size_t getPowerIndex() const { return powerIndex; }
+
 signals:
     void clicked();
 
@@ -40,4 +48,7 @@ private:
     bool isWizard = false;
     size_t wizardIndex = 0;
     QString wizardName;
+
+    bool isPower = false;
+    size_t powerIndex = 0;
 };

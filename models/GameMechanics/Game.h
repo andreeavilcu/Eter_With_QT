@@ -13,6 +13,7 @@
 inline bool running = true;
 inline bool saving;
 
+
 class Game {
 public:
     enum class GameType : size_t {

@@ -29,11 +29,14 @@ void CardLabel::setDescription(const QString& description) {
 
 void CardLabel::mousePressEvent(QMouseEvent* event)
 {
-    qDebug() << "Mouse press event, isWizard:" << isWizardCard();
+    //qDebug() << "Mouse press event, isWizard:" << isWizardCard();
     if (event->button() == Qt::LeftButton) {
         if (isWizardCard()) {
             emit clicked();
-            
+        }
+        else if (isPowerCard()) {
+            emit clicked();
+            qDebug() << "Power card clicked with index:" << getPowerIndex();
         }
         else {
             QDrag* drag = new QDrag(this);

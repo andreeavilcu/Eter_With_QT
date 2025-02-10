@@ -64,6 +64,76 @@ Eter_UI::Eter_UI(QWidget* parent)
 Eter_UI::~Eter_UI() {
 }
 
+// Funcții helper pentru gestionarea cărților returnate
+void Eter_UI::handleReturnedCards() {
+    if (m_game->m_returnedCards.empty()) return;
+
+    std::map<bool, int> lastPositions = {
+        {true, width() / 2 - 330},   // pentru cărți roșii
+        {false, width() / 2 - 330}   // pentru cărți albastre
+    };
+
+    for (auto& returnedCard : m_game->m_returnedCards) {
+        bool isRedCard = returnedCard.getColor() == Card::Color::Red;
+        QString colorPrefix = isRedCard ? "R" : "B";
+        QString valSuffix = QString::number(static_cast<int>(returnedCard.getValue()));
+        QString imagePath = QCoreApplication::applicationDirPath() +
+            "/cards/" + colorPrefix + valSuffix + ".png";
+
+        CardLabel* newCard = new CardLabel(imagePath, returnedCard.getValue(), this);
+        newCard->setProperty("cardName", colorPrefix + valSuffix);
+
+        int startY = isRedCard ? height() / 2 - 340 : height() / 2 + 230;
+        placeCardInHand(newCard, lastPositions[isRedCard], startY, isRedCard);
+        lastPositions[isRedCard] += 110;
+    }
+}
+
+void Eter_UI::placeCardInHand(CardLabel* card, int startX, int startY, bool isRedCard)
+{
+    int currentX = startX;
+    while (true) {
+        bool positionOccupied = false;
+        for (const auto& existingCard : cards) {
+            if (!existingCard->isHidden() &&
+                existingCard->geometry().x() == currentX &&
+                existingCard->geometry().y() == startY) {
+                currentX += 110;
+                positionOccupied = true;
+                break;
+            }
+        }
+        if (!positionOccupied) break;
+    }
+
+    card->setGeometry(currentX, startY, 100, 150);
+    card->show();
+    cards.append(card);
+}
+
+void Eter_UI::handleSquallReturnedCard()
+{
+    if (m_game->m_returnedCards.empty()) return;
+
+    auto& returnedCard = m_game->m_returnedCards.back();
+    bool isRedCard = returnedCard.getColor() == Card::Color::Red;
+
+    QString colorPrefix = isRedCard ? "R" : "B";
+    QString valSuffix = QString::number(static_cast<int>(returnedCard.getValue()));
+    QString imagePath = QCoreApplication::applicationDirPath() +
+        "/cards/" + colorPrefix + valSuffix + ".png";
+
+    CardLabel* newCard = new CardLabel(imagePath, returnedCard.getValue(), this);
+    newCard->setProperty("cardName", colorPrefix + valSuffix);
+
+    int startY = isRedCard ? height() / 2 - 340 : height() / 2 + 230;
+    int startX = width() / 2 - 330;
+
+    placeCardInHand(newCard, startX, startY, isRedCard);
+    m_game->m_returnedCards.clear();
+}
+
+
 // Funcție generică pentru a crea butoane
 void Eter_UI::createButton(
     QPointer<QPushButton>& button,
@@ -173,10 +243,11 @@ void Eter_UI::OnButtonClick() {
         m_game = std::make_unique<Game>(
             gameType,
             std::make_pair<size_t, size_t>(0, 1),  // exemplu: indices wizards
-            false, // illusionsAllowed
-            false, // explosionAllowed
+            includePowers, // illusionsAllowed
+            includePowers, // explosionAllowed
             false  // tournament (false deocamdată)
         );
+
     }
     catch (const std::exception& e) {
         qDebug() << "Error creating game instance:" << e.what();
@@ -357,6 +428,13 @@ void Eter_UI::onIllusionButtonClicked() {
     QString imagePath = QCoreApplication::applicationDirPath() + "/cards/" +
         prefix + "I.png";
     selectedCard->setPixmap(QPixmap(imagePath).scaled(100, 150, Qt::KeepAspectRatio));
+
+    if (isRedTurn) {
+        m_game->getPlayer1().setPlayedIllusion(true);
+    }
+    else {
+        m_game->getPlayer2().setPlayedIllusion(true);
+    }
 }
 
 
@@ -394,10 +472,10 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
     QStringList powerDescriptions = {
         "Controlled Explosion: Use an explosion to return cards to players' hands.",
         "Destruction: Destroy an opponent's card.",
-        "Flame: Remove illusions from the board.",
-        "Lava: Remove all cards of a selected value.",
+        "Flame: Reveal illusions from the board.",
+        "Lava: Return in players's hands all cards of a selected value.",
         "Ash: Bring back an eliminated card.",
-        "Spark: Cover an opponent's card with your own.",
+        "Spark: Take any of your cards that is covered by an opponent’s cards and play it onto a different space.",
         "Squall: Return an opponent's card to their hand.",
         "Gale: Clear all but the top cards in each stack.",
         "Hurricane: Shift a row or column of cards.",
@@ -414,7 +492,7 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         "Earthquake: Eliminate all cards with value 1.",
         "Crumble: Decrease an opponent's card value by 1.",
         "Border: Place a border card to limit the playable area.",
-        "Avalanche: Swap two adjacent stacks.",
+        "Avalanche: Move two neighboring stacks by one space horizontally or vertically.",
         "Rock: Cover an illusion without revealing it."
     };
 
@@ -438,32 +516,55 @@ void Eter_UI::createCards(QPushButton* clickedButton) {
         includeWizards = (clickedButton == buttonWizardPowers);
 
         // Exemplu: adăugăm 2 puteri random la fiecare
-        auto addRandomPowers = [&](const QStringList& pnames, int startX, int startY) {
+        // In createCards()
+        auto addRandomPowers = [&](const QStringList& pnames, int startX, int startY, const QString& color) {
+            std::pair<size_t, size_t> indices;
+            //std::vector<int> testIndices = {21, 23 };
             for (int i = 0; i < 2; ++i) {
                 int idx = QRandomGenerator::global()->bounded(pnames.size());
+                //int idx = testIndices[i];
+                if (i == 0) {
+                    indices.first = idx;
+                }
+                else {
+                    indices.second = idx;
+                }
+
                 QString powerName = pnames[idx];
                 QString powerImagePath = cardsPath + powerName + ".png";
                 if (QFile::exists(powerImagePath)) {
-                    CardLabel* powerLabel = new CardLabel(powerImagePath, Card::Value::Two, this); // exemplu Value
-                    powerLabel->setDescription(powerDescriptions[idx]); // Hover text
+                    CardLabel* powerLabel = new CardLabel(powerImagePath, Card::Value::Two, this);
+                    powerLabel->setPowerCard(true, idx);
+                    powerLabel->setProperty("cardName", color);
+                    powerLabel->setDescription(powerDescriptions[idx]);
+
+                    connect(powerLabel, &CardLabel::clicked, this, [this, powerLabel]() {
+                        onPowerCardClicked(powerLabel);
+                        });
+
                     powerLabel->setGeometry(startX, startY, 100, 150);
                     cards.append(powerLabel);
                     powerLabel->show();
                     startX += 110;
                 }
-                else {
-                    qDebug() << "Power image not found:" << powerImagePath;
-                }
+            }
+
+            // Store indices in player
+            if (color == "R") {
+                m_game->getPlayer1().setPowersIndex(indices);
+            }
+            else {
+                m_game->getPlayer2().setPowersIndex(indices);
             }
             };
 
         int startXBlue = width() / 2 + ((blueCards.size() / 2) * 110) + 120;
         int startYBlue = height() / 2 + 230;
-        addRandomPowers(powerNames, startXBlue, startYBlue);
+        addRandomPowers(powerNames, startXBlue, startYBlue, "B");
 
         int startXRed = width() / 2 + ((redCards.size() / 2) * 110) + 120;
         int startYRed = height() / 2 - 340;
-        addRandomPowers(powerNames, startXRed, startYRed);
+        addRandomPowers(powerNames, startXRed, startYRed, "R");
     }
 
     // Creăm vrăjitorii (random) dacă e cazul
@@ -571,6 +672,15 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
 
     int row = cell->getRow();
     int col = cell->getCol();
+
+    Power& power = Power::getInstance();
+    if ((power.getRestrictedRow() != -1 && row == power.getRestrictedRow()) ||
+        (power.getRestrictedCol() != -1 && col == power.getRestrictedCol())) {
+        QMessageBox::warning(this, "Mutare interzisă",
+            "Nu puteți plasa cărți pe linia/coloana restricționată!");
+        return;
+    }
+
     Board& board = m_game->getBoard();
 
     QString cardName = card->property("cardName").toString();
@@ -619,6 +729,13 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
         QPixmap illusionPixmap(imagePath);
         qDebug() << "Illusion pixmap valid:" << !illusionPixmap.isNull();
         cell->setPixmap(illusionPixmap.scaled(100, 150, Qt::KeepAspectRatio));
+    
+        if (isRedTurn) {
+            m_game->getPlayer1().setPlayedIllusion(true);
+        }
+        else {
+            m_game->getPlayer2().setPlayedIllusion(true);
+        }
     }
     else {
         cell->setPixmap(card->pixmap(Qt::ReturnByValue).scaled(100, 150, Qt::KeepAspectRatio));
@@ -627,6 +744,13 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
         newCard.setIllusion();
     }
     board.getBoard()[row][col].push_back(newCard);
+
+    if (isRedTurn) {
+        m_game->getPlayer1().setLastPlacedCard(board.getBoard()[row][col].back());
+    }
+    else {
+        m_game->getPlayer2().setLastPlacedCard(board.getBoard()[row][col].back());
+    }
 
     auto checkForCompleteLines = [&]() {
         bool rowComplete = std::all_of(board.getBoard()[row].begin(),
@@ -686,6 +810,13 @@ void Eter_UI::onCardPlaced(QDropEvent* event, BoardCell* cell) {
     isRedTurn = !isRedTurn;
     updateTurnLabel();
     updateCardStacks();
+
+    if (Power::getInstance().getJustBlocked()) {
+        Power::getInstance().setRestrictedRow(-1);
+        Power::getInstance().setRestrictedCol(-1);
+        Power::getInstance().setJustBlocked(false);
+    }
+
     checkWinCondition();
 }
 
@@ -883,8 +1014,16 @@ void Eter_UI::updateCardStacks() {
         if (!c) continue;
         if (c->isHidden()) continue;
 
+        QString name = c->property("cardName").toString();
+        bool isRedCard = name.contains("R", Qt::CaseInsensitive);
+        bool isBlueCard = name.contains("B", Qt::CaseInsensitive);
 
-        if (c->isWizardCard()) {
+        if (c->isPowerCard()) {
+            bool isRedPower = isRedTurn && isRedCard;
+            bool isBluePower = !isRedTurn && isBlueCard;
+            c->setEnabled(isRedPower || isBluePower);
+        }
+        else if (c->isWizardCard()) {
             // Add check for card ownership
             QString name = c->property("cardName").toString();
             bool isRedCard = name.contains("R", Qt::CaseInsensitive);
@@ -903,9 +1042,9 @@ void Eter_UI::updateCardStacks() {
             continue;
         }
 
-        QString name = c->property("cardName").toString();
+        /*QString name = c->property("cardName").toString();
         bool isRedCard = name.contains("R", Qt::CaseInsensitive);
-        bool isBlueCard = name.contains("B", Qt::CaseInsensitive);
+        bool isBlueCard = name.contains("B", Qt::CaseInsensitive);*/
 
         if (isRedTurn) {
             c->setEnabled(isRedCard);
@@ -977,6 +1116,246 @@ void Eter_UI::onWizardCardClicked(CardLabel* card) {
         card->hide();
         updateBoardDisplay();
     }
+}
+
+void Eter_UI::onPowerCardClicked(CardLabel* card) {
+    qDebug() << "Power card clicked with index:" << card->getPowerIndex();
+    if (!m_game) {
+        qDebug() << "Game instance is null!";
+        return;
+    }
+
+    QString cardName = card->property("cardName").toString();
+    if ((isRedTurn && !cardName.contains("R")) || (!isRedTurn && !cardName.contains("B"))) {
+        QMessageBox::warning(this, "Invalid Move", "It's not your turn!");
+        return;
+    }
+
+
+    Player& currentPlayer = isRedTurn ? m_game->getPlayer1() : m_game->getPlayer2();
+    size_t powerIndex = card->getPowerIndex();
+
+    qDebug() << "Attempting to play power with index:" << powerIndex;
+    qDebug() << "Current player color:" << (isRedTurn ? "Red" : "Blue");
+
+    bool actionSuccessful = false;
+    qDebug() << "Power clicked:" << card->getPowerIndex();
+
+    try {
+        switch (powerIndex) {
+     case 0: // controlledExplosion
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 1: // destruction
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+        if (actionSuccessful) {
+        // Verificăm dacă tabla e goală după distrugerea cărții
+        bool boardEmpty = true;
+        const auto& board = m_game->getBoard().getBoard();
+        for (const auto& row : board) {
+            for (const auto& stack : row) {
+                if (!stack.empty()) {
+                    boardEmpty = false;
+                    break;
+                }
+            }
+            if (!boardEmpty) break;
+        }
+        
+        if (boardEmpty) {
+            firstCardPlaced = false;  // Resetăm flag-ul din UI
+        }
+        
+    }
+     case 2: // flame
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 3: // lava
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             handleReturnedCards();
+
+             // Verificăm dacă tabla e goală după distrugerea cărții
+             bool boardEmpty = true;
+             const auto& board = m_game->getBoard().getBoard();
+             for (const auto& row : board) {
+                 for (const auto& stack : row) {
+                     if (!stack.empty()) {
+                         boardEmpty = false;
+                         break;
+                     }
+                 }
+                 if (!boardEmpty) break;
+             }
+
+             if (boardEmpty) {
+                 firstCardPlaced = false;  // Resetăm flag-ul din UI
+             }
+
+             //updateBoardDisplay();
+         }
+
+         break;
+     case 4: // ash
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 5: // spark
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 6: // squall
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             handleSquallReturnedCard();
+         }
+         break;
+     case 7: // gale
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             handleReturnedCards();
+         }
+
+         break;
+     case 8: // hurricane
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             handleReturnedCards();
+         }
+
+         break;
+     case 9: // gust
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 10: // mirage
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             handleReturnedCards();
+             if (actionSuccessful) {
+                 for (CardLabel* cardLabel : cards) {
+                     if (!cardLabel->isHidden() &&
+                         cardLabel->property("cardName").toString().endsWith(QString::number(static_cast<int>(currentPlayer.getLastPlacedCard()->getValue())))) {
+                         cardLabel->hide();
+                         break;
+                     }
+                 }
+             }
+         }
+     case 11: // storm
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 12: // tide
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 13: // mist
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             for (CardLabel* cardLabel : cards) {
+                 if (!cardLabel->isHidden() &&
+                     cardLabel->property("cardName").toString().endsWith(QString::number(static_cast<int>(currentPlayer.getLastPlacedCard()->getValue())))) {
+                     cardLabel->hide();
+                     break;
+                 }
+             }
+         }
+         break;
+     case 14: // wave
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             for (CardLabel* cardLabel : cards) {
+                 if (!cardLabel->isHidden() &&
+                     cardLabel->property("cardName").toString().endsWith(QString::number(static_cast<int>(currentPlayer.getLastPlacedCard()->getValue())))) {
+                     cardLabel->hide();
+                     break;
+                 }
+             }
+         }
+         break;
+     case 15: // whirlpool
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 16: // tsunami
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 17: // waterfall
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 18: // support
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 19: // earthquake
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             bool boardEmpty = true;
+             const auto& board = m_game->getBoard().getBoard();
+             for (const auto& row : board) {
+                 for (const auto& stack : row) {
+                     if (!stack.empty()) {
+                         boardEmpty = false;
+                         break;
+                     }
+                 }
+                 if (!boardEmpty) break;
+             }
+
+             if (boardEmpty) {
+                 firstCardPlaced = false;  // Resetăm flag-ul din UI
+             }
+         }
+         break;
+     case 20: // crumble
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 21: // border
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 22: // avalanche
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         break;
+     case 23: // rock
+         actionSuccessful = Power::getInstance().play(powerIndex, currentPlayer, *m_game, false);
+         if (actionSuccessful) {
+             for (CardLabel* cardLabel : cards) {
+                 if (!cardLabel->isHidden() &&
+                     cardLabel->property("cardName").toString().endsWith(QString::number(static_cast<int>(currentPlayer.getLastPlacedCard()->getValue())))) {
+                     cardLabel->hide();
+                     break;
+                 }
+             }
+         }
+         break;
+     default:
+         QMessageBox::warning(this, "Error", "Unknown power action!");
+         return;
+     }
+    }
+    catch (const std::exception& e) {
+        qDebug() << "Exception during power execution:" << e.what();
+        QMessageBox::warning(this, "Error", QString("Error executing power: %1").arg(e.what()));
+        return;
+    }
+
+    
+
+    qDebug() << "Action successful:" << actionSuccessful;
+    if (actionSuccessful) {
+        card->hide();
+        updateBoardDisplay();
+
+
+
+        if (powerIndex == 2 || powerIndex == 16)
+        {
+            QMessageBox::information(nullptr, "Info",
+                "You must place a card after using this power!");
+        }
+        else
+        { // flame si tsunami nu schimbă rândul 
+            isRedTurn = !isRedTurn;
+            updateTurnLabel();
+            updateCardStacks();
+        }
+    }
+
+    checkWinCondition();
 }
 
 // Re-actualizează ce se vede pe tablă după shift

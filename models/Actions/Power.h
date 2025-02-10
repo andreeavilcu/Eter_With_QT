@@ -6,8 +6,16 @@
 #include <algorithm>
 #include <functional>
 #include <nlohmann/json.hpp>
-
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QString>
+#include <QWidget>
+#include <QGridLayout>
+#include <QPixmap>
+#include <QCoreApplication>
+#include "BoardCell.h"
 #include "Card.h"
+
 
 class Game;
 class Board;
@@ -75,6 +83,10 @@ public:
         m_justBlocked = false;
     }
 
+    [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game, const bool _check) const {
+        return m_powers[_index](_player, _game, _check);
+    }
+
 private:
     Power() = default;
     ~Power() = default;
@@ -114,9 +126,6 @@ private:
         static bool rock(Player& _player, Game& _game, bool _check);
     };
 
-    [[nodiscard]] bool play(const size_t _index, Player& _player, Game& _game, const bool _check) const {
-        return m_powers[_index](_player, _game, _check);
-    }
 
     std::array<FuncType, power_count> m_powers = {
         &PowerAction::controlledExplosion,
