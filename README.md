@@ -3,6 +3,11 @@
 ## Modern C++ project implementing the board game "Eter"
 #### Visual interface: QT
 
+## Features
+- **Modern Graphical Interface:** Built with Qt to provide a user-friendly experience.
+- **Modular Architecture:** Designed to be easily extended and enhanced with new functionalities.
+- **Responsive Design:** Adapted to work seamlessly across various platforms and screen resolutions.
+
 ## Team members
 #### Priboi Andrei (andreiprb)
 #### Tudose Alexandru Vasile (Chewdoughsay)
