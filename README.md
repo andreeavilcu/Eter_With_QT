@@ -1,4 +1,4 @@
-# Eter_With_QT_and_AI
+# Eter_With_QT
 
 ## Modern C++ project implementing the board game "Eter"
 #### Visual interface: QT
