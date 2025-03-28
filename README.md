@@ -2,8 +2,6 @@
 
 ## Modern C++ project implementing the board game "Eter"
 #### Visual interface: QT
-#### Hints system: limited search (minimax with Alpha-Beta Pruning)
-#### Computer AI: reinforcement learning (AlphaZero)
 
 ## Team members
 #### Priboi Andrei (andreiprb)
